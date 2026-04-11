@@ -272,16 +272,18 @@ body {
 .contact-strip {
   background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
   color: #fff; border-radius: var(--r);
-  padding: 13px 24px; display: flex; align-items: center; justify-content: center; gap: 48px;
-  margin-bottom: 16px; font-size: 13px;
-  box-shadow: 0 3px 12px rgba(13,50,112,0.2);
+  padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  margin-bottom: 20px; font-size: 15px;
+  box-shadow: 0 4px 16px rgba(13,50,112,0.3);
 }
-.contact-item { display: flex; align-items: center; gap: 9px; opacity: 0.95; }
+.contact-item { display: flex; align-items: center; gap: 12px; opacity: 0.98; font-weight: 500; }
+.contact-item span { font-size: 18px; }
 .contact-edit {
   background: transparent; border: none;
-  border-bottom: 1.5px solid rgba(255,255,255,0.4);
-  color: #fff; font-size: 13px; outline: none; min-width: 140px;
-  padding: 3px 4px; font-family: 'Plus Jakarta Sans', sans-serif;
+  border-bottom: 2px solid rgba(255,255,255,0.5);
+  color: #fff; font-size: 15px; outline: none; min-width: 160px;
+  padding: 4px 6px; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500;
 }
 .contact-edit:focus { border-bottom-color: var(--accent); }
 
