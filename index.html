@@ -5733,8 +5733,8 @@ innoviocr@gmail.com`;
       document.getElementById('fac-condicion').value = 'contado';
       document.getElementById('fac-vence').value = '';
       // Limpiar ítems de factura
-      const facItems = document.getElementById('fac-items-body');
-      if (facItems) facItems.innerHTML = '';
+      facItems.length = 0;
+      renderizarItemsFactura();
       // Resetear totales de factura
       document.getElementById('fac-disc-check').checked = false;
       document.getElementById('fac-iva-check').checked = false;
@@ -5751,8 +5751,8 @@ innoviocr@gmail.com`;
       document.getElementById('cot-date').value = '';
       document.getElementById('cot-vence').value = '';
       // Limpiar ítems de cotización
-      const cotItems = document.getElementById('cot-items-body');
-      if (cotItems) cotItems.innerHTML = '';
+      cotItems.length = 0;
+      renderizarItemsCotizacion();
       // Resetear totales de cotización
       document.getElementById('cot-disc-check').checked = false;
       document.getElementById('cot-iva-check').checked = false;
@@ -5782,7 +5782,13 @@ innoviocr@gmail.com`;
       document.getElementById('equip-so').value = '';
       document.getElementById('equip-so-otro').value = '';
       document.getElementById('equip-so-otro').style.display = 'none';
-      lines = [{type:'BH', desc:'', qty:1, price:0, total:0}];
+      lines = [
+        { tag:'',   desc:'Fuente de poder + Mano de Obra', qty:1, price:44500 },
+        { tag:'BH', desc:'Hora Ordinaria',                  qty:0, price:0 },
+        { tag:'BH', desc:'Hora Adicional',                  qty:0, price:0 },
+        { tag:'BH', desc:'Hora Soporte Remoto',             qty:0, price:0 },
+        { tag:'EH', desc:'Otros',                           qty:0, price:0 }
+      ];
       renderLines();
       calcTotals();
       
@@ -6472,6 +6478,7 @@ innoviocr@gmail.com`;
   // --- Formulario nuevo cliente en el panel ---
   function mostrarFormularioCliente() {
     _usuariosTemp = [];
+    mobPanelShowDetail('clientes');
     const panel = document.getElementById('detalle-cliente-panel');
     panel.innerHTML = `
       <div class="cuenta-form">
@@ -7165,6 +7172,7 @@ innoviocr@gmail.com`;
   
   function mostrarFormularioServicio() {
     const panel = document.getElementById('detalle-servicio-panel');
+    mobPanelShowDetail('servicios');
     panel.innerHTML = `
       <div class="cuenta-form">
         <div class="cuenta-form-title">＋ Nuevo Servicio</div>
@@ -7838,6 +7846,7 @@ innoviocr@gmail.com`;
   
   function mostrarFormularioProducto() {
     const panel = document.getElementById('detalle-producto-panel');
+    mobPanelShowDetail('productos');
     panel.innerHTML = `
       <div class="cuenta-form">
         <div class="cuenta-form-title">＋ Nuevo Producto</div>
@@ -9345,6 +9354,7 @@ innoviocr@gmail.com`;
   // Mostrar formulario para nueva cuenta
   function mostrarFormularioCuenta() {
     cuentaEditandoId = null;
+    mobPanelShowDetail('cuentas');
     const panel = document.getElementById('detalle-cuenta-panel');
     panel.innerHTML = crearHTMLFormularioCuenta();
 
