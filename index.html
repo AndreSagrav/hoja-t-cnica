@@ -2143,17 +2143,7 @@ body {
         <div class="mob-more-item" onclick="vistaPrevia();mobHideMore()">
           <span class="mob-more-item-icon">👁️</span>Vista Previa
         </div>
-        <div class="mob-more-item" onclick="shareWA();mobHideMore()">
-          <span class="mob-more-item-icon">💬</span>WhatsApp
-        </div>
       </div>
-      <div class="mob-more-sep"></div>
-      <button class="mob-more-item-row" onclick="generatePDF();mobHideMore()">
-        <span class="mob-more-icon">🖨️</span> Imprimir / PDF
-      </button>
-      <button class="mob-more-item-row" onclick="shareEmail();mobHideMore()">
-        <span class="mob-more-icon">✉️</span> Enviar por Email
-      </button>
     </div>
   </div>
 
@@ -2972,9 +2962,6 @@ body {
         <div class="panel-card">
           <div class="panel-title">Acciones</div>
           <button class="panel-btn pb-preview" onclick="vistaPrevia()">👁️ Vista Previa</button>
-          <button class="panel-btn pb-print" onclick="generatePDF()">🖨️ Imprimir / PDF</button>
-          <button class="panel-btn pb-email" onclick="shareEmail()">✉️ Enviar email</button>
-          <button class="panel-btn pb-wa"    onclick="shareWA()">💬 WhatsApp</button>
         </div>
         <div class="panel-card">
           <div class="panel-title">Resumen</div>
@@ -3753,30 +3740,33 @@ body {
     }
   }
 
+  let previewWindowRef = null;
+
   function vistaPrevia(){
     if(!validateDoc()) return;
-    
-    // Abrir comprobante profesional en ventana popup (diseño del 2.5)
-    const previewWindow = window.open('', '_blank', 'width=900,height=1200,scrollbars=yes');
-    if (!previewWindow) {
+
+    // Cerrar vista previa anterior si sigue abierta
+    if (previewWindowRef && !previewWindowRef.closed) previewWindowRef.close();
+
+    previewWindowRef = window.open('', '_blank', 'width=900,height=1200,scrollbars=yes');
+    if (!previewWindowRef) {
       alert('Por favor permita ventanas emergentes para ver la vista previa');
       return;
     }
-    
-    // Obtener datos del formulario
+
     const data = collectFormData();
-    
-    // Construir HTML del comprobante con diseño profesional
     const html = generarHTMLComprobante(data);
-    
-    previewWindow.document.write(html);
-    previewWindow.document.close();
+    previewWindowRef.document.write(html);
+    previewWindowRef.document.close();
   }
   
-  function generarHTMLComprobante(data) {
-    // Obtener logo del formulario
-    const logoImg = document.querySelector('#a4 .brand-logo-big');
-    const logoSrc = (logoImg && logoImg.src && logoImg.src.startsWith('data:')) ? logoImg.src : '';
+  function generarHTMLComprobante(data, logoBlancoOverride = null) {
+    // Obtener logo del formulario (usar override si se proporciona)
+    let logoSrc = logoBlancoOverride;
+    if (!logoSrc) {
+      const logoImg = document.querySelector('#a4 .brand-logo-big');
+      logoSrc = (logoImg && logoImg.src && logoImg.src.startsWith('data:')) ? logoImg.src : '';
+    }
     
     // CSS variables del 2.5
     const css = [
@@ -3792,6 +3782,7 @@ body {
       '.fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.25); }',
       '.fab-print { background: var(--accent); color: #fff; }',
       '.fab-wa { background: #1a7a3a; color: #fff; }',
+      '.fab-email { background: #ea4335; color: #fff; }',
       '.fab-close { background: var(--paper); color: var(--ink-soft); box-shadow: 0 2px 12px rgba(0,0,0,.12); }',
       '.comprobante { width: 780px; background: var(--paper); position: relative; overflow: visible; }',
       '.comprobante::before { content: "INNOVIO"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-family: "Syne", sans-serif; font-weight: 800; font-size: 140px; color: rgba(10, 50, 112, .028); pointer-events: none; letter-spacing: 12px; white-space: nowrap; }',
@@ -4076,11 +4067,13 @@ body {
         '<div class="fab-group">',
         '  <button class="fab fab-close" onclick="window.close()">✕ Cerrar</button>',
         '  <button class="fab fab-print" onclick="window.print()">🖨️ Imprimir / PDF</button>',
+        '  <button class="fab fab-email" onclick="window.opener.shareEmailFromPreview()">✉️ Email</button>',
+        '  <button class="fab fab-wa" onclick="window.print(); window.opener.openWhatsAppWithMessage();">💬 WhatsApp</button>',
         '</div>',
         '<div class="comprobante">',
         '  <div class="header">',
         '    <div class="header-brand">',
-        logoSrc ? '      <img class="brand-logo" src="' + logoSrc + '" alt="INNOVIO"/>' : '      <div class="brand-logo" style="font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;">INNOVIO</div>',
+        logoSrc ? '      <img class="brand-logo" src="' + logoSrc + '" alt="INNOVIO"' + (logoBlancoOverride ? ' style="filter:none"' : '') + '/>' : '      <div class="brand-logo" style="font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;">INNOVIO</div>',
         '      <div class="brand-contact">',
         '        <span>📍 ' + (contact.address || 'Cartago, La Unión') + '</span>',
         '        <span>📱 ' + (contact.phone || '(506) 62 7775 00') + '</span>',
@@ -4103,7 +4096,17 @@ body {
         '    <div class="footer-note">Documento generado digitalmente<br>' + nowStr + '</div>',
         '  </div>',
         '</div>',
-        '<script>(function(){var A4_H=Math.floor((297-10)*96/25.4);var z="";function ap(){var el=document.querySelector(".comprobante");if(!el)return;var h=el.scrollHeight;if(h>A4_H){z=document.documentElement.style.zoom||"";document.documentElement.style.zoom=String(A4_H/h);}}function rp(){document.documentElement.style.zoom=z;}window.addEventListener("beforeprint",ap);window.addEventListener("afterprint",rp);var _p=window.print.bind(window);window.print=function(){ap();setTimeout(function(){_p();setTimeout(rp,500);},80);};})()</s' + 'cript>',
+        '<script>(function(){' +
+        // Auto-escala para que quepa en el viewport actual (fix zoom hiper-ampliado)
+        'function autoScale(){var c=document.querySelector(".comprobante");if(!c)return;var avail=window.innerWidth-40;if(avail<780){document.documentElement.style.zoom=String(avail/780);}else{document.documentElement.style.zoom="1";}}' +
+        'window.addEventListener("load",autoScale);window.addEventListener("resize",autoScale);autoScale();' +
+        // Zoom para impresión
+        'var A4_H=Math.floor((297-10)*96/25.4);var z="";' +
+        'function ap(){var el=document.querySelector(".comprobante");if(!el)return;var h=el.scrollHeight;if(h>A4_H){z=document.documentElement.style.zoom||"";document.documentElement.style.zoom=String(A4_H/h);}}' +
+        'function rp(){document.documentElement.style.zoom=z||"1";}' +
+        'window.addEventListener("beforeprint",ap);window.addEventListener("afterprint",rp);' +
+        'var _p=window.print.bind(window);window.print=function(){ap();setTimeout(function(){_p();setTimeout(rp,500);},80);};' +
+        '})()</s' + 'cript>',
         '</body></html>'
       ].join('\n');
       return htmlParts;
@@ -4205,11 +4208,13 @@ body {
       '<div class="fab-group">',
       '  <button class="fab fab-close" onclick="window.close()">✕ Cerrar</button>',
       '  <button class="fab fab-print" onclick="window.print()">🖨️ Imprimir / PDF</button>',
+      '  <button class="fab fab-email" onclick="window.opener.shareEmailFromPreview()">✉️ Email</button>',
+      '  <button class="fab fab-wa" onclick="window.opener.shareWAFromPreview()">💬 WhatsApp</button>',
       '</div>',
       '<div class="comprobante">',
       '  <div class="header">',
       '    <div class="header-brand">',
-      logoSrc ? '      <img class="brand-logo" src="' + logoSrc + '" alt="INNOVIO"/>' : '      <div class="brand-logo" style="font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;">INNOVIO</div>',
+      logoSrc ? '      <img class="brand-logo" src="' + logoSrc + '" alt="INNOVIO"' + (logoBlancoOverride ? ' style="filter:none"' : '') + '/>' : '      <div class="brand-logo" style="font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;">INNOVIO</div>',
       '      <div class="brand-contact">',
       '        <span>📍 ' + (contact.address || 'Cartago, La Unión') + '</span>',
       '        <span>📱 ' + (contact.phone || '(506) 62 7775 00') + '</span>',
@@ -4344,112 +4349,529 @@ body {
     return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
   }
 
+  // ─── Helper: genera PDF del comprobante de forma robusta ────────────────────
+  async function generarPDFComprobante(data, returnBlob = false) {
+    return new Promise((resolve, reject) => {
+      const htmlContent = generarHTMLComprobante(data);
+      const docNum = data.docNum || 'documento';
+      
+      const popup = window.open('', '_blank', 'width=100,height=100,left=-1000,top=-1000');
+      if (!popup) {
+        reject(new Error('No se pudo abrir ventana para generar PDF'));
+        return;
+      }
+      
+      popup.document.write(htmlContent);
+      popup.document.close();
+      
+      const doGenerate = async () => {
+        try {
+          const el = popup.document.querySelector('.comprobante');
+          if (!el) {
+            popup.close();
+            reject(new Error('No se encontró elemento comprobante'));
+            return;
+          }
+          
+          const pdfOpts = {
+            margin: 0,
+            filename: `${docNum}.pdf`,
+            image: { type: 'jpeg', quality: 0.97 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+          
+          if (returnBlob) {
+            const blob = await html2pdf().set(pdfOpts).from(el).output('blob');
+            popup.close();
+            resolve(blob);
+          } else {
+            await html2pdf().set(pdfOpts).from(el).save();
+            popup.close();
+            resolve();
+          }
+        } catch (err) {
+          popup.close();
+          reject(err);
+        }
+      };
+      
+      const waitForFonts = async () => {
+        try {
+          if (popup.document.fonts) {
+            await popup.document.fonts.ready;
+          }
+        } catch (e) {}
+        setTimeout(doGenerate, 500);
+      };
+      
+      if (popup.document.readyState === 'complete') {
+        setTimeout(waitForFonts, 100);
+      } else {
+        popup.onload = () => setTimeout(waitForFonts, 100);
+        setTimeout(waitForFonts, 1000);
+      }
+    });
+  }
+
+  // ─── Helper: convierte logo a blanco usando canvas ────────────────────────
+  async function obtenerLogoEnBlanco() {
+    return new Promise((resolve) => {
+      const logoImg = document.querySelector('#a4 .brand-logo-big');
+      if (!logoImg || !logoImg.src) {
+        resolve('');
+        return;
+      }
+      
+      // Crear canvas off-screen
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const img = new Image();
+      
+      // Timeout de seguridad
+      const timeout = setTimeout(() => {
+        console.warn('Timeout generando logo blanco, usando original');
+        resolve(logoImg.src);
+      }, 3000);
+      
+      img.onload = () => {
+        clearTimeout(timeout);
+        
+        // Usar tamaño razonable (max 800px de ancho para evitar problemas de memoria)
+        const maxWidth = 800;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Dibujar imagen escalada
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        try {
+          // Obtener datos de píxeles
+          const imageData = ctx.getImageData(0, 0, width, height);
+          const data = imageData.data;
+          
+          // Convertir a blanco: donde hay opacidad, poner blanco puro
+          for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+            if (alpha > 10) { // Si hay algo de opacidad
+              data[i] = 255;     // R
+              data[i + 1] = 255; // G
+              data[i + 2] = 255; // B
+              // Mantener alpha original para transparencias suaves
+            }
+          }
+          
+          // Volver a poner los datos modificados
+          ctx.putImageData(imageData, 0, 0);
+          
+          resolve(canvas.toDataURL('image/png'));
+        } catch (e) {
+          console.warn('Error procesando logo:', e);
+          // Fallback: usar imagen original
+          resolve(logoImg.src);
+        }
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeout);
+        console.warn('Error cargando logo, usando original');
+        resolve(logoImg.src);
+      };
+      
+      // Cargar imagen
+      img.src = logoImg.src;
+    });
+  }
+
+  // ─── Helper: genera PDF del comprobante SILENCIOSO (sin popup, para WhatsApp) ───
+  // Usa iframe oculto para no disparar bloqueador de popups
+  async function generarPDFDesdeComprobanteSilencioso(data, returnBlob = false) {
+    const logoBlanco = await obtenerLogoEnBlanco();
+    const htmlContent = generarHTMLComprobante(data, logoBlanco);
+    const docNum = data.docNum || 'documento';
+    
+    // Crear iframe oculto
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:0;left:-9999px;width:900px;height:1300px;visibility:hidden;border:none;';
+    document.body.appendChild(iframe);
+    
+    iframe.contentDocument.write(htmlContent);
+    iframe.contentDocument.close();
+    
+    // Esperar que cargue
+    await new Promise(r => setTimeout(r, 1500));
+    
+    const el = iframe.contentDocument.querySelector('.comprobante');
+    if (!el) {
+      document.body.removeChild(iframe);
+      throw new Error('No se encontró elemento comprobante');
+    }
+    
+    const pdfOpts = {
+      margin: 0,
+      filename: `${docNum}.pdf`,
+      image: { type: 'jpeg', quality: 0.97 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    if (returnBlob) {
+      const blob = await html2pdf().set(pdfOpts).from(el).output('blob');
+      document.body.removeChild(iframe);
+      return blob;
+    } else {
+      await html2pdf().set(pdfOpts).from(el).save();
+      document.body.removeChild(iframe);
+    }
+  }
+
+  // ─── Helper: genera PDF del comprobante usando popup window ───────────────
+  // (mejor que iframe porque las fuentes de Google se cargan correctamente)
+  async function generarPDFDesdeComprobante(data, returnBlob = false) {
+    // Obtener logo en blanco antes de generar
+    const logoBlanco = await obtenerLogoEnBlanco();
+    
+    return new Promise((resolve, reject) => {
+      const htmlContent = generarHTMLComprobante(data, logoBlanco);
+      const docNum = data.docNum || 'documento';
+      
+      // Abrir ventana popup (off-screen pero visible para el navegador)
+      const popup = window.open('', '_blank', 'width=850,height=1200,left=-1000,top=-1000');
+      if (!popup) {
+        reject(new Error('No se pudo abrir ventana para generar PDF. Verifique permisos de popup.'));
+        return;
+      }
+      
+      popup.document.write(htmlContent);
+      popup.document.close();
+      
+      const doGenerate = async () => {
+        try {
+          const el = popup.document.querySelector('.comprobante');
+          if (!el) {
+            popup.close();
+            reject(new Error('No se encontró elemento comprobante'));
+            return;
+          }
+          
+          const pdfOpts = {
+            margin: 0,
+            filename: `${docNum}.pdf`,
+            image: { type: 'jpeg', quality: 0.97 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+          
+          if (returnBlob) {
+            const blob = await html2pdf().set(pdfOpts).from(el).output('blob');
+            popup.close();
+            resolve(blob);
+          } else {
+            await html2pdf().set(pdfOpts).from(el).save();
+            popup.close();
+            resolve();
+          }
+        } catch (err) {
+          popup.close();
+          reject(err);
+        }
+      };
+      
+      // Esperar a que las fuentes e imágenes se carguen
+      const waitForResources = async () => {
+        try {
+          if (popup.document.fonts) {
+            await popup.document.fonts.ready;
+          }
+        } catch (e) {}
+        
+        // Esperar a que todas las imágenes se carguen
+        const images = popup.document.querySelectorAll('img');
+        const imagePromises = Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Continuar aunque falle
+            setTimeout(() => resolve(), 2000); // Timeout de seguridad
+          });
+        });
+        
+        try {
+          await Promise.all(imagePromises);
+        } catch (e) {}
+        
+        // Espera adicional para asegurar renderizado completo
+        setTimeout(doGenerate, 500);
+      };
+      
+      if (popup.document.readyState === 'complete') {
+        setTimeout(waitForResources, 200);
+      } else {
+        popup.onload = () => setTimeout(waitForResources, 200);
+        setTimeout(waitForResources, 2000);
+      }
+    });
+  }
+
   async function generatePDF(){
     if(!validateDoc()) return;
 
     // Guardar en carpeta local (File System Access API)
     const savedLocal = await saveDocumentToFolder();
 
-    // Guardar en Supabase (esquema completo: clientes, documentos, líneas, hojas)
+    // Guardar en Supabase
     const savedDB = await guardarDocumentoCompleto();
 
-    // Mostrar feedback al usuario
     if (savedLocal && savedDB) {
-      console.log('✅ Documento guardado en carpeta local y base de datos');
+      console.log('✅ Documento guardado local y en base de datos');
     } else if (savedLocal) {
-      console.log('✅ Documento guardado en carpeta local');
       alert('⚠️ No se pudo guardar en la base de datos, pero el archivo local se guardó.');
     } else if (savedDB) {
       console.log('✅ Documento guardado en base de datos');
     } else {
-      alert('⚠️ No se pudo guardar el documento. Verifique la conexión.');
+      alert('⚠️ No se pudo guardar el documento.');
       return;
     }
 
-    // Descargar el comprobante profesional como PDF (mismo que vista previa)
+    // Descargar PDF del comprobante
     mostrarToast('⏳ Generando PDF…');
-    const data = collectFormData();
-    const htmlComprobante = generarHTMLComprobante(data);
-    const docNum = data.docNum || 'documento';
-    const pdfOpts = {
-      margin: 0,
-      filename: `${docNum}.pdf`,
-      image:    { type: 'jpeg', quality: 0.97 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF:    { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;top:0;left:-5000px;width:800px;height:1200px;visibility:hidden;border:none;';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(htmlComprobante);
-    iframe.contentDocument.close();
-    await new Promise(r => setTimeout(r, 700));
-
     try {
-      const el = iframe.contentDocument.querySelector('.comprobante') || iframe.contentDocument.body;
-      await html2pdf().set(pdfOpts).from(el).save();
+      await generarPDFDesdeComprobante(collectFormData(), false);
       mostrarToast('✅ PDF descargado');
     } catch(e) {
       console.error('Error generando PDF:', e);
-      mostrarToast('⚠️ Error al generar el PDF');
-    } finally {
-      document.body.removeChild(iframe);
+      mostrarToast('⚠️ Error al generar PDF');
     }
   }
 
   async function shareEmail(){
     if(!validateDoc()) return;
 
-    const data = collectFormData();
+    const data    = collectFormData();
     const docNum  = data.docNum || 'documento';
     const cliente = data.clientName || 'Cliente';
+    const email   = data.clientEmail || '';
     const sym     = (data.currency && data.currency.symbol) || '₡';
     const total   = sym + ' ' + (data.totals && data.totals.total || 0).toLocaleString('es-CR', { minimumFractionDigits: 2 });
     const tipo    = data.docType || 'Documento';
+    const fecha   = data.date || new Date().toLocaleDateString('es-CR');
 
-    // Descargar el PDF del comprobante
-    mostrarToast('⏳ Generando PDF para adjuntar…');
-    const htmlComprobante = generarHTMLComprobante(data);
-    const pdfOpts = {
-      margin: 0,
-      filename: `${docNum}.pdf`,
-      image:    { type: 'jpeg', quality: 0.97 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF:    { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    // Cerrar vista previa si está abierta
+    if (previewWindowRef && !previewWindowRef.closed) previewWindowRef.close();
+
+    // Mostrar overlay de carga
+    const overlay = document.createElement('div');
+    overlay.id = 'email-loading-overlay';
+    overlay.style.cssText = `
+      position:fixed;inset:0;background:rgba(7,31,80,0.6);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;z-index:99999;
+    `;
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:20px;padding:36px 32px;max-width:380px;width:90%;
+                  text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.25);">
+        <div id="email-overlay-icon" style="font-size:48px;margin-bottom:16px;">⏳</div>
+        <div id="email-overlay-title" style="font-size:17px;font-weight:700;color:#0d3270;margin-bottom:8px;">
+          Generando PDF…
+        </div>
+        <div id="email-overlay-sub" style="font-size:13px;color:#64748b;margin-bottom:24px;">
+          Esto tarda unos segundos
+        </div>
+        <div id="email-overlay-spinner" style="width:40px;height:40px;border:4px solid #e2e8f0;
+             border-top-color:#1a4fa0;border-radius:50%;animation:email-spin 0.8s linear infinite;margin:0 auto;">
+        </div>
+        <div id="email-overlay-btn" style="display:none;margin-top:20px;"></div>
+      </div>
+      <style>@keyframes email-spin{to{transform:rotate(360deg)}}</style>
+    `;
+    document.body.appendChild(overlay);
+
+    const setOverlayState = (icon, title, sub) => {
+      document.getElementById('email-overlay-icon').textContent = icon;
+      document.getElementById('email-overlay-title').textContent = title;
+      document.getElementById('email-overlay-sub').textContent  = sub;
     };
 
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;top:0;left:-5000px;width:800px;height:1200px;visibility:hidden;border:none;';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(htmlComprobante);
-    iframe.contentDocument.close();
-    await new Promise(r => setTimeout(r, 700));
+    const removeOverlay = () => document.getElementById('email-loading-overlay')?.remove();
 
+    // Generar PDF en el servidor (Chrome real, calidad idéntica a Vista Previa)
+    let pdfUrl = null;
+    const storagePublicUrl = `${SUPABASE_URL}/storage/v1/object/public/comprobantes/${docNum}.pdf`;
     try {
-      const el = iframe.contentDocument.querySelector('.comprobante') || iframe.contentDocument.body;
-      await html2pdf().set(pdfOpts).from(el).save();
-      mostrarToast('✅ PDF descargado — adjúntelo al correo');
+      const logoBlanco = await obtenerLogoEnBlanco();
+      const html = generarHTMLComprobante(data, logoBlanco);
+
+      const fnResp = await fetch(`${SUPABASE_URL}/functions/v1/generar-comprobante`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ html, docNum })
+      });
+      const fnData = await fnResp.json();
+      if (!fnResp.ok) throw new Error(fnData?.error || `Error ${fnResp.status}`);
+
+      pdfUrl = fnData.url;
     } catch(e) {
-      console.error('Error generando PDF:', e);
-    } finally {
-      document.body.removeChild(iframe);
+      console.error('Error generando PDF en servidor:', e);
+      removeOverlay();
+      mostrarToast('⚠️ ' + e.message, 8000);
+      return;
     }
 
-    // Abrir cliente de correo con asunto y cuerpo prellenado
-    const asunto = `${tipo} ${docNum} — INNOVIO`;
-    const cuerpo = `Estimado/a ${cliente},\n\nLe compartimos su ${tipo} *${docNum}* de INNOVIO.\n\n💰 Total: ${total}\n\n📎 Adjunto encontrará el documento PDF.\n\nPor favor confírmenos la recepción de este mensaje.\n\nGracias por su preferencia.\n\nInnovioCR`;
-    window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    // Registrar en historial
+    try {
+      await supabaseClient.from('envios_whatsapp').insert([{
+        documento_id: currentDocumentoId || null,
+        doc_num:      docNum,
+        cliente_id:   currentClienteId || null,
+        telefono:     email,
+        pdf_url:      pdfUrl,
+        estado:       'email_enviado'
+      }]);
+    } catch(e) { console.warn('No se pudo registrar envío:', e); }
+
+    // Descargar blob para descarga automática
+    setOverlayState('📎', 'Preparando archivo…', 'Descargando PDF');
+    let pdfBlob = null;
+    try {
+      const res = await fetch(storagePublicUrl);
+      if (res.ok) pdfBlob = await res.blob();
+    } catch(e) {
+      console.warn('No se pudo descargar blob:', e);
+    }
+
+    // Plantilla del correo
+    const linkLinea = pdfUrl
+      ? `\nTambién puede verlo en línea aquí:\n${pdfUrl}\n`
+      : '';
+
+    const asunto = `${tipo} N° ${docNum} — INNOVIO`;
+    const cuerpo =
+`Estimado/a ${cliente},
+
+Reciba un cordial saludo de parte del equipo de INNOVIO.
+
+Le hacemos llegar su ${tipo} correspondiente al día ${fecha}:
+
+  • Número de documento : ${docNum}
+  • Total               : ${total}
+
+Adjunto a este correo encontrará el documento en formato PDF para sus registros.
+${linkLinea}
+Si tiene alguna consulta, no dude en contactarnos.
+
+Agradecemos su preferencia.
+
+Atentamente,
+Equipo INNOVIO
+────────────────────────────
+innoviocr@gmail.com`;
+
+    // Mostrar botones — descarga y mailto desde clic directo del usuario
+    document.getElementById('email-overlay-spinner').style.display = 'none';
+    setOverlayState('✅', '¡Comprobante listo!', 'Haga clic para enviar por correo');
+
+    const btnDiv = document.getElementById('email-overlay-btn');
+    btnDiv.style.display = 'block';
+    btnDiv.innerHTML = `
+      <button id="email-send-btn"
+         style="display:block;width:100%;background:linear-gradient(135deg,#1a4fa0,#0d3270);color:#fff;
+                font-size:15px;font-weight:700;padding:14px 24px;border-radius:12px;border:none;
+                cursor:pointer;box-shadow:0 4px 16px rgba(13,50,112,0.35);">
+        ✉️ Abrir Outlook y Enviar
+      </button>
+      <a href="${storagePublicUrl}" target="_blank" download="${docNum}.pdf"
+         style="display:block;margin-top:10px;background:#f1f5f9;color:#0d3270;font-size:13px;
+                font-weight:600;padding:11px 24px;border-radius:10px;text-decoration:none;
+                border:1.5px solid #e2e8f0;">
+        ⬇️ Descargar PDF
+      </a>
+      <button onclick="document.getElementById('email-loading-overlay').remove()"
+              style="margin-top:10px;background:none;border:none;color:#94a3b8;
+                     font-size:13px;cursor:pointer;width:100%;">
+        Cancelar
+      </button>
+    `;
+
+    // Activar desde clic directo (user gesture real)
+    document.getElementById('email-send-btn').addEventListener('click', () => {
+      // Descargar PDF automáticamente si hay blob
+      if (pdfBlob) {
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${docNum}.pdf`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      }
+      // Abrir cliente de correo con plantilla prellenada
+      window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+      removeOverlay();
+      mostrarModalEmail(docNum, pdfUrl);
+    });
+  }
+
+  function mostrarModalEmail(docNum, pdfUrl) {
+    const existing = document.getElementById('modal-email-msg');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-email-msg';
+    modal.style.cssText = `
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(7,31,80,0.55);display:flex;align-items:center;
+      justify-content:center;z-index:10000;backdrop-filter:blur(3px);
+    `;
+    modal.innerHTML = `
+      <div style="background:white;border-radius:18px;padding:28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(7,31,80,0.3);font-family:'Plus Jakarta Sans',sans-serif;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e5e7ef;">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;font-size:20px;">✉️</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#0d3270;">Correo listo para enviar</div>
+            <div style="font-size:11.5px;color:#64748b;margin-top:1px;">${docNum}</div>
+          </div>
+        </div>
+        <div style="background:#f0f9ff;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#0c4a6e;line-height:1.7;">
+          <strong>Pasos en Outlook:</strong><br>
+          1. Outlook se abrió con el asunto y cuerpo ya escritos<br>
+          2. El PDF <strong>${docNum}.pdf</strong> se descargó en <strong>Descargas</strong><br>
+          3. Arrastre el PDF al correo para adjuntarlo<br>
+          4. Haga clic en <strong>Enviar</strong>
+        </div>
+        ${pdfUrl ? `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;color:#8892a8;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Link del comprobante:</div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;font-size:11px;color:#334155;word-break:break-all;">${pdfUrl}</div>
+        </div>` : ''}
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('modal-email-msg').remove()"
+            style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #e2e8f0;background:white;color:#475569;font-size:13px;font-weight:600;cursor:pointer;">
+            Cerrar
+          </button>
+          ${pdfUrl ? `
+          <button onclick="navigator.clipboard.writeText('${pdfUrl}');this.textContent='✅ Copiado'"
+            style="flex:1;padding:11px;border-radius:10px;border:none;background:#0d3270;color:white;font-size:13px;font-weight:700;cursor:pointer;">
+            Copiar link
+          </button>` : ''}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   }
 
   function formatWhatsAppNumber(num) {
-    // Eliminar todo excepto dígitos
     let digits = num.replace(/\D/g, '');
-    // Si empieza con 0, eliminarlo (formato costarricense)
     if (digits.startsWith('0')) digits = digits.substring(1);
-    // Si no tiene código de país, agregar 506 (Costa Rica)
     if (!digits.startsWith('506') && digits.length === 8) digits = '506' + digits;
     return digits;
   }
@@ -4457,7 +4879,6 @@ body {
   async function shareWA() {
     if (!validateDoc()) return;
 
-    // ── Datos del documento (branch por tipo) ──
     const data    = collectFormData();
     const docNum  = data.docNum || 'documento';
     const tipo    = data.docType || 'Documento';
@@ -4472,62 +4893,192 @@ body {
     }
 
     const formattedPhone = formatWhatsAppNumber(phone);
-    const message = `Hola${cliente ? ' ' + cliente : ''}, le compartimos su ${tipo} *${docNum}* de INNOVIO.\n\n💰 Total: *${total}*\n\n📎 Adjunto encontrará el documento PDF.\n\nPor favor responda para confirmar que ha recibido este mensaje.\n\nGracias por su preferencia.`;
 
-    // ── Generar PDF del comprobante profesional (mismo que vista previa) ──
-    mostrarToast('⏳ Generando PDF…');
+    // Cerrar vista previa si está abierta
+    if (previewWindowRef && !previewWindowRef.closed) previewWindowRef.close();
 
-    const htmlComprobante = generarHTMLComprobante(data);
+    // Mostrar overlay de carga en la misma página (no popup — nunca se bloquea)
+    const overlay = document.createElement('div');
+    overlay.id = 'wa-loading-overlay';
+    overlay.style.cssText = `
+      position:fixed;inset:0;background:rgba(7,31,80,0.6);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;z-index:99999;
+    `;
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:20px;padding:36px 32px;max-width:360px;width:90%;
+                  text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.25);">
+        <div id="wa-overlay-icon" style="font-size:48px;margin-bottom:16px;">⏳</div>
+        <div id="wa-overlay-title" style="font-size:17px;font-weight:700;color:#0d3270;margin-bottom:8px;">
+          Generando PDF…
+        </div>
+        <div id="wa-overlay-sub" style="font-size:13px;color:#64748b;margin-bottom:24px;">
+          Esto tarda unos segundos
+        </div>
+        <div id="wa-overlay-spinner" style="width:40px;height:40px;border:4px solid #e2e8f0;
+             border-top-color:#25d366;border-radius:50%;animation:wa-spin 0.8s linear infinite;margin:0 auto;">
+        </div>
+        <div id="wa-overlay-btn" style="display:none;margin-top:20px;"></div>
+      </div>
+      <style>@keyframes wa-spin{to{transform:rotate(360deg)}}</style>
+    `;
+    document.body.appendChild(overlay);
 
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;top:0;left:-5000px;width:800px;height:1200px;visibility:hidden;border:none;';
-    document.body.appendChild(iframe);
-    iframe.contentDocument.open();
-    iframe.contentDocument.write(htmlComprobante);
-    iframe.contentDocument.close();
-
-    await new Promise(r => setTimeout(r, 700));
-
-    const el = iframe.contentDocument.querySelector('.comprobante') || iframe.contentDocument.body;
-
-    const pdfOpts = {
-      margin: 0,
-      filename: `${docNum}.pdf`,
-      image:    { type: 'jpeg', quality: 0.97 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF:    { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    const setOverlayState = (icon, title, sub) => {
+      document.getElementById('wa-overlay-icon').textContent = icon;
+      document.getElementById('wa-overlay-title').textContent = title;
+      document.getElementById('wa-overlay-sub').textContent  = sub;
     };
 
-    // ── Ruta A: Web Share API con archivo (móvil / navegadores compatibles) ──
-    if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
-      try {
-        const blob = await html2pdf().set(pdfOpts).from(el).output('blob');
-        const file = new File([blob], `${docNum}.pdf`, { type: 'application/pdf' });
-
-        if (navigator.canShare({ files: [file] })) {
-          document.body.removeChild(iframe);
-          try { await navigator.clipboard.writeText(message); } catch (_) {}
-          await navigator.share({ files: [file], title: `${tipo} ${docNum} – INNOVIO` });
-          mostrarToast('✅ PDF compartido — el mensaje ya está en el portapapeles');
-          return;
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError') console.warn('Web Share falló:', err);
-      }
-    }
-
-    // ── Ruta B: Descargar PDF + abrir WhatsApp + mostrar modal con mensaje ──
+    // Generar PDF en el servidor (Chrome real, fuentes perfectas, sin popups)
+    let pdfUrl = null;
     try {
-      await html2pdf().set(pdfOpts).from(el).save();
+      const logoBlanco = await obtenerLogoEnBlanco();
+      const html = generarHTMLComprobante(data, logoBlanco);
+
+      // Usar fetch directo para obtener el mensaje de error real
+      const fnResp = await fetch(`${SUPABASE_URL}/functions/v1/generar-comprobante`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ html, docNum })
+      });
+      const fnData = await fnResp.json();
+      if (!fnResp.ok) throw new Error(fnData?.error || `Error ${fnResp.status}`);
+
+      pdfUrl = fnData.url;
     } catch(e) {
-      console.error('Error generando PDF:', e);
+      console.error('Error generando PDF en servidor:', e);
+      overlay.remove();
+      mostrarToast('⚠️ ' + e.message, 8000);
+      return;
     }
-    document.body.removeChild(iframe);
 
-    const waUrl = `https://wa.me/${formattedPhone}`;
-    window.open(waUrl, '_blank');
+    // Registrar envío
+    try {
+      await supabaseClient.from('envios_whatsapp').insert([{
+        documento_id: currentDocumentoId || null,
+        doc_num:      docNum,
+        cliente_id:   currentClienteId || null,
+        telefono:     formattedPhone,
+        pdf_url:      pdfUrl,
+        estado:       'enviado'
+      }]);
+    } catch(e) { console.warn('No se pudo registrar envío:', e); }
 
-    mostrarModalWhatsApp(message, docNum);
+    const message = `Hola${cliente ? ' ' + cliente : ''}, le compartimos su ${tipo} *${docNum}* de INNOVIO.\n\n💰 Total: *${total}*\n\n📎 Adjunto encontrará el documento PDF de su comprobante.\n\nPor favor responda para confirmar que ha recibido este mensaje.\n\nGracias por su preferencia.`;
+    const waUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+
+    // Descargar blob con cache-bust para evitar versión corrupta en CDN
+    const storagePublicUrl = `${SUPABASE_URL}/storage/v1/object/public/comprobantes/${docNum}.pdf`;
+    const cacheBustUrl = `${storagePublicUrl}?t=${Date.now()}`;
+    let pdfBlob = null;
+    try {
+      setOverlayState('📎', 'Preparando archivo…', 'Descargando PDF');
+      const res = await fetch(cacheBustUrl);
+      if (res.ok) pdfBlob = await res.blob();
+    } catch(e) {
+      console.warn('No se pudo descargar blob:', e);
+    }
+
+    // Auto-copiar mensaje al portapapeles
+    let mensajeCopiado = false;
+    try {
+      await navigator.clipboard.writeText(message);
+      mensajeCopiado = true;
+    } catch(e) {
+      console.warn('No se pudo copiar al portapapeles:', e);
+    }
+
+    // Mostrar botones
+    document.getElementById('wa-overlay-spinner').style.display = 'none';
+    setOverlayState('✅', '¡Comprobante listo!',
+      mensajeCopiado ? '📋 Mensaje copiado — ábralo y péguelo' : 'Elegí cómo enviarlo');
+
+    const btnDiv = document.getElementById('wa-overlay-btn');
+    btnDiv.style.display = 'block';
+
+    // Crear URL de descarga desde blob en memoria (evita CDN cacheado)
+    const downloadBlobUrl = pdfBlob ? URL.createObjectURL(pdfBlob) : null;
+
+    const canShareFile = pdfBlob && typeof navigator.canShare === 'function' &&
+      navigator.canShare({ files: [new File([pdfBlob], `${docNum}.pdf`, { type: 'application/pdf' })] });
+
+    btnDiv.innerHTML = `
+      ${canShareFile ? `
+      <button id="wa-share-btn"
+         style="display:block;width:100%;background:#25d366;color:#fff;font-size:15px;font-weight:700;
+                padding:14px 24px;border-radius:12px;border:none;cursor:pointer;
+                box-shadow:0 4px 16px rgba(37,211,102,0.4);margin-bottom:8px;">
+        📎 Compartir PDF en WhatsApp
+      </button>` : `
+      <a href="${waUrl}" target="_blank" rel="noopener"
+         onclick="document.getElementById('wa-loading-overlay').remove()"
+         style="display:block;background:#25d366;color:#fff;font-size:15px;font-weight:700;
+                padding:14px 24px;border-radius:12px;text-decoration:none;
+                box-shadow:0 4px 16px rgba(37,211,102,0.4);margin-bottom:8px;">
+        💬 Abrir WhatsApp
+      </a>`}
+      ${mensajeCopiado
+        ? `<div id="wa-copy-status" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;
+               padding:9px 14px;font-size:12px;color:#166534;margin-bottom:8px;text-align:left;line-height:1.4;">
+             📋 <strong>Mensaje copiado.</strong> Abrí WhatsApp, pegá con Ctrl+V y enviá.
+           </div>`
+        : `<button id="wa-copiar-btn"
+               style="display:block;width:100%;background:#f1f5f9;color:#0d3270;font-size:13px;
+                      font-weight:600;padding:11px 24px;border-radius:10px;border:1.5px solid #e2e8f0;
+                      cursor:pointer;margin-bottom:8px;">
+             📋 Copiar mensaje
+           </button>`}
+      ${downloadBlobUrl
+        ? `<a href="${downloadBlobUrl}" download="${docNum}.pdf"
+               style="display:block;background:#f1f5f9;color:#0d3270;font-size:13px;
+                      font-weight:600;padding:11px 24px;border-radius:10px;text-decoration:none;
+                      border:1.5px solid #e2e8f0;margin-bottom:8px;">
+             ⬇️ Descargar PDF
+           </a>`
+        : `<a href="${storagePublicUrl}" target="_blank" download="${docNum}.pdf"
+               style="display:block;background:#f1f5f9;color:#0d3270;font-size:13px;
+                      font-weight:600;padding:11px 24px;border-radius:10px;text-decoration:none;
+                      border:1.5px solid #e2e8f0;margin-bottom:8px;">
+             ⬇️ Descargar PDF
+           </a>`}
+      <button onclick="document.getElementById('wa-loading-overlay').remove()"
+              style="background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;width:100%;">
+        Cancelar
+      </button>
+    `;
+
+    // Botón copiar manual (si auto-copia falló)
+    const copiarBtn = document.getElementById('wa-copiar-btn');
+    if (copiarBtn) {
+      copiarBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(message);
+          copiarBtn.textContent = '✅ Copiado';
+          copiarBtn.style.background = '#f0fdf4';
+          copiarBtn.style.color = '#166534';
+          copiarBtn.style.borderColor = '#bbf7d0';
+        } catch(e) {
+          mostrarToast('⚠️ No se pudo copiar');
+        }
+      });
+    }
+
+    // Activar Web Share desde clic directo (user gesture real)
+    if (canShareFile) {
+      document.getElementById('wa-share-btn').addEventListener('click', async () => {
+        try {
+          const file = new File([pdfBlob], `${docNum}.pdf`, { type: 'application/pdf' });
+          await navigator.share({ files: [file], title: `${tipo} ${docNum} – INNOVIO`, text: message });
+          document.getElementById('wa-loading-overlay')?.remove();
+          mostrarToast('✅ PDF compartido');
+        } catch(e) {
+          if (e.name !== 'AbortError') mostrarToast('⚠️ No se pudo compartir');
+        }
+      });
+    }
   }
 
   // ─── Modal para copiar mensaje de WhatsApp ──────────────────────────────────
@@ -4617,6 +5168,46 @@ body {
     // Auto-seleccionar al abrir
     setTimeout(() => textarea.select(), 100);
   }
+
+  // ─── Funciones para llamar desde el popup de vista previa ────────────────
+  window.shareWAFromPreview = function() {
+    shareWA();
+  };
+  
+  window.shareEmailFromPreview = function() {
+    shareEmail();
+  };
+  
+  window.generatePDFFromPreview = function() {
+    generatePDF();
+  };
+
+  // Nueva función simplificada: abre WhatsApp con mensaje (PDF ya se imprimió desde popup)
+  window.openWhatsAppWithMessage = function() {
+    const data = collectFormData();
+    const docNum  = data.docNum || 'documento';
+    const tipo    = data.docType || 'Documento';
+    const cliente = data.clientName || '';
+    const phone   = data.clientPhone || '';
+    
+    if (!phone) {
+      alert('Por favor ingrese el número de WhatsApp del cliente.');
+      return;
+    }
+    
+    const formattedPhone = formatWhatsAppNumber(phone);
+    const sym = (data.currency && data.currency.symbol) || '₡';
+    const total = sym + ' ' + (data.totals && data.totals.total || 0).toLocaleString('es-CR', { minimumFractionDigits: 2 });
+    
+    const message = `Hola${cliente ? ' ' + cliente : ''}, le compartimos su ${tipo} *${docNum}* de INNOVIO.\n\n💰 Total: *${total}*\n\n📎 Adjunto encontrará el documento PDF.\n\nPor favor responda para confirmar que ha recibido este mensaje.\n\nGracias por su preferencia.`;
+    
+    // Abrir WhatsApp
+    const waUrl = `https://wa.me/${formattedPhone}`;
+    window.open(waUrl, '_blank');
+    
+    // Mostrar modal con mensaje
+    mostrarModalWhatsApp(message, docNum);
+  };
 
   // ============================================
   // SUPABASE CONFIGURATION - ESQUEMA COMPLETO
@@ -7652,20 +8243,20 @@ body {
       hoja.style.display = 'block';
     } else if (tipoDocumentoActual === 'factura') {
       factura.style.display = 'block';
-      // Inicializar fecha de factura
+      // Inicializar fecha de factura (hora local Costa Rica UTC-6)
       if (!document.getElementById('fac-date').value) {
-        document.getElementById('fac-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('fac-date').value = new Date().toLocaleDateString('en-CA');
       }
     } else if (tipoDocumentoActual === 'cotizacion') {
       cotizacion.style.display = 'block';
-      // Inicializar fecha de cotización
+      // Inicializar fecha de cotización (hora local Costa Rica UTC-6)
       if (!document.getElementById('cot-date').value) {
         const hoy = new Date();
-        document.getElementById('cot-date').value = hoy.toISOString().split('T')[0];
+        document.getElementById('cot-date').value = hoy.toLocaleDateString('en-CA');
         // Válida por 30 días
         const vence = new Date(hoy);
         vence.setDate(vence.getDate() + 30);
-        document.getElementById('cot-vence').value = vence.toISOString().split('T')[0];
+        document.getElementById('cot-vence').value = vence.toLocaleDateString('en-CA');
       }
     }
     // Re-scale for mobile after switching document type
