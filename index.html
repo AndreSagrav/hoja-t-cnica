@@ -1907,9 +1907,367 @@ body {
   margin: 0 auto;
   line-height: 1.5;
 }
+
+/* ════════════════════════════════════════════════════════
+   SISTEMA DE LOGIN / AUTENTICACIÓN
+════════════════════════════════════════════════════════ */
+
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 50%, #0f3d8a 100%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-overlay.hidden {
+  display: none !important;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 40px 36px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.1);
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-logo h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.login-logo p {
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-top: 8px;
+}
+
+.login-form .form-field {
+  margin-bottom: 20px;
+}
+
+.login-form .form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.login-form .form-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--r);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.login-form .form-input:focus {
+  border-color: var(--navy);
+  box-shadow: var(--focus);
+  outline: none;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--r);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(13,50,112,0.3);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.login-links a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-links a:hover {
+  text-decoration: underline;
+}
+
+.login-error {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: var(--r);
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.login-error.visible {
+  display: block;
+}
+
+.login-success {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #16a34a;
+  padding: 12px 16px;
+  border-radius: var(--r);
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.login-success.visible {
+  display: block;
+}
+
+.user-info {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.user-info.hidden {
+  display: none;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.user-menu-btn {
+  background: none;
+  border: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.user-menu-btn:hover {
+  color: var(--navy);
+}
+
+/* Login en móvil */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 32px 24px;
+    border-radius: 16px;
+  }
+  
+  .login-logo h1 {
+    font-size: 28px;
+  }
+  
+  .user-info {
+    top: 10px;
+    right: 10px;
+    padding: 6px 12px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+}
 </style>
 </head>
 <body>
+
+<!-- ════════════════════════════════════════════════════════
+   SISTEMA DE LOGIN / AUTENTICACIÓN
+════════════════════════════════════════════════════════ -->
+
+<!-- Overlay de Login -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-container">
+    <div class="login-logo">
+      <img id="login-logo-img" class="brand-logo-big" alt="INNOVIO" style="max-width:280px;height:auto;"/>
+      <p>Sistema de Facturación y Gestión</p>
+    </div>
+    
+    <!-- Formulario de Login -->
+    <div id="login-form-section">
+      <div id="login-error" class="login-error"></div>
+      <form class="login-form" onsubmit="handleLogin(event)">
+        <div class="form-field">
+          <label class="form-label" for="login-email">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="login-email" 
+            class="form-input" 
+            placeholder="tu@email.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="login-password">Contraseña</label>
+          <input 
+            type="password" 
+            id="login-password" 
+            class="form-input" 
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        <button type="submit" class="login-btn" id="login-btn">
+          Iniciar Sesión
+        </button>
+      </form>
+      <div class="login-links">
+        <a onclick="showRegister()">Crear cuenta</a>
+        <a onclick="showResetPassword()">¿Olvidó contraseña?</a>
+      </div>
+    </div>
+    
+    <!-- Formulario de Registro -->
+    <div id="register-form-section" style="display:none;">
+      <div id="register-error" class="login-error"></div>
+      <div id="register-success" class="login-success"></div>
+      <form class="login-form" onsubmit="handleRegister(event)">
+        <div class="form-field">
+          <label class="form-label" for="register-name">Nombre completo</label>
+          <input 
+            type="text" 
+            id="register-name" 
+            class="form-input" 
+            placeholder="Tu nombre completo"
+            required
+          />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="register-email">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="register-email" 
+            class="form-input" 
+            placeholder="tu@email.com"
+            required
+          />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="register-password">Contraseña</label>
+          <input 
+            type="password" 
+            id="register-password" 
+            class="form-input" 
+            placeholder="Mínimo 6 caracteres"
+            required
+            minlength="6"
+          />
+        </div>
+        <button type="submit" class="login-btn" id="register-btn">
+          Crear Cuenta
+        </button>
+      </form>
+      <div class="login-links">
+        <a onclick="showLogin()">← Volver al login</a>
+      </div>
+    </div>
+    
+    <!-- Formulario de Recuperación -->
+    <div id="reset-form-section" style="display:none;">
+      <div id="reset-error" class="login-error"></div>
+      <div id="reset-success" class="login-success"></div>
+      <form class="login-form" onsubmit="handleResetPassword(event)">
+        <div class="form-field">
+          <label class="form-label" for="reset-email">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="reset-email" 
+            class="form-input" 
+            placeholder="tu@email.com"
+            required
+          />
+        </div>
+        <button type="submit" class="login-btn" id="reset-btn">
+          Enviar instrucciones
+        </button>
+      </form>
+      <div class="login-links">
+        <a onclick="showLogin()">← Volver al login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Info de usuario logueado -->
+<div id="user-info" class="user-info hidden">
+  <div class="user-avatar" id="user-avatar">U</div>
+  <span class="user-name" id="user-name">Usuario</span>
+  <button class="user-menu-btn" onclick="logout()" title="Cerrar sesión">🚪</button>
+</div>
+
 <div class="app-shell">
 
   <!-- SIDEBAR -->
@@ -3369,10 +3727,10 @@ body {
   // Inicializar tareas al cargar
   document.addEventListener('DOMContentLoaded', function() {
     renderTasks();
-    // Copiar logo de OT a Factura y Cotización (solo si tiene src válido)
+    // Copiar logo de OT a Factura, Cotización y Login (solo si tiene src válido)
     const otLogo = document.querySelector('#a4 .brand-logo-big');
     if (otLogo && otLogo.src && !otLogo.src.endsWith(location.href)) {
-      ['fac-logo', 'cot-logo'].forEach(id => {
+      ['fac-logo', 'cot-logo', 'login-logo-img'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.src = otLogo.src;
       });
@@ -5226,9 +5584,10 @@ innoviocr@gmail.com`;
     }
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: 'innovio_auth_token'
       }
     });
     console.log('✅ Supabase inicializado');
@@ -9037,15 +9396,6 @@ innoviocr@gmail.com`;
   // INICIALIZACIÓN
   // ============================================
 
-  initSupabase();
-
-  // Intentar restaurar borrador; si no hay, inicializar normalmente
-  const restored = autoRestore();
-  if (!restored) {
-    document.getElementById('doc-date').value = new Date().toLocaleDateString('en-CA');
-    renderLines();
-  }
-
   // ============================================
   // CUENTAS BANCARIAS - SISTEMA COMPLETO
   // ============================================
@@ -9545,8 +9895,301 @@ innoviocr@gmail.com`;
     return sinpeData;
   }
 
-  // Inicializar al cargar la página
-  initCuentasBancarias();
+  // ============================================
+  // SISTEMA DE AUTENTICACIÓN / LOGIN
+  // ============================================
+
+  let currentUser = null;
+  let userProfile = null;
+
+  // Verificar sesión al cargar
+  async function checkSession() {
+    if (!supabaseClient) initSupabase();
+    if (!supabaseClient) return;
+
+    try {
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      
+      if (session) {
+        currentUser = session.user;
+        await loadUserProfile();
+        showApp();
+      } else {
+        showLogin();
+      }
+    } catch (e) {
+      console.error('Error verificando sesión:', e);
+      showLogin();
+    }
+  }
+
+  // Cargar perfil del usuario
+  async function loadUserProfile() {
+    if (!currentUser || !supabaseClient) return;
+    
+    try {
+      const { data, error } = await supabaseClient
+        .from('perfiles_usuarios')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+      
+      if (data) {
+        userProfile = data;
+      } else {
+        // Crear perfil si no existe
+        userProfile = {
+          id: currentUser.id,
+          nombre_completo: currentUser.user_metadata?.nombre_completo || currentUser.email.split('@')[0],
+          rol: 'tecnico',
+          activo: true
+        };
+      }
+      
+      updateUserUI();
+    } catch (e) {
+      console.error('Error cargando perfil:', e);
+    }
+  }
+
+  // Actualizar UI con datos del usuario
+  function updateUserUI() {
+    if (!currentUser) return;
+    
+    const name = userProfile?.nombre_completo || currentUser.email.split('@')[0];
+    const initial = name.charAt(0).toUpperCase();
+    
+    document.getElementById('user-avatar').textContent = initial;
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('user-info').classList.remove('hidden');
+  }
+
+  // Mostrar/ocultar secciones de login
+  function showLogin() {
+    document.getElementById('login-overlay').classList.remove('hidden');
+    document.getElementById('login-form-section').style.display = 'block';
+    document.getElementById('register-form-section').style.display = 'none';
+    document.getElementById('reset-form-section').style.display = 'none';
+    document.getElementById('user-info').classList.add('hidden');
+  }
+
+  function showRegister() {
+    document.getElementById('login-form-section').style.display = 'none';
+    document.getElementById('register-form-section').style.display = 'block';
+    document.getElementById('reset-form-section').style.display = 'none';
+  }
+
+  function showResetPassword() {
+    document.getElementById('login-form-section').style.display = 'none';
+    document.getElementById('register-form-section').style.display = 'none';
+    document.getElementById('reset-form-section').style.display = 'block';
+  }
+
+  function showApp() {
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('user-info').classList.remove('hidden');
+  }
+
+  // Login
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    const errorDiv = document.getElementById('login-error');
+    
+    btn.disabled = true;
+    btn.textContent = 'Ingresando...';
+    errorDiv.classList.remove('visible');
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    try {
+      if (!supabaseClient) initSupabase();
+      
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+      
+      currentUser = data.user;
+      await loadUserProfile();
+      
+      // Limpiar formulario
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      
+      showApp();
+    } catch (error) {
+      console.error('Error de login:', error);
+      errorDiv.textContent = error.message === 'Invalid login credentials' 
+        ? 'Correo o contraseña incorrectos'
+        : 'Error al iniciar sesión: ' + error.message;
+      errorDiv.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Iniciar Sesión';
+    }
+  }
+
+  // Registro
+  async function handleRegister(e) {
+    e.preventDefault();
+    const btn = document.getElementById('register-btn');
+    const errorDiv = document.getElementById('register-error');
+    const successDiv = document.getElementById('register-success');
+    
+    btn.disabled = true;
+    btn.textContent = 'Creando cuenta...';
+    errorDiv.classList.remove('visible');
+    successDiv.classList.remove('visible');
+    
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    
+    try {
+      if (!supabaseClient) initSupabase();
+      
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          emailConfirmTo: false,
+          data: {
+            nombre_completo: name,
+            rol: 'tecnico'
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      successDiv.textContent = 'Cuenta creada exitosamente. Ya puedes iniciar sesión.';
+      successDiv.classList.add('visible');
+      
+      // Limpiar formulario
+      setTimeout(() => {
+        showLogin();
+        document.getElementById('register-name').value = '';
+        document.getElementById('register-email').value = '';
+        document.getElementById('register-password').value = '';
+        successDiv.classList.remove('visible');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error de registro:', error);
+      errorDiv.textContent = error.message === 'User already registered'
+        ? 'Este correo ya está registrado'
+        : 'Error al crear cuenta: ' + error.message;
+      errorDiv.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Crear Cuenta';
+    }
+  }
+
+  // Recuperar contraseña
+  async function handleResetPassword(e) {
+    e.preventDefault();
+    const btn = document.getElementById('reset-btn');
+    const errorDiv = document.getElementById('reset-error');
+    const successDiv = document.getElementById('reset-success');
+    
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    errorDiv.classList.remove('visible');
+    successDiv.classList.remove('visible');
+    
+    const email = document.getElementById('reset-email').value;
+    
+    try {
+      if (!supabaseClient) initSupabase();
+      
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+      });
+      
+      if (error) throw error;
+      
+      successDiv.textContent = 'Instrucciones enviadas a tu correo.';
+      successDiv.classList.add('visible');
+      
+      setTimeout(() => {
+        showLogin();
+        document.getElementById('reset-email').value = '';
+        successDiv.classList.remove('visible');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error reset password:', error);
+      errorDiv.textContent = 'Error: ' + error.message;
+      errorDiv.classList.add('visible');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Enviar instrucciones';
+    }
+  }
+
+  // Logout
+  async function logout() {
+    try {
+      if (!supabaseClient) initSupabase();
+      
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) throw error;
+      
+      currentUser = null;
+      userProfile = null;
+      
+      // Limpiar datos sensibles
+      currentClienteId = null;
+      currentDocumentoId = null;
+      
+      showLogin();
+    } catch (error) {
+      console.error('Error logout:', error);
+      alert('Error al cerrar sesión');
+    }
+  }
+
+  // Escuchar cambios de autenticación
+  function setupAuthListener() {
+    if (!supabaseClient) return;
+    
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        currentUser = session.user;
+        loadUserProfile();
+        showApp();
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        userProfile = null;
+        showLogin();
+      }
+    });
+  }
+
+  // ============================================
+  // INICIALIZACIÓN
+  // ============================================
+
+  initSupabase();
+  setupAuthListener();
+  
+  // Verificar sesión antes de cargar datos
+  checkSession().then(() => {
+    // Solo inicializar si hay sesión
+    if (currentUser) {
+      initCuentasBancarias();
+      const restored = autoRestore();
+      if (!restored) {
+        document.getElementById('doc-date').value = new Date().toLocaleDateString('en-CA');
+        renderLines();
+      }
+    }
+  });
 </script>
 </body>
 </html>
