@@ -5584,10 +5584,9 @@ innoviocr@gmail.com`;
     }
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storageKey: 'innovio_auth_token'
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
       }
     });
     console.log('✅ Supabase inicializado');
@@ -9902,25 +9901,10 @@ innoviocr@gmail.com`;
   let currentUser = null;
   let userProfile = null;
 
-  // Verificar sesión al cargar
+  // Verificar sesión al cargar - siempre muestra login
   async function checkSession() {
-    if (!supabaseClient) initSupabase();
-    if (!supabaseClient) return;
-
-    try {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-      
-      if (session) {
-        currentUser = session.user;
-        await loadUserProfile();
-        showApp();
-      } else {
-        showLogin();
-      }
-    } catch (e) {
-      console.error('Error verificando sesión:', e);
-      showLogin();
-    }
+    // Siempre mostrar login, sin persistir sesión
+    showLogin();
   }
 
   // Cargar perfil del usuario
