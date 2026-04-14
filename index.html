@@ -256,6 +256,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-center { display: flex; align-items: center; flex: 1; justify-content: center; }
 .topbar-title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 22px; font-weight: 800;
@@ -456,23 +457,23 @@ body {
 }
 .equip-grid { display: grid; grid-template-columns: 110px 1fr; }
 .equip-cell {
-  padding: 10px 12px; border-bottom: 2px solid var(--border);
-  border-right: 2px solid var(--border); display: flex; align-items: center;
+  padding: 6px 10px; border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border); display: flex; align-items: center;
   background: var(--surface2);
 }
 .equip-cell:nth-child(even) { background: var(--surface); }
-.equip-label { font-size: 13px; color: var(--text); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+.equip-label { font-size: 12px; color: var(--text); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
 .equip-input {
-  width: 100%; border: none; border-bottom: 2px solid var(--border);
+  width: 100%; border: none; border-bottom: 1px solid var(--border);
   font-size: 14px; color: var(--text); outline: none; background: transparent;
-  padding: 8px 4px; text-align: left; font-weight: 500;
+  padding: 4px 2px; text-align: left; font-weight: 500;
 }
 .equip-input:focus { border-bottom-color: var(--navy); background: rgba(13,50,112,0.05); }
 
 .equip-select {
-  width: 100%; border: none; border-bottom: 2px solid var(--border);
+  width: 100%; border: none; border-bottom: 1px solid var(--border);
   font-size: 14px; color: var(--text); outline: none; background: transparent;
-  padding: 8px 4px; text-align: left;
+  padding: 4px 2px; text-align: left;
   cursor: pointer; font-weight: 500;
   appearance: none;
   -webkit-appearance: none;
@@ -540,21 +541,21 @@ body {
   border-width: 3px;
 }
 
-.task-category { margin-bottom: 16px; }
+.task-category { margin-bottom: 10px; }
 .task-category-title {
-  font-size: 15px; font-weight: 800; color: var(--text);
-  margin-bottom: 8px; padding: 8px 12px;
+  font-size: 14px; font-weight: 800; color: var(--text);
+  margin-bottom: 6px; padding: 6px 10px;
   background: rgba(13,50,112,0.08); border-radius: var(--r-sm);
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 6px;
   border-left: 4px solid var(--navy);
 }
 
 .task-item {
-  background: var(--surface); border: 2px solid var(--border);
-  border-radius: var(--r-sm); margin-bottom: 8px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-sm); margin-bottom: 5px; overflow: hidden;
 }
 .task-header {
-  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
   cursor: pointer; transition: background 0.2s;
 }
 .task-header:hover { background: var(--surface2); }
@@ -572,13 +573,13 @@ body {
 .task-item.expanded .task-expand { transform: rotate(180deg); }
 
 .task-actions {
-  display: none; padding: 12px 14px 14px 42px;
-  background: var(--surface2); border-top: 2px solid var(--border);
+  display: none; padding: 8px 10px 10px 38px;
+  background: var(--surface2); border-top: 1px solid var(--border);
 }
 .task-item.expanded .task-actions { display: block; }
 
 .action-item {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
 }
 .action-checkbox {
   width: 20px; height: 20px; accent-color: var(--green); cursor: pointer;
@@ -2510,6 +2511,8 @@ body {
     <header class="topbar">
       <div class="topbar-left">
         <span class="topbar-title">Sistema de Facturación</span>
+      </div>
+      <div class="topbar-center">
         <div class="doc-type-selector" role="group" aria-label="Tipo de documento">
           <button class="doc-btn active" onclick="setDocType(this,'ORDEN DE TRABAJO','OT','hoja')" aria-pressed="true">📋 Orden de Trabajo</button>
           <button class="doc-btn" onclick="setDocType(this,'FACTURA','FAC','factura')" aria-pressed="false">🧾 Factura</button>
@@ -3342,13 +3345,7 @@ body {
 <script>
   let currency = '₡', currCode = 'CRC';
 
-  let lines = [
-    { tag:'',   desc:'Fuente de poder + Mano de Obra', qty:1, price:44500 },
-    { tag:'BH', desc:'Hora Ordinaria',                  qty:0, price:0 },
-    { tag:'BH', desc:'Hora Adicional',                  qty:0, price:0 },
-    { tag:'BH', desc:'Hora Soporte Remoto',             qty:0, price:0 },
-    { tag:'EH', desc:'Otros',                           qty:0, price:0 },
-  ];
+  let lines = [];
 
   const fmt = v => currency + ' ' + v.toLocaleString('es-CR',{minimumFractionDigits:1,maximumFractionDigits:1});
   const tagClass = t => t==='BH'?'tag-bh':t==='EH'?'tag-eh':t==='OT'?'tag-ot':'';
@@ -5584,9 +5581,10 @@ innoviocr@gmail.com`;
     }
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: 'innovio_auth_token'
       }
     });
     console.log('✅ Supabase inicializado');
@@ -9901,10 +9899,25 @@ innoviocr@gmail.com`;
   let currentUser = null;
   let userProfile = null;
 
-  // Verificar sesión al cargar - siempre muestra login
+  // Verificar sesión al cargar
   async function checkSession() {
-    // Siempre mostrar login, sin persistir sesión
-    showLogin();
+    if (!supabaseClient) initSupabase();
+    if (!supabaseClient) return;
+
+    try {
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      
+      if (session) {
+        currentUser = session.user;
+        await loadUserProfile();
+        showApp();
+      } else {
+        showLogin();
+      }
+    } catch (e) {
+      console.error('Error verificando sesión:', e);
+      showLogin();
+    }
   }
 
   // Cargar perfil del usuario
