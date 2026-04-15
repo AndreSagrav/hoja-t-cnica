@@ -2158,16 +2158,17 @@ body {
     <!-- Formulario de Login -->
     <div id="login-form-section">
       <div id="login-error" class="login-error"></div>
-      <form class="login-form" onsubmit="handleLogin(event)">
+      <form class="login-form" method="post" action="#" onsubmit="handleLogin(event)">
         <div class="form-field">
           <label class="form-label" for="login-email">Correo electrónico</label>
           <input 
             type="email" 
             id="login-email" 
+            name="email"
             class="form-input" 
             placeholder="tu@email.com"
             required
-            autocomplete="email"
+            autocomplete="username email"
           />
         </div>
         <div class="form-field">
@@ -2175,6 +2176,7 @@ body {
           <input 
             type="password" 
             id="login-password" 
+            name="password"
             class="form-input" 
             placeholder="••••••••"
             required
@@ -2561,8 +2563,8 @@ body {
         <div class="doc-body">
           <div class="contact-strip">
           <div class="contact-item"><span aria-hidden="true">📍</span><input class="contact-edit" value="Cartago, La Unión" aria-label="Dirección"/></div>
-          <div class="contact-item"><span aria-hidden="true">📱</span><input class="contact-edit" value="(506) 62 7775 00" aria-label="Teléfono" /></div>
-          <div class="contact-item"><span aria-hidden="true">✉️</span><input class="contact-edit" value="innoviocr@outlook.es" aria-label="Correo" /></div>
+          <div class="contact-item"><span aria-hidden="true">📱</span><input class="contact-edit" value="(506)  62 777 500" aria-label="Teléfono" /></div>
+          <div class="contact-item"><span aria-hidden="true">✉️</span><input class="contact-edit" value="innoviocr@outlook.com" aria-label="Correo" /></div>
         </div>
 
         <div class="client-row">
@@ -2983,8 +2985,8 @@ body {
         <div class="doc-body">
           <div class="contact-strip">
             <div class="contact-item"><span aria-hidden="true">📍</span><input class="contact-edit" value="Cartago, La Unión" aria-label="Dirección"/></div>
-            <div class="contact-item"><span aria-hidden="true">📱</span><input class="contact-edit" value="(506) 62 7775 00" aria-label="Teléfono"/></div>
-            <div class="contact-item"><span aria-hidden="true">✉️</span><input class="contact-edit" value="innoviocr@outlook.es" aria-label="Correo"/></div>
+            <div class="contact-item"><span aria-hidden="true">📱</span><input class="contact-edit" value="(506)  62 777 500" aria-label="Teléfono"/></div>
+            <div class="contact-item"><span aria-hidden="true">✉️</span><input class="contact-edit" value="innoviocr@outlook.com" aria-label="Correo"/></div>
           </div>
 
           <div class="section-header">👤 Datos del Cliente</div>
@@ -3134,8 +3136,8 @@ body {
         <div class="doc-body">
           <div class="contact-strip">
             <div class="contact-item"><span aria-hidden="true">📍</span><input class="contact-edit" value="Cartago, La Unión" aria-label="Dirección"/></div>
-            <div class="contact-item"><span aria-hidden="true">📱</span><input class="contact-edit" value="(506) 62 7775 00" aria-label="Teléfono"/></div>
-            <div class="contact-item"><span aria-hidden="true">✉️</span><input class="contact-edit" value="innoviocr@outlook.es" aria-label="Correo"/></div>
+            <div class="contact-item"><span aria-hidden="true">📱</span><input class="contact-edit" value="(506)  62 777 500" aria-label="Teléfono"/></div>
+            <div class="contact-item"><span aria-hidden="true">✉️</span><input class="contact-edit" value="innoviocr@outlook.com" aria-label="Correo"/></div>
           </div>
 
           <div class="section-header">👤 Datos del Cliente</div>
@@ -3207,8 +3209,8 @@ body {
               <div style="padding: 10px 12px; background: var(--surface2); font-size: 12px; line-height: 1.6;">
                 <div style="font-weight: 700; color: var(--navy); margin-bottom: 2px;">Innovio CR S.A.</div>
                 <div style="color: var(--text-mid);">Cartago, La Unión</div>
-                <div style="color: var(--text-mid);">(506) 62 7775 00</div>
-                <div style="color: var(--text-mid);">innoviocr@outlook.es</div>
+                <div style="color: var(--text-mid);">(506)  62 777 500</div>
+                <div style="color: var(--text-mid);">innoviocr@outlook.com</div>
               </div>
             </div>
           </div>
@@ -4431,8 +4433,8 @@ body {
         logoSrc ? '      <img class="brand-logo" src="' + logoSrc + '" alt="INNOVIO"' + (logoBlancoOverride ? ' style="filter:none"' : '') + '/>' : '      <div class="brand-logo" style="font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;">INNOVIO</div>',
         '      <div class="brand-contact">',
         '        <span>📍 ' + (contact.address || 'Cartago, La Unión') + '</span>',
-        '        <span>📱 ' + (contact.phone || '(506) 62 7775 00') + '</span>',
-        '        <span>✉️ ' + (contact.email || 'innoviocr@outlook.es') + '</span>',
+        '        <span>📱 ' + (contact.phone || '(506)  62 777 500') + '</span>',
+        '        <span>✉️ ' + (contact.email || 'innoviocr@outlook.com') + '</span>',
         '      </div>',
         '    </div>',
         '    <div class="header-doc">',
@@ -4572,8 +4574,8 @@ body {
       logoSrc ? '      <img class="brand-logo" src="' + logoSrc + '" alt="INNOVIO"' + (logoBlancoOverride ? ' style="filter:none"' : '') + '/>' : '      <div class="brand-logo" style="font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;">INNOVIO</div>',
       '      <div class="brand-contact">',
       '        <span>📍 ' + (contact.address || 'Cartago, La Unión') + '</span>',
-      '        <span>📱 ' + (contact.phone || '(506) 62 7775 00') + '</span>',
-      '        <span>✉️ ' + (contact.email || 'innoviocr@outlook.es') + '</span>',
+      '        <span>📱 ' + (contact.phone || '(506)   62 777 500') + '</span>',
+      '        <span>✉️ ' + (contact.email || 'innoviocr@outlook.com') + '</span>',
       '      </div>',
       '    </div>',
       '    <div class="header-doc">',
@@ -5583,7 +5585,7 @@ innoviocr@gmail.com`;
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true,
+        detectSessionInUrl: false,
         storageKey: 'innovio_auth_token'
       }
     });
@@ -6138,13 +6140,7 @@ innoviocr@gmail.com`;
       document.getElementById('equip-so').value = '';
       document.getElementById('equip-so-otro').value = '';
       document.getElementById('equip-so-otro').style.display = 'none';
-      lines = [
-        { tag:'',   desc:'Fuente de poder + Mano de Obra', qty:1, price:44500 },
-        { tag:'BH', desc:'Hora Ordinaria',                  qty:0, price:0 },
-        { tag:'BH', desc:'Hora Adicional',                  qty:0, price:0 },
-        { tag:'BH', desc:'Hora Soporte Remoto',             qty:0, price:0 },
-        { tag:'EH', desc:'Otros',                           qty:0, price:0 }
-      ];
+      lines = [];
       renderLines();
       calcTotals();
       
@@ -9325,12 +9321,10 @@ innoviocr@gmail.com`;
         });
       }
 
-      // Restaurar líneas
-      if (data.lines && data.lines.length) {
-        lines = data.lines;
-        renderLines();
-        calcTotals();
-      }
+      // No restaurar líneas - siempre empezar con tabla vacía
+      lines = [];
+      renderLines();
+      calcTotals();
 
       // Restaurar trabajos realizados
       if (data.workItems && data.workItems.length) {
@@ -9968,6 +9962,17 @@ innoviocr@gmail.com`;
     document.getElementById('register-form-section').style.display = 'none';
     document.getElementById('reset-form-section').style.display = 'none';
     document.getElementById('user-info').classList.add('hidden');
+    
+    // Cargar credenciales guardadas si existen
+    const savedEmail = localStorage.getItem('innovio_last_email');
+    const savedPassword = localStorage.getItem('innovio_last_password');
+    console.log('📋 Cargando credenciales:', savedEmail ? 'Email encontrado' : 'No hay email');
+    if (savedEmail) {
+      document.getElementById('login-email').value = savedEmail;
+    }
+    if (savedPassword) {
+      document.getElementById('login-password').value = savedPassword;
+    }
   }
 
   function showRegister() {
@@ -9994,14 +9999,21 @@ innoviocr@gmail.com`;
     const errorDiv = document.getElementById('login-error');
     
     btn.disabled = true;
-    btn.textContent = 'Ingresando...';
+    btn.textContent = 'Verificando...';
     errorDiv.classList.remove('visible');
-    
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
     
     try {
       if (!supabaseClient) initSupabase();
+      
+      // Siempre usar credenciales ingresadas (no sesión guardada)
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      if (!email || !password) {
+        throw new Error('Ingrese correo y contraseña');
+      }
+      
+      btn.textContent = 'Ingresando...';
       
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
@@ -10011,18 +10023,32 @@ innoviocr@gmail.com`;
       if (error) throw error;
       
       currentUser = data.user;
-      await loadUserProfile();
+      
+      // Guardar credenciales ANTES de cualquier otra cosa
+      localStorage.setItem('innovio_last_email', email);
+      localStorage.setItem('innovio_last_password', password);
+      console.log('✅ Credenciales guardadas:', email);
+      
+      // Intentar cargar perfil, pero no detener si falla
+      try {
+        await loadUserProfile();
+      } catch (profileError) {
+        console.warn('Error cargando perfil:', profileError);
+      }
       
       // Limpiar formulario
       document.getElementById('login-email').value = '';
       document.getElementById('login-password').value = '';
       
       showApp();
+      
+      // Activar listener de auth solo después de login exitoso
+      setupAuthListener();
     } catch (error) {
       console.error('Error de login:', error);
       errorDiv.textContent = error.message === 'Invalid login credentials' 
         ? 'Correo o contraseña incorrectos'
-        : 'Error al iniciar sesión: ' + error.message;
+        : error.message;
       errorDiv.classList.add('visible');
     } finally {
       btn.disabled = false;
@@ -10172,21 +10198,13 @@ innoviocr@gmail.com`;
   // INICIALIZACIÓN
   // ============================================
 
-  initSupabase();
-  setupAuthListener();
+  // Mostrar login inmediatamente - siempre requiere clic para entrar
+  showLogin();
   
-  // Verificar sesión antes de cargar datos
-  checkSession().then(() => {
-    // Solo inicializar si hay sesión
-    if (currentUser) {
-      initCuentasBancarias();
-      const restored = autoRestore();
-      if (!restored) {
-        document.getElementById('doc-date').value = new Date().toLocaleDateString('en-CA');
-        renderLines();
-      }
-    }
-  });
+  initSupabase();
+  // NO setupAuthListener aquí - solo después de login manual
+  
+  // No verificar sesión automáticamente - el usuario debe hacer clic en "Iniciar Sesión"
 </script>
 </body>
 </html>
