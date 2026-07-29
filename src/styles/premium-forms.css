@@ -1,0 +1,224 @@
+/* ============================================================
+   Premium Forms — INNOVIO v2.0 Redesign
+   ============================================================ */
+
+.form-section-premium {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--t);
+}
+.form-section-premium:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.form-section-premium h3 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-extrabold);
+  color: var(--navy);
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 2px solid rgba(0, 194, 168, 0.1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  letter-spacing: -0.01em;
+}
+
+.form-grid-premium {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.form-grid-premium .field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.form-grid-premium .field.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-grid-premium .field-label {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 0;
+}
+
+.form-grid-premium .input,
+.form-grid-premium .select,
+.form-grid-premium .textarea {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  color: var(--navy);
+  font-weight: var(--fw-medium);
+  transition: all 0.2s var(--ease-out);
+  outline: none;
+  font-family: inherit;
+}
+
+.form-grid-premium .input:hover,
+.form-grid-premium .select:hover,
+.form-grid-premium .textarea:hover {
+  background: var(--surface);
+  border-color: #b0b8cc;
+  box-shadow: var(--shadow-xs);
+}
+
+.form-grid-premium .input:focus,
+.form-grid-premium .select:focus,
+.form-grid-premium .textarea:focus {
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: var(--focus);
+}
+
+/* Auth Users Premium styling */
+.premium-auth-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-2);
+  box-shadow: var(--shadow-xs);
+  transition: all var(--t);
+}
+.premium-auth-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   Client Detail Sections (Read-only)
+   ============================================================ */
+.crm-detail-section {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  box-shadow: var(--shadow-xs);
+}
+
+.crm-detail-section h3 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-extrabold);
+  color: var(--navy);
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 2px solid rgba(0, 194, 168, 0.1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  letter-spacing: -0.01em;
+}
+
+.crm-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.crm-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.crm-detail-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.crm-detail-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.crm-detail-label svg {
+  color: var(--blue-light);
+  opacity: 0.7;
+}
+
+.crm-detail-value {
+  font-size: var(--fs-sm);
+  color: var(--navy);
+  font-weight: var(--fw-medium);
+  word-break: break-word;
+  line-height: var(--lh-normal);
+}
+
+/* ============================================================
+   Asistente OT — Compact step layout
+   ============================================================ */
+.asistente-ot {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.asistente-ot > h3 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-extrabold);
+  color: var(--navy);
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 2px solid rgba(0, 194, 168, 0.1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.asistente-paso {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  box-shadow: var(--shadow-xs);
+}
+.asistente-resumen h4 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-extrabold);
+  color: var(--navy);
+  margin-top: var(--sp-3);
+  margin-bottom: var(--sp-1);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid rgba(0, 194, 168, 0.08);
+}
+.asistente-resumen h4:first-child {
+  margin-top: 0;
+}
+.asistente-resumen p {
+  font-size: var(--fs-sm);
+  color: var(--text-mid);
+  margin-bottom: 2px;
+  line-height: var(--lh-snug);
+}
+.asistente-resumen p strong {
+  color: var(--navy);
+  font-weight: var(--fw-bold);
+}
