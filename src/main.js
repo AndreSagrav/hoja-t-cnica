@@ -68,6 +68,8 @@ router.beforeEach(({ path }) => {
     if (user) router.go('/dashboard');
   });
   router.start();
+  router.go('/login');
+
 
 
   // ── Keep-Alive Heartbeat ─────────────────────────────────

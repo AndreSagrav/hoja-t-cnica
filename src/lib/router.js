@@ -1,6 +1,6 @@
 // Tiny hash router with :param support
 
-export function createRouter(table = {}, { fallback = '/dashboard' } = {}) {
+export function createRouter(table = {}, { fallback = '/login' } = {}) {
   let beforeHook = null;
 
   const patterns = Object.keys(table).map(p => ({

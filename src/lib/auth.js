@@ -6,8 +6,17 @@ window.__auth_listeners = window.__auth_listeners || new Set();
 export async function initAuth() {
   // Reset cached auth state on initial app load / page refresh so startup always defaults to login screen
   window.__auth_cachedUser = null;
-  sessionStorage.removeItem('demo_logged_in');
+  try { sessionStorage.clear(); } catch {}
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('sb-') || key.includes('auth') || key.includes('token'))) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {}
 }
+
 
 
 export function isLoggedIn() { return !!window.__auth_cachedUser; }
