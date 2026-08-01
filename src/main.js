@@ -1,4 +1,5 @@
 import { initAuth, isLoggedIn, onAuthChange } from './lib/auth.js';
+import { getSupabase, withTimeout } from './lib/supabase.js';
 import { createRouter } from './lib/router.js';
 import { loginView } from './views/login.js';
 import { dashboardView } from './views/dashboard.js';
@@ -39,11 +40,11 @@ const router = createRouter({
   '/tareas':                      tareasView,
   '/dispositivos':                dispositivosView,
   '/asistente-ot':              asistenteOTView,
-  '/impuestos':                   lazy(() => import(/* @vite-ignore */ './views/impuestos.js')),
-  '/impuestos/ingresos':          lazy(() => import(/* @vite-ignore */ './views/impuestos-ingresos.js')),
-  '/impuestos/gastos':            lazy(() => import(/* @vite-ignore */ './views/impuestos-gastos.js')),
-  '/impuestos/declaraciones':     lazy(() => import(/* @vite-ignore */ './views/impuestos-declaraciones.js')),
-  '/impuestos/correo':            lazy(() => import(/* @vite-ignore */ './views/impuestos-correo.js'))
+  '/impuestos':                   lazy(() => import('./views/impuestos.js')),
+  '/impuestos/ingresos':          lazy(() => import('./views/impuestos-ingresos.js')),
+  '/impuestos/gastos':            lazy(() => import('./views/impuestos-gastos.js')),
+  '/impuestos/declaraciones':     lazy(() => import('./views/impuestos-declaraciones.js')),
+  '/impuestos/correo':            lazy(() => import('./views/impuestos-correo.js'))
 }, { fallback: '/dashboard' });
 
 router.beforeEach(({ path }) => {
@@ -54,6 +55,8 @@ router.beforeEach(({ path }) => {
 });
 
 (async function bootstrap() {
+  try { document.body.setAttribute('data-app-mounted', '1'); } catch {}
+
   try {
     // No bloquear el arranque: inicializar auth en segundo plano
     initAuth().catch(() => {});
@@ -67,5 +70,32 @@ router.beforeEach(({ path }) => {
 
   onAuthChange(() => router.go(window.location.hash.slice(1) || '/dashboard'));
   router.start();
-  try { document.body.setAttribute('data-app-mounted', '1'); } catch {}
+
+  // ── Keep-Alive Heartbeat ─────────────────────────────────
+  // Ping Supabase every 4 mins to keep session & DB warm
+  let keepAliveTimer = null;
+
+  async function pingKeepAlive() {
+    if (!isLoggedIn() || document.visibilityState === 'hidden') return;
+    try {
+      const supabase = await getSupabase();
+      await withTimeout(supabase.from('clientes').select('id', { count: 'exact', head: true }).limit(1), 4000);
+    } catch (_) {}
+  }
+
+  function startKeepAlive() {
+    if (keepAliveTimer) clearInterval(keepAliveTimer);
+    keepAliveTimer = setInterval(pingKeepAlive, 4 * 60 * 1000);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      pingKeepAlive();
+      startKeepAlive();
+    } else if (keepAliveTimer) {
+      clearInterval(keepAliveTimer);
+    }
+  });
+
+  startKeepAlive();
 })();
