@@ -4,27 +4,11 @@ window.__auth_cachedUser = window.__auth_cachedUser || null;
 window.__auth_listeners = window.__auth_listeners || new Set();
 
 export async function initAuth() {
-  if (sessionStorage.getItem('demo_logged_in') === 'true') {
-    signInDemo();
-    return;
-  }
-  
-  try {
-    const supabase = await getSupabase();
-    const result = await withTimeout(supabase.auth.getSession(), 3000, null);
-    if (!window.__auth_cachedUser) window.__auth_cachedUser = result?.data?.session?.user || null;
-  } catch (_) {
-    if (!window.__auth_cachedUser) window.__auth_cachedUser = null;
-  }
-  try {
-    const supabase = await getSupabase();
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (window.__auth_cachedUser && window.__auth_cachedUser.email === 'innoviocr@outlook.com') return;
-      window.__auth_cachedUser = session?.user || null;
-      window.__auth_listeners.forEach(fn => { try { fn(window.__auth_cachedUser); } catch {} });
-    });
-  } catch {}
+  // Reset cached auth state on initial app load / page refresh so startup always defaults to login screen
+  window.__auth_cachedUser = null;
+  sessionStorage.removeItem('demo_logged_in');
 }
+
 
 export function isLoggedIn() { return !!window.__auth_cachedUser; }
 export function getUser()     { return window.__auth_cachedUser; }

@@ -45,31 +45,30 @@ const router = createRouter({
   '/impuestos/gastos':            lazy(() => import('./views/impuestos-gastos.js')),
   '/impuestos/declaraciones':     lazy(() => import('./views/impuestos-declaraciones.js')),
   '/impuestos/correo':            lazy(() => import('./views/impuestos-correo.js'))
-}, { fallback: '/dashboard' });
+}, { fallback: '/login' });
 
 router.beforeEach(({ path }) => {
   const logged = isLoggedIn();
-  console.log(`beforeEach: path=${path}, logged=${logged}`);
   if (!logged && path !== '/login') return '/login';
-  if (logged && path === '/login') return '/dashboard';
 });
 
 (async function bootstrap() {
   try { document.body.setAttribute('data-app-mounted', '1'); } catch {}
 
   try {
-    // No bloquear el arranque: inicializar auth en segundo plano
-    initAuth().catch(() => {});
+    await initAuth();
   } catch (e) {
     console.error('Auth init error:', e);
   }
 
-  if (!window.location.hash) {
-    window.location.hash = '/login';
-  }
+  // Force login view on fresh load / refresh
+  window.location.hash = '/login';
 
-  onAuthChange(() => router.go(window.location.hash.slice(1) || '/dashboard'));
+  onAuthChange((user) => {
+    if (user) router.go('/dashboard');
+  });
   router.start();
+
 
   // ── Keep-Alive Heartbeat ─────────────────────────────────
   // Ping Supabase every 4 mins to keep session & DB warm
