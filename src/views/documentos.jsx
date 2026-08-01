@@ -17,54 +17,35 @@ export async function documentosListView() {
 
   c.innerHTML = `
 <div class="crm-panel">
-  <div class="crm-header" style="height: auto; padding: 16px 24px;">
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <div style="background: rgba(255,255,255,0.1); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <svg width="22" height="22" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-      </div>
-      <div>
-        <h2 style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin: 0; display: flex; align-items: center; gap: 10px;">
-          Gestión de Documentos
-          <span class="crm-header-count" id="doc-count" style="font-size: 11px; padding: 3px 12px; margin-left: 4px;">—</span>
-        </h2>
-        <div style="font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; margin-top: 3px;">
-          Control y seguimiento unificado de todas las transacciones
-        </div>
-      </div>
+  <div class="crm-header">
+    <h2>📄 Gestión de Documentos <span class="crm-header-count" id="doc-count">—</span></h2>
+    <div class="crm-header-actions">
+      <button class="crm-action-btn primary" id="doc-new-btn" style="flex:none;">＋ Nuevo Documento</button>
     </div>
   </div>
   <div class="crm-kpi-row" id="doc-kpis"></div>
   <div class="crm-body">
     <div class="crm-list-pane" style="width:100%;border-right:none;">
-      <div class="crm-search-bar" style="display:flex; gap:16px; align-items:center; border-bottom:1px solid var(--border-light); padding:16px 24px; background:var(--surface);">
-        <input class="crm-search-input" id="doc-search" placeholder="🔍  Buscar por número o cliente…" style="flex:1; max-width: 400px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-size: 13px;" />
-        <div style="width:1px; height:24px; background:var(--border-light); margin: 0 4px;"></div>
-        <div id="doc-tipo-filters" style="display:flex; align-items:center;"></div>
-        <div id="doc-estado-filters" style="display:flex; align-items:center;"></div>
-      </div>
-      <div class="crm-list-scroll" id="doc-list" style="position: relative;">
-        <div class="doc-grid-header" style="display: grid; grid-template-columns: 150px 1fr 100px 130px 100px; gap: 20px; padding: 12px 24px; border-bottom: 1px solid var(--border-light); border-left: 4px solid transparent; background: var(--surface-2); font-size: 10px; font-weight: 800; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; align-items: center; position: sticky; top: 0; z-index: 10;">
-          <div style="padding-left: 24px;">Tipo / ID Documento</div>
-          <div style="padding-left: 16px;">Cliente / Proveedor</div>
-          <div style="text-align: right;">Fecha</div>
-          <div style="text-align: right;">Monto</div>
-          <div style="text-align: center;">Estado</div>
+      <div class="crm-search-bar">
+        <div class="crm-search-wrap">
+          <svg class="crm-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input class="crm-search-input" id="doc-search" placeholder="Buscar por número o cliente…" />
         </div>
+        <div class="crm-search-row2">
+          <div class="crm-filter-tabs" id="doc-tipo-filters"></div>
+          <div class="crm-filter-tabs" id="doc-estado-filters"></div>
+        </div>
+      </div>
+      <div class="crm-list-scroll" id="doc-list">
         <div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div><div class="crm-empty-text">Cargando…</div></div>
       </div>
     </div>
   </div>
 </div>`;
 
-  // Agregar evento al botón del asistente
-  setTimeout(() => {
-    const btnAsistente = document.getElementById('btn-asistente-ot');
-    if (btnAsistente) {
-      btnAsistente.addEventListener('click', () => {
-        window.location.hash = '/asistente-ot';
-      });
-    }
-  }, 0);
+  document.getElementById('doc-new-btn').addEventListener('click', () => {
+    window.location.hash = '/wizard/nuevo';
+  });
 
   document.getElementById('doc-search').addEventListener('input', debounce(e => { docState.search = e.target.value.trim(); loadDocList(); }, 280));
 
@@ -97,7 +78,6 @@ export async function documentoDetalleView({ id }) {
       
     if (error) throw error;
     
-    // Renderizar el detalle del documento
     renderDocDetail(data, shell);
   } catch (e) {
     console.error('Error cargando documento:', e);
@@ -112,25 +92,43 @@ export async function documentoDetalleView({ id }) {
 }
 
 function renderDocFilters() {
-  const tipos   = [['','Todos'],['OT','OT'],['PRO','Doc. Electrónicos'],['FAC','Facturas sin IVA'],['COT','Cotización']];
-  const estados = [['','Todos estados'],['pendiente','Pendiente'],['en_progreso','En progreso'],['completado','Completado'],['facturado','Facturado'],['cancelado','Cancelado']];
-  document.getElementById('doc-tipo-filters').innerHTML = `
-    <select id="select-tipo" style="padding: 10px 36px 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface) url('data:image/svg+xml;utf8,<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23475569\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 9l6 6 6-6\"/></svg>') no-repeat right 12px center; appearance: none; color: var(--text-mid); font-size: 13px; outline: none; cursor: pointer; min-width: 180px; font-weight: 600;">
-      ${tipos.map(([v,l]) => `<option value="${v}" ${docState.tipo===v?'selected':''}>${l}</option>`).join('')}
-    </select>
-  `;
-  document.getElementById('doc-estado-filters').innerHTML = `
-    <select id="select-estado" style="padding: 10px 36px 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface) url('data:image/svg+xml;utf8,<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23475569\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 9l6 6 6-6\"/></svg>') no-repeat right 12px center; appearance: none; color: var(--text-mid); font-size: 13px; outline: none; cursor: pointer; min-width: 180px; font-weight: 600;">
-      ${estados.map(([v,l]) => `<option value="${v}" ${docState.estado===v?'selected':''}>${l}</option>`).join('')}
-    </select>
-  `;
-  
-  document.getElementById('select-tipo').addEventListener('change', (e) => {
-    docState.tipo = e.target.value;
+  const tipos = [
+    ['', 'Todos tipos'],
+    ['OT', '📋 OT'],
+    ['PRO', '⚡ Doc. Elec.'],
+    ['FAC', '🧾 Facturas'],
+    ['COT', '📄 Cotización']
+  ];
+  const estados = [
+    ['', 'Todos estados'],
+    ['pendiente', '⏳ Pendientes'],
+    ['en_progreso', '🔄 En progreso'],
+    ['completado', '✅ Completados'],
+    ['facturado', '💰 Facturados'],
+    ['cancelado', '❌ Cancelados']
+  ];
+
+  document.getElementById('doc-tipo-filters').innerHTML = tipos.map(([v, l]) =>
+    `<button class="crm-filter-tab ${docState.tipo === v ? 'active' : ''}" data-tipo="${v}">${l}</button>`
+  ).join('');
+
+  document.getElementById('doc-estado-filters').innerHTML = estados.map(([v, l]) =>
+    `<button class="crm-filter-tab ${docState.estado === v ? 'active' : ''}" data-estado="${v}">${l}</button>`
+  ).join('');
+
+  document.getElementById('doc-tipo-filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.crm-filter-tab');
+    if (!btn) return;
+    docState.tipo = btn.dataset.tipo;
+    renderDocFilters();
     loadDocList();
   });
-  document.getElementById('select-estado').addEventListener('change', (e) => {
-    docState.estado = e.target.value;
+
+  document.getElementById('doc-estado-filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.crm-filter-tab');
+    if (!btn) return;
+    docState.estado = btn.dataset.estado;
+    renderDocFilters();
     loadDocList();
   });
 }
@@ -153,11 +151,13 @@ async function loadDocList() {
     const { data, count, error } = await q;
     if (error) throw error;
 
-    document.getElementById('doc-count').textContent = count ?? data.length;
+    const totalCount = count ?? (data ? data.length : 0);
+    const countEl = document.getElementById('doc-count');
+    if (countEl) countEl.textContent = totalCount;
     renderDocKPIs(data || []);
     renderListToBox(data || []);
   } catch (e) {
-    console.error("Error al cargar documentos reales de Supabase:", e);
+    console.error("Error al cargar documentos de Supabase:", e);
     toast("Error al conectar con Supabase: " + (e.message || e), "error");
     if (box) {
       box.innerHTML = `<div class="crm-empty"><div class="crm-empty-icon" style="color:var(--red);">⚠️</div><div class="crm-empty-text" style="color:var(--red);">Error de Supabase: ${esc(e.message || String(e))}</div></div>`;
@@ -168,95 +168,93 @@ async function loadDocList() {
 }
 
 function renderDocKPIs(data) {
-  // Renderizar KPIs
   const kpiBox = document.getElementById('doc-kpis');
   if (!kpiBox) return;
-  
-  // Calcular totales por estado
-  const estados = {};
+
+  const counts = { total: data.length, pendiente: 0, en_progreso: 0, completado: 0, facturado: 0 };
   data.forEach(d => {
     const e = d.estado || 'pendiente';
-    estados[e] = (estados[e] || 0) + 1;
+    if (counts[e] !== undefined) counts[e]++;
   });
-  
+
   kpiBox.innerHTML = `
     <div class="crm-kpi">
-      <div class="crm-kpi-label">Total documentos</div>
-      <div class="crm-kpi-value">${data.length}</div>
+      <div class="crm-kpi-icon blue"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+      <div><div class="crm-kpi-label">Total</div><div class="crm-kpi-value">${counts.total}</div></div>
     </div>
-    ${Object.entries(estados).map(([estado, count]) => `
-      <div class="crm-kpi">
-        <div class="crm-kpi-label">${estado}</div>
-        <div class="crm-kpi-value">${count}</div>
-      </div>
-    `).join('')}
-  `;
+    <div class="crm-kpi">
+      <div class="crm-kpi-icon amber"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div><div class="crm-kpi-label">Pendientes</div><div class="crm-kpi-value">${counts.pendiente}</div></div>
+    </div>
+    <div class="crm-kpi">
+      <div class="crm-kpi-icon purple"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div>
+      <div><div class="crm-kpi-label">En progreso</div><div class="crm-kpi-value">${counts.en_progreso}</div></div>
+    </div>
+    <div class="crm-kpi">
+      <div class="crm-kpi-icon green"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div><div class="crm-kpi-label">Completados</div><div class="crm-kpi-value">${counts.completado}</div></div>
+    </div>`;
 }
 
 function renderListToBox(data) {
   const box = document.getElementById('doc-list');
-  
+  if (!box) return;
+
   if (!data.length) {
     box.innerHTML = `<div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div><div class="crm-empty-text">Sin resultados</div></div>`; return;
   }
-  
+
   const thead = `
-    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-      <thead style="position: sticky; top: 0; z-index: 10; background: var(--surface-2); border-bottom: 1px solid var(--border-light);">
-        <tr style="font-size: 10px; font-weight: 800; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px;">
-          <th style="padding: 12px 24px; width: 140px;">
-            <div style="line-height: 1.4;">Tipo<br><span style="font-weight:600;font-size:9px;">N° Documento</span></div>
-          </th>
-          <th style="padding: 12px 24px;">Cliente / Proveedor</th>
-          <th style="padding: 12px 24px; width: 100px; text-align: center;">Fecha</th>
-          <th style="padding: 12px 24px; width: 130px; text-align: right;">Monto</th>
-          <th style="padding: 12px 24px; width: 100px; text-align: center;">Estado</th>
+    <div class="doc-table-wrap">
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th style="width: 140px;">Tipo / ID</th>
+          <th>Cliente / Proveedor</th>
+          <th style="width: 110px; text-align: center;">Fecha</th>
+          <th style="width: 130px; text-align: right;">Monto</th>
+          <th style="width: 120px; text-align: center;">Estado</th>
         </tr>
       </thead>
       <tbody>
   `;
-  
+
   const rows = data.map(d => {
-    const tipo    = d.doc_type || 'DEF';
+    const tipo = d.doc_type || 'DEF';
     const cliente = d.clientes?.empresa || d.clientes?.nombre || '—';
-    const estado  = d.estado || 'pendiente';
-    const clr = ESTADO_COLOR[estado] || '#94a3b8';
-    const bg  = ESTADO_BG[estado]    || '#f8fafd';
-    
+    const estado = d.estado || 'pendiente';
+    const badgeClass = `doc-badge ${estado}`;
+
     return `
-    <tr class="crm-table-row" data-id="${d.id}" style="background:${bg}11; border-bottom: 1px solid var(--border-light); cursor:pointer; transition:background 0.2s ease;">
-      <td style="padding: 14px 24px; border-left: 4px solid ${clr};">
-        <div style="display:flex; align-items:flex-start; gap:8px; font-weight:800; color:var(--navy); font-size:12px; letter-spacing:-0.01em;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--text-soft);margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <div style="word-wrap: break-word;">
-            ${tipo} ${d.doc_num ? `<br><span style="color:var(--text-soft);font-weight:600;font-size:11px;">N° ${d.doc_num}</span>` : ''}
-          </div>
+    <tr class="doc-table-row" data-id="${d.id}">
+      <td>
+        <div style="font-weight:800; color:var(--navy); font-size:12px;">
+          ${tipo} ${d.doc_num ? `<span style="color:var(--text-soft);font-weight:600;font-size:11px;">#${d.doc_num}</span>` : ''}
         </div>
       </td>
-      <td style="padding: 14px 24px;">
-        <div style="font-weight:700; font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px;">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--text-soft);margin-right:4px;vertical-align:-1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      <td>
+        <div style="font-weight:700; font-size:13px; color:var(--text);">
           ${esc(cliente)}
         </div>
       </td>
-      <td style="padding: 14px 24px; color:var(--text-mid); font-weight:500; font-size:11px; text-align:center;">
+      <td style="color:var(--text-mid); font-weight:500; font-size:11px; text-align:center;">
         ${fmtDate(d.fecha)}
       </td>
-      <td style="padding: 14px 24px; font-size:14px; font-weight:900; color:var(--navy); text-align:right; letter-spacing:-0.02em;">
+      <td style="font-size:14px; font-weight:900; color:var(--navy); text-align:right;">
         ${fmtMoney(d.total)}
       </td>
-      <td style="padding: 14px 24px; text-align:center;">
-        <div style="display:inline-block; color:${clr}; font-weight:800; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; background:${bg}; padding:4px 10px; border-radius:100px; text-align:center; box-shadow:inset 0 0 0 1px ${clr}40;">
-          ${estado.replace('_',' ')}
-        </div>
+      <td style="text-align:center;">
+        <span class="${badgeClass}">
+          ${estado.replace('_', ' ')}
+        </span>
       </td>
     </tr>`;
   }).join('');
-  
-  box.innerHTML = `<style>.crm-table-row:hover { background: var(--surface-2) !important; }</style>` + thead + rows + `</tbody></table>`;
+
+  box.innerHTML = thead + rows + `</tbody></table></div>`;
   
   // Agregar eventos de click
-  box.querySelectorAll('.crm-table-row').forEach(row => {
+  box.querySelectorAll('.doc-table-row').forEach(row => {
     row.addEventListener('click', async () => {
       let nextTr = row.nextElementSibling;
       if (nextTr && nextTr.classList.contains('doc-accordion-row')) {
@@ -273,7 +271,6 @@ function renderListToBox(data) {
       
       let detailsDiv = document.createElement('div');
       detailsDiv.className = 'doc-accordion-details';
-      detailsDiv.style = "padding: 0 20px 20px 20px; cursor: default; animation: slideDown 0.3s ease;";
       detailsDiv.innerHTML = `<div style="padding:10px;text-align:center;color:var(--text-soft);font-size:11px;">Cargando detalles...</div>`;
       detailsDiv.addEventListener('click', e => e.stopPropagation());
       detailsCell.appendChild(detailsDiv);
