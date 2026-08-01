@@ -1402,20 +1402,24 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
 
 @media (max-width: 480px) {
   .dash-kpi-grid { grid-template-columns: 1fr; }
-  .crm-kpi-row { grid-template-columns: 1fr 1fr; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3) 0; }
-  .crm-kpi { padding: 10px 12px; }
-  .crm-kpi-value { font-size: 17px; }
-  .crm-kpi-icon { width: 34px; height: 34px; font-size: 14px; }
-  .dash-hero-title { font-size: var(--fs-lg); }
-  .detail-hero { padding: var(--sp-4); flex-direction: column; }
-  .detail-hero-actions { flex-direction: row; width: 100%; }
-  .detail-hero-name { font-size: var(--fs-lg); }
-  .detail-info-grid { grid-template-columns: 1fr; gap: var(--sp-3); }
-  .crm-form-grid { grid-template-columns: 1fr; }
-  .crm-search-bar { padding: 10px 12px; }
-  .crm-item { padding: 12px 14px; gap: 10px; }
-  .crm-item-avatar { width: 38px; height: 38px; font-size: 13px; }
+  .crm-kpi-row { grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px 8px 0; }
+  .crm-kpi { padding: 8px 10px; }
+  .crm-kpi-value { font-size: 15px; }
+  .crm-kpi-icon { width: 30px; height: 30px; font-size: 13px; }
+  .crm-search-bar { padding: 8px 10px; }
+  .crm-item { padding: 10px 10px; gap: 8px; box-sizing: border-box; width: 100%; }
+  .crm-item-avatar { width: 34px; height: 34px; font-size: 12px; flex-shrink: 0; }
+  .crm-item-info { flex: 1; min-width: 0; padding-right: 4px; }
+  .crm-item-name { font-size: 12.5px; }
+  .crm-item-sub { font-size: 10.5px; }
+  .crm-item-meta { flex-shrink: 0; align-items: flex-end; justify-content: center; }
+  .crm-item-price { font-size: 11px; font-weight: 800; white-space: nowrap; text-align: right; }
+  .crm-item-price.emp { font-size: 9.5px; white-space: nowrap; text-align: right; }
+  .crm-header { padding: 8px 10px; }
+  .crm-header h2 { font-size: 13px; }
+  .crm-header-actions .crm-action-btn { font-size: 9.5px; padding: 5px 8px; }
 }
+
 
 /* Botón "Volver" para navegación móvil en CRM (oculto en desktop) */
 .crm-back-btn {
