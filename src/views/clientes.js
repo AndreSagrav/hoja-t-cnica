@@ -63,7 +63,7 @@ async function loadData() {
   try {
     const supabase = await getSupabase();
     const result = await withTimeout(
-      supabase.from("clientes").select("*").order("nombre"),
+      supabase.from("clientes").select("*").order("codigo_fiscal", { ascending: true, nullsFirst: false }),
       5000,
       { data: [], error: null }
     );
@@ -104,7 +104,7 @@ function renderKPIs() {
 }
 
 function renderList() {
-  let filtered = items;
+  let filtered = [...items];
   if (typeFilter !== "todos") filtered = filtered.filter(c => c.tipo_cliente === typeFilter);
   if (search) filtered = filtered.filter(c =>
     c.nombre.toLowerCase().includes(search) ||
@@ -113,6 +113,13 @@ function renderList() {
     (c.telefono || "").toLowerCase().includes(search) ||
     (c.cedula || "").toLowerCase().includes(search)
   );
+
+  // Ordenar ascendentemente por Código de Cliente (de menor a mayor)
+  filtered.sort((a, b) => {
+    const codeA = a.codigo_fiscal != null ? Number(a.codigo_fiscal) : 999999;
+    const codeB = b.codigo_fiscal != null ? Number(b.codigo_fiscal) : 999999;
+    return codeA - codeB;
+  });
   
   const countEl = document.getElementById("cli-count");
   if (countEl) countEl.textContent = filtered.length;
