@@ -444,13 +444,13 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
 .av-cli { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .crm-item-info { flex: 1; min-width: 0; }
 .crm-item-name {
-  font-size: 13px; font-weight: var(--fw-bold); color: var(--navy);
-  word-break: break-word; overflow-wrap: break-word; line-height: 1.35;
-  letter-spacing: -0.01em;
+  font-size: 12px; font-weight: var(--fw-bold); color: var(--navy);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: -0.01em; line-height: 1.25;
 }
 .crm-item-sub {
-  font-size: 11px; color: var(--text-soft); margin-top: 3px;
-  word-break: break-word; overflow-wrap: break-word; line-height: 1.35;
+  font-size: 11px; color: var(--text-soft); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .crm-item-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 .crm-item-price { font-size: var(--fs-xs); font-weight: var(--fw-extrabold); color: var(--navy); }
