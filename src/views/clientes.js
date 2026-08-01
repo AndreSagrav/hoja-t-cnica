@@ -744,10 +744,13 @@ async function saveClient() {
         
       if (error) {
         if (error.code === '23505' || (error.message && (error.message.toLowerCase().includes('unique') || error.message.toLowerCase().includes('duplicate')))) {
-          if (error.message && error.message.includes('codigo_fiscal')) {
-            toast(`El Código Fiscal #${codigoFiscalInput} ya pertenece a otro cliente. Usá otro código.`, 'error');
-            return;
+          const isCodigo = error.message && (error.message.includes('codigo_fiscal') || error.message.includes('codigo'));
+          if (isCodigo && codigoFiscalInput) {
+            toast(`El Código Fiscal #${codigoFiscalInput} ya pertenece a otro cliente. Usá otro código diferente.`, 'error');
+          } else {
+            toast(`Ya existe un cliente registrado con esa misma Cédula o Código en el sistema.`, 'error');
           }
+          return;
         }
         if (error.message && error.message.includes("Could not find the") && error.message.includes("column")) {
           const match = error.message.match(/Could not find the '([^']+)' column/);
