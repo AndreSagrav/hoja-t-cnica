@@ -1,5 +1,6 @@
 import { ensureShell } from '../components/shell.js';
 import { esc, toast } from '../lib/utils.js';
+import { getSupabase } from '../lib/supabase.js';
 
 const DEFAULT_DATA = {
   empresarial: [
@@ -19,14 +20,14 @@ const DEFAULT_DATA = {
     { id: 'emp-base-datos', icon: '🗄️', title: 'Instalación de Base de Datos', children: ['1. Verificar requisitos de hardware para BD','2. Verificar S.O. compatible con versión de BD','3. Instalar prerequisitos (.NET, etc.)','4. Descargar instalador del motor de BD (SQL Server/MySQL/PostgreSQL)','5. Ejecutar instalador del motor de BD','6. Seleccionar tipo de instalación (nueva)','7. Aceptar términos de licencia','8. Seleccionar características a instalar (motor, SSMS, herramientas)','9. Configurar instancia (predeterminada o nombrada)','10. Configurar cuenta de servicio del motor','11. Configurar tipo de autenticación (Windows/Mixta)','12. Asignar contraseña de sa/admin','13. Configurar collation y idioma','14. Configurar ubicación de archivos de datos','15. Configurar ubicación de archivos de log','16. Configurar ubicación de tempdb','17. Completar instalación','18. Verificar servicio de BD iniciado','19. Instalar SQL Server Management Studio / pgAdmin','20. Conectar al motor de BD','21. Configurar memoria máxima del motor','22. Configurar max degree of parallelism','23. Configurar backup automático (full, differential, log)','24. Configurar mantenimiento de índices y estadísticas','25. Abrir puerto en firewall (1433/3306/5432)','26. Crear base de datos de aplicación','27. Crear usuarios y roles de BD','28. Documentar configuración de BD','29. Entregar BD lista para aplicación'] },
     { id: 'emp-gpo', icon: '⚙️', title: 'Configuración de GPO', children: ['1. Abrir Group Policy Management Console','2. Crear nueva GPO con nombre descriptivo','3. Vincular GPO a OU correspondiente','4. Configurar políticas de contraseñas (complejidad, longitud, duración)','5. Configurar política de bloqueo de cuentas','6. Configurar mapeo de unidades de red','7. Configurar impresoras desplegadas','8. Configurar scripts de inicio de sesión','9. Configurar fondo de pantalla corporativo','10. Configurar bloqueo de panel de control','11. Configurar restricciones de software','12. Configurar Windows Update por GPO','13. Configurar firewall de Windows por GPO','14. Configurar políticas de seguridad local','15. Configurar delegación de administración','16. Configurar AppLocker si aplica','17. Configurar redirección de carpetas','18. Configurar perfiles móviles si aplica','19. Configurar tiempo de espera de pantalla','20. Configurar políticas de Edge/Chrome','21. Probar GPO en OU de pruebas','22. Verificar aplicación con gpresult','23. Ajustar filtros WMI si aplica','24. Documentar GPOs configuradas','25. Entregar GPOs en producción'] },
     { id: 'emp-red-mantenimiento', icon: '🔧', title: 'Mantenimiento de Red', children: ['1. Acceder a consola de gestión de switches','2. Verificar estado de puertos (up/down)','3. Verificar utilización de CPU y memoria','4. Revisar logs de eventos de red','5. Verificar configuración de VLANs','6. Verificar trunking entre switches','7. Revisar cableado estructurado visualmente','8. Verificar etiquetado de cables','9. Probar conectividad entre VLANs (ping)','10. Probar conectividad entre sitios (ping/tracert)','11. Analizar tráfico con Wireshark si hay problemas','12. Verificar ancho de banda utilizado','13. Configurar QoS si hay congestión','14. Actualizar firmware de switches','15. Actualizar firmware de routers','16. Verificar enlaces WAN','17. Verificar redundancia de enlaces','18. Revisar ACLs de routers','19. Detectar dispositivos no autorizados en red','20. Optimizar rutas estáticas y dinámicas','21. Verificar Spanning Tree Protocol','22. Generar reporte de estado de red','23. Documentar topología actualizada','24. Programar próximo mantenimiento'] },
-    { id: 'emp-vpn', icon: '🔗', title: 'Configuración de VPN', children: ['1. Verificar requisitos de acceso remoto','2. Seleccionar tipo de VPN (site-to-site o cliente)','3. Verificar licencias del equipo de firewall/router','4. Acceder al firewall/router','5. Habilitar servicio VPN','6. Configurar pool de IPs para clientes VPN','7. Configurar DNS e IP del pool','8. Crear usuarios VPN','9. Asignar contraseñas seguras','10. Crear certificados digitales si aplica','11. Configurar protocolo (IPSec, L2TP, OpenVPN, SSL)','12. Configurar cifrado y algoritmos','13. Configurar autenticación (local o RADIUS/AD)','14. Configurar MFA para VPN','15. Configurar split tunneling','16. Configurar rutas accesibles por VPN','17. Configurar tiempo máximo de conexión','18. Configurar keepalive','19. Abrir puertos necesarios en firewall','20. Instalar cliente VPN en equipo de usuario','21. Configurar cliente VPN con datos de conexión','22. Probar conexión VPN desde equipo remoto','23. Verificar acceso a recursos internos','24. Verificar velocidad y latencia','25. Configurar logging de conexiones VPN','26. Documentar configuración de VPN','27. Entregar acceso VPN operativo'] },
+    { id: 'emp-vpn', icon: '🔗', title: 'Configuración de VPN', children: ['1. Verificar requisitos de acceso remoto','2. Seleccionar tipo de VPN (site-to-site o cliente)','3. Verificar licencias del equipo de firewall/router','4. Acceder al firewall/router','5. Habilitar servicio VPN','6. Configurar pool de IPs para clientes VPN','7. Configurar DNS e IP del pool','8. Crear usuarios VPN','9. Asignar contraseñas seguras','10. Crear certificados digitales si aplica','11. Configurar protocolo (IPSec, L2TP, OpenVPN, SSL)','12. Configurar cifrado y algoritmos','13. Configurar autenticación (local o RADIUS/AD)','14. Configurar MFA para VPN','15. Configurar split tunneling','16. Configurar rutas accesibles por VPN','17. Configurar tiempo máximo de conexión','18. Configurar keepalive','19. Abrir puertos necesarios en firewall','20. Instalar cliente VPN en equipo de usuario','21. Configurar cliente VPN con datos de conexión','22. Probar conexión VPN desde equipo remoto','23. Verificar acceso a recursos internos','24. Verificar velocidad and latencia','25. Configurar logging de conexiones VPN','26. Documentar configuración de VPN','27. Entregar acceso VPN operativo'] },
     { id: 'emp-backups-config', icon: '💾', title: 'Configuración de Backups', children: ['1. Identificar datos críticos a respaldar','2. Identificar servidores y bases de datos a respaldar','3. Seleccionar software de backup (Veeam, Commvault, etc.)','4. Instalar servidor de backup','5. Configurar repositorio de backup (disco/NAS/cinta)','6. Agregar servidores al console de backup','7. Crear job de backup de servidores virtuales','8. Crear job de backup de servidores físicos','9. Crear job de backup de bases de datos (SQL/Exchange)','10. Configurar tipo de backup (full, incremental, diferencial)','11. Configurar schedule full semanal','12. Configurar schedule incremental diario','13. Configurar política de retención (GFS)','14. Configurar cifrado de backups','15. Configurar compresión de backups','16. Configurar replicación offsite si aplica','17. Configurar notificaciones por correo (éxito/fallo)','18. Ejecutar primer backup completo','19. Verificar integridad del backup','20. Realizar prueba de restauración completa','21. Verificar tiempo de restauración','22. Configurar backup de configuración de equipos de red','23. Configurar backup de Office 365 si aplica','24. Documentar procedimiento de backup','25. Documentar procedimiento de restauración','26. Entregar sistema de backup operativo'] },
     { id: 'emp-backups-monitoreo', icon: '📊', title: 'Monitoreo de Backups', children: ['1. Verificar logs de ejecución de backup diario','2. Verificar logs de ejecución de backup semanal','3. Revisar alertas de fallos por correo','4. Identificar jobs fallidos','5. Investigar causa de fallo','6. Corregir problema y reejecutar job','7. Verificar tamaño de backups','8. Verificar tiempo de ejecución de backups','9. Verificar almacenamiento utilizado en repositorio','10. Verificar espacio libre en repositorio','11. Realizar prueba de restauración mensual','12. Restaurar archivo aleatorio para verificar','13. Restaurar VM aleatoria para verificar','14. Verificar replicación offsite','15. Verificar integridad de backups replicados','16. Limpiar backups expirados según retención','17. Generar reporte mensual de cumplimiento','18. Verificar cumplimiento de SLA de backup','19. Optimizar tiempos de backup si es necesario','20. Auditar retención de datos','21. Verificar cifrado de backups','22. Documentar incidencias y resoluciones','23. Entregar reporte mensual a gerencia de IT'] },
     { id: 'emp-erp', icon: '📋', title: 'Instalación de ERP/CRM', children: ['1. Levantar requisitos del ERP/CRM con el proveedor','2. Verificar compatibilidad con S.O. y base de datos','3. Preparar servidor de aplicación','4. Preparar servidor de base de datos','5. Instalar motor de base de datos (SQL Server)','6. Crear base de datos para el ERP/CRM','7. Configurar collation y idioma de BD','8. Crear usuario de BD para la aplicación','9. Asignar permisos al usuario de BD','10. Instalar prerequisitos del ERP/CRM (.NET, IIS, etc.)','11. Ejecutar instalador del ERP/CRM','12. Configurar cadena de conexión a BD','13. Crear esquema de base de datos','14. Cargar datos iniciales/demo','15. Configurar módulos a utilizar','16. Configurar parámetros de la empresa','17. Configurar plan de cuentas si aplica','18. Configurar centros de costo','19. Configurar bodegas/sucursales','20. Crear usuarios del sistema','21. Asignar roles y permisos a usuarios','22. Migrar datos históricos si aplica','23. Verificar integridad de migración','24. Configurar integraciones con otros sistemas','25. Realizar pruebas de funcionamiento por módulo','26. Realizar pruebas de integridad de datos','27. Capacitar a usuarios finales','28. Capacitar a administradores del sistema','29. Configurar backup del ERP/CRM','30. Documentar configuración del sistema','31. Entregar sistema en producción'] },
     { id: 'emp-software-mantenimiento', icon: '⚙️', title: 'Mantenimiento de Software', children: ['1. Recibir reporte de incidencia o tarea programada','2. Clasificar prioridad de la incidencia','3. Acceder al servidor de aplicación','4. Revisar logs de aplicación','5. Revisar logs de eventos de Windows','6. Identificar causa raíz del problema','7. Verificar estado de servicios de la aplicación','8. Reiniciar servicio si es necesario','9. Verificar conectividad a base de datos','10. Verificar espacio en disco del servidor','11. Verificar memoria disponible del servidor','12. Verificar CPU del servidor','13. Instalar parche de seguridad si aplica','14. Actualizar versión de software si aplica','15. Optimizar consultas de base de datos','16. Rebuild de índices de BD','17. Update de estadísticas de BD','18. Limpiar archivos temporales','19. Limpiar logs antiguos','20. Verificar configuración de IIS/Apache','21. Reciclar pool de aplicación si aplica','22. Verificar certificados SSL','23. Probar funcionamiento post-cambio','24. Documentar incidencia y solución','25. Cerrar ticket de soporte','26. Programar seguimiento si aplica'] },
     { id: 'emp-print-server', icon: '🖨️', title: 'Servidor de Impresión', children: ['1. Instalar rol Print and Document Services','2. Abrir Print Management Console','3. Agregar impresora (TCP/IP o local)','4. Seleccionar puerto TCP/IP con IP de impresora','5. Instalar driver de impresora (x64)','6. Instalar driver de impresora (x86) si aplica','7. Asignar nombre descriptivo a impresora','8. Compartir impresora con nombre de recurso','9. Configurar ubicación y comentarios','10. Configurar permisos de impresión por grupo','11. Configurar cuotas de impresión si aplica','12. Probar impresión de prueba','13. Desplegar impresora por GPO','14. Mapear impresora por grupo de seguridad','15. Configurar impresora por defecto por GPO','16. Configurar pooling de impresoras si aplica','17. Habilitar logging de impresión','18. Auditar uso de impresoras','19. Solucionar problemas de cola de impresión','20. Limpiar colas atascadas','21. Reiniciar servicio Print Spooler si es necesario','22. Actualizar drivers de impresoras','23. Documentar impresoras configuradas','24. Entregar servidor de impresión operativo'] },
     { id: 'emp-impresoras', icon: '🖨️', title: 'Mantenimiento de Impresoras', children: ['1. Monitorear niveles de tóner/tinta en consola','2. Generar reporte de niveles bajos','3. Solicitar compra de consumibles','4. Reemplazar tóner/cartuchos con niveles bajos','5. Configurar alertas por correo para niveles bajos','6. Realizar mantenimiento preventivo mensual','7. Limpiar rodillos de alimentación','8. Limpiar bandejas de papel','9. Limpiar exterior de impresora','10. Calibrar impresora','11. Alinear cabezales de impresión','12. Verificar calidad de impresión','13. Actualizar firmware de impresora','14. Reemplazar fusor según ciclo de vida','15. Reemplazar rodillos según ciclo de vida','16. Verificar conectividad de red','17. Verificar configuración de IP','18. Solucionar atascos de papel','19. Generar reporte de uso por departamento','20. Generar reporte de costos de impresión','21. Documentar mantenimientos realizados','22. Programar próximo mantenimiento preventivo'] },
-    { id: 'emp-seguridad-audit', icon: '🔍', title: 'Auditoría de Seguridad', children: ['1. Definir alcance de la auditoría','2. Obtener autorización formal','3. Instalar herramienta de escaneo de vulnerabilidades','4. Ejecutar escaneo de vulnerabilidades en servidores','5. Ejecutar escaneo de vulnerabilidades en estaciones','6. Ejecutar escaneo de vulnerabilidades en red','7. Analizar resultados del escaneo','8. Clasificar vulnerabilidades por severidad','9. Revisar políticas de contraseñas','10. Verificar complejidad de contraseñas','11. Auditar permisos de archivos compartidos','12. Auditar permisos de AD (usuarios con privileges excesivos)','13. Auditar miembros de grupos de administradores','14. Revisar logs de acceso a sistemas críticos','15. Analizar puertos abiertos en servidores','16. Analizar puertos abiertos en firewall','17. Revisar configuración de firewall','18. Revisar reglas de VPN activas','19. Verificar cifrado de datos en tránsito','20. Verificar cifrado de datos en reposo','21. Revisar políticas de GPO de seguridad','22. Realizar pruebas de penetración básicas','23. Compilar reporte de hallazgos','24. Crear plan de remediación priorizado','25. Presentar reporte a gerencia de IT','26. Dar seguimiento a remediación'] },
+    { id: 'emp-seguridad-audit', icon: '🔍', title: 'Auditoría de Seguridad', children: ['1. Definir alcance de la auditoría','2. Obtener autorización formal','3. Instalar herramienta de escaneo de vulnerabilidades','4. Ejecutar escaneo de vulnerabilidades en servidores','5. Ejecutar escaneo de vulnerabilidades en estaciones','6. Ejecutar escaneo de vulnerabilidades en red','7. Analizar resultados del escaneo','8. Clasificar vulnerabilidades por severidad','9. Revisar políticas de contraseñas','10. Verificar complejidad de contraseñas','11. Auditar permisos de archivos compartidos','12. Auditar permisos de AD (usuarios con privilegios excesivos)','13. Auditar miembros de grupos de administradores','14. Revisar logs de acceso a sistemas críticos','15. Analizar puertos abiertos en servidores','16. Analizar puertos abiertos en firewall','17. Revisar configuración de firewall','18. Revisar reglas de VPN activas','19. Verificar cifrado de datos en tránsito','20. Verificar cifrado de datos en reposo','21. Revisar políticas de GPO de seguridad','22. Realizar pruebas de penetración básicas','23. Compilar reporte de hallazgos','24. Crear plan de remediación priorizado','25. Presentar reporte a gerencia de IT','26. Dar seguimiento a remediación'] },
     { id: 'emp-seguridad-perimetral', icon: '🚨', title: 'Seguridad Perimetral', children: ['1. Revisar topología de seguridad perimetral','2. Verificar configuración de firewall perimetral','3. Revisar reglas de entrada (inbound)','4. Eliminar reglas obsoletas o innecesarias','5. Verificar configuración de DMZ','6. Revisar servicios expuestos a internet','7. Verificar que solo puertos necesarios estén abiertos','8. Configurar/verificar IDS/IPS','9. Actualizar firmas de IDS/IPS','10. Analizar tráfico de red en perímetro','11. Detectar tráfico anómalo','12. Bloquear IPs maliciosas identificadas','13. Configurar geobloqueo si aplica','14. Revisar logs de seguridad del firewall','15. Monitorear intentos de acceso fallidos','16. Verificar configuración de VPN','17. Revisar VPNs activas y usuarios conectados','18. Auditar certificados de VPN','19. Configurar honeypot si aplica','20. Realizar pruebas de penetración externas','21. Generar reporte de eventos de seguridad','22. Documentar incidentes detectados','23. Programar revisión periódica mensual'] },
     { id: 'emp-virtualizacion', icon: '🖥️', title: 'Virtualización', children: ['1. Verificar requisitos de hardware del host','2. Verificar soporte de virtualización en BIOS (VT-x/AMD-V)','3. Instalar hipervisor (Hyper-V/VMware ESXi)','4. Configurar red del hipervisor (vSwitch)','5. Configurar almacenamiento (datastore)','6. Crear vSwitch para red de gestión','7. Crear vSwitch para red de producción','8. Crear vSwitch para red de storage (iSCSI/NFS)','9. Configurar NIC teaming si aplica','10. Crear primera VM (plantilla)','11. Instalar S.O. en plantilla','12. Instalar VMware Tools/Integration Services','13. Sysprep la plantilla','14. Clonar VMs desde plantilla según necesidad','15. Configurar recursos de cada VM (CPU, RAM, disco)','16. Configurar red de cada VM','17. Instalar aplicaciones en cada VM','18. Configurar snapshots programados','19. Configurar backup de VMs','20. Configurar alta disponibilidad (HA) si hay cluster','21. Configurar Distributed Resource Scheduler (DRS)','22. Configurar vMotion/Live Migration','23. Monitorear recursos del host (CPU, RAM, storage)','24. Monitorear recursos de cada VM','25. Optimizar almacenamiento (thin provisioning)','26. Migrar VMs entre hosts si es necesario','27. Documentar entorno virtual completo','28. Entregar entorno virtual operativo'] },
     { id: 'emp-cloud', icon: '☁️', title: 'Migración a Nube', children: ['1. Evaluar cargas de trabajo candidatas a migrar','2. Seleccionar proveedor (Azure/AWS/GCP)','3. Crear cuenta y suscripción en la nube','4. Configurar MFA para cuenta de nube','5. Configurar red virtual (VNet/VPC)','6. Configurar subredes','7. Configurar grupos de seguridad (NSG/SG)','8. Configurar VPN site-to-site con oficina','9. Configurar ExpressRoute/Direct Connect si aplica','10. Configurar identidad híbrida (Azure AD Connect)','11. Sincronizar AD local con Azure AD','12. Migrar servidores con herramienta de migración','13. Migrar bases de datos a la nube','14. Migrar archivos a almacenamiento en nube','15. Configurar backups en la nube','16. Configurar monitoreo de recursos en nube','17. Configurar alertas de costos','18. Optimizar costos (reserved instances, auto-scaling)','19. Configurar políticas de seguridad en la nube','20. Verificar cumplimiento normativo','21. Probar conectividad entre nube y oficina','22. Probar acceso a aplicaciones migradas','23. Configurar recuperación ante desastres','24. Documentar arquitectura en la nube','25. Capacitar a administradores','26. Entregar entorno en nube operativo'] },
@@ -43,7 +44,7 @@ const DEFAULT_DATA = {
     { id: 'res-so-software', icon: '📦', title: 'Instalación de Software', children: ['1. Recibir solicitud de software a instalar','2. Verificar compatibilidad con el equipo','3. Verificar requisitos mínimos (RAM, disco, CPU)','4. Descargar instalador desde sitio oficial','5. Verificar integridad del instalador','6. Desactivar antivirus temporalmente si es necesario','7. Ejecutar instalador como administrador','8. Aceptar términos de licencia','9. Seleccionar tipo de instalación (típica/personalizada)','10. Seleccionar ubicación de instalación','11. Desmarcar software adicional no deseado (bloatware)','12. Completar instalación','13. Activar licencia del software','14. Configurar software según preferencias del cliente','15. Crear accesos directos','16. Instalar antivirus si no está instalado','17. Instalar Office o suite ofimática','18. Instalar navegadores (Chrome, Firefox, Edge)','19. Instalar reproductores multimedia','20. Instalar herramientas de compresión (7-Zip, WinRAR)','21. Instalar software específico del cliente','22. Instalar drivers de periféricos','23. Configurar impresoras','24. Configurar correo electrónico','25. Ejecutar pruebas de funcionamiento de cada software','26. Reactivar antivirus','27. Documentar software instalado','28. Entregar equipo al cliente'] },
     { id: 'res-so-virus', icon: '🦠', title: 'Eliminación de Virus/Malware', children: ['1. Entrevistar al cliente sobre síntomas','2. Documentar comportamiento anómalo','3. Desconectar equipo de red (cable y Wi-Fi)','4. Reiniciar en modo seguro (F8 / Shift+Reiniciar)','5. Insertar USB con antivirus offline','6. Ejecutar antivirus offline (Kaspersky Rescue, Bitdefender)','7. Realizar escaneo completo del sistema','8. Identificar amenazas detectadas','9. Eliminar amenazas detectadas','10. Reiniciar en modo seguro nuevamente','11. Ejecutar Malwarebytes Anti-Malware','12. Realizar escaneo completo con Malwarebytes','13. Eliminar amenazas restantes','14. Restaurar archivos de sistema (sfc /scannow)','15. Reparar hosts file','16. Revisar y eliminar extensiones maliciosas del navegador','17. Restablecer configuración de navegadores','18. Eliminar barras de herramientas y adware','19. Revisar programas instalados recientemente','20. Desinstalar programas sospechosos','21. Revisar tareas programadas sospechosas','22. Revisar entradas de registro de malware','23. Limpiar registro con CCleaner','24. Restaurar configuración de red','25. Restaurar configuración de DNS','26. Reparar políticas de seguridad','27. Reiniciar en modo normal','28. Ejecutar escaneo final de verificación','29. Instalar/actualizar antivirus','30. Verificar que el sistema funcione correctamente','31. Entregar equipo al cliente','32. Recomendar prácticas de seguridad'] },
     { id: 'res-so-optimizacion', icon: '⚡', title: 'Optimización de Sistema', children: ['1. Recibir equipo del cliente','2. Entrevistar al cliente sobre lentitud percibida','3. Hacer backup de datos importantes','4. Verificar espacio libre en disco','5. Desinstalar programas innecesarios','6. Desinstalar bloatware del fabricante','7. Eliminar archivos temporales (Disk Cleanup)','8. Limpiar archivos temporales de usuario','9. Limpiar archivos temporales de sistema','10. Limpiar caché de Windows Update','11. Limpiar prefetch','12. Limpiar registro con CCleaner','13. Optimizar programas de inicio (msconfig/Task Manager)','14. Deshabilitar servicios innecesarios','15. Deshabilitar efectos visuales innecesarios','16. Configurar plan de energía de alto rendimiento','17. Desfragmentar disco si es HDD','18. Optimizar memoria virtual (pagefile)','19. Limpiar caché de navegadores','20. Eliminar cookies innecesarias','21. Eliminar barras de herramientas','22. Eliminar extensiones innecesarias del navegador','23. Actualizar drivers de video','24. Actualizar drivers de chipset','25. Ejecutar Windows Update','26. Verificar estado de disco (SMART)','27. Verificar temperatura de CPU','28. Ejecutar prueba de rendimiento post-optimización','29. Documentar cambios realizados','30. Entregar equipo al cliente'] },
-    { id: 'res-red-config', icon: '🌐', title: 'Configuración de Red', children: ['1. Entrevistar al cliente sobre necesidades de red','2. Verificar conexión de internet activa','3. Conectar equipo por cable o Wi-Fi','4. Verificar adaptador de red detectado','5. Verificar drivers de adaptador de red','6. Configurar IP dinámica (DHCP) o estática según necesidad','7. Si IP estática: asignar IP, máscara y gateway','8. Configurar DNS primario y secundario','9. Probar conectividad con ping al gateway','10. Probar conectividad con ping a 8.8.8.8','11. Probar resolución de DNS con nslookup','12. Configurar Wi-Fi (SSID y contraseña)','13. Configurar cifrado WPA2/WPA3','14. Configurar recursos compartidos si aplica','15. Mapear unidades de red si aplica','16. Configurar HomeGroup/Grupo Hogar si aplica','17. Solucionar conflictos de IP si los hay','18. Configurar firewall local de Windows','19. Probar velocidad de internet (Speedtest)','20. Probar estabilidad de conexión','21. Probar ping y latencia','22. Configurar QoS si aplica','23. Documentar configuración de red','24. Entregar equipo con red funcionando'] },
+    { id: 'res-red-config', icon: '🌐', title: 'Configuración de Red', children: ['1. Entrevistar al cliente sobre necesidades de red','2. Verificar conexión de internet activa','3. Conectar equipo por cable o Wi-Fi','4. Verificar adaptador de red detectado','5. Verificar drivers de adaptador de red','6. Configurar IP dinámica (DHCP) o estática según necesidad','7. Si IP estática: asignar IP, máscara y gateway','8. Configurar DNS primario y secundario','9. Probar conectividad con ping al gateway','10. Probar conectividad con ping a 8.8.8.8','11. Probar resolución de DNS con nslookup','12. Configurar Wi-Fi (SSID y contraseña)','13. Configurar Wi-Fi (cifrado WPA2/WPA3)','14. Configurar recursos compartidos si aplica','15. Mapear unidades de red si aplica','16. Configurar HomeGroup/Grupo Hogar si aplica','17. Solucionar conflictos de IP si los hay','18. Configurar firewall local de Windows','19. Probar velocidad de internet (Speedtest)','20. Probar estabilidad de conexión','21. Probar ping y latencia','22. Configurar QoS si aplica','23. Documentar configuración de red','24. Entregar equipo con red funcionando'] },
     { id: 'res-red-router', icon: '📡', title: 'Configuración de Router/Modem', children: ['1. Conectar router/modem a la corriente','2. Conectar cable de internet al WAN','3. Conectar equipo por cable al LAN','4. Abrir navegador y acceder a IP del router (192.168.1.1)','5. Iniciar sesión con credenciales por defecto','6. Cambiar contraseña de administrador','7. Configurar tipo de conexión WAN (PPPoE/Dinámica/Estática)','8. Si PPPoE: ingresar usuario y contraseña del ISP','9. Verificar conexión a internet','10. Configurar SSID de Wi-Fi (nombre de red)','11. Configurar contraseña de Wi-Fi','12. Configurar cifrado WPA2 o WPA3','13. Configurar banda 2.4GHz y 5GHz si aplica','14. Optimizar canal Wi-Fi menos congestionado','15. Configurar control parental si aplica','16. Configurar reserva de IP por MAC si aplica','17. Configurar apertura de puertos según necesidad','18. Configurar DMZ si aplica','19. Configurar DNS personalizado si aplica','20. Actualizar firmware del router','21. Configurar UPnP si aplica','22. Reiniciar router para aplicar cambios','23. Probar conexión Wi-Fi desde dispositivos','24. Probar conexión cableada','25. Probar velocidad de internet','26. Documentar configuración del router','27. Entregar router configurado al cliente'] },
     { id: 'res-red-problemas', icon: '🔌', title: 'Resolución de Problemas de Red', children: ['1. Entrevistar al cliente sobre el problema de red','2. Verificar si afecta a un equipo o todos','3. Verificar si es Wi-Fi o cable','4. Reiniciar modem/router (apagar 30 seg, encender)','5. Esperar a que sincronice el modem','6. Verificar luces del modem/router','7. Probar conectividad con ping al gateway','8. Probar conectividad con ping a 8.8.8.8','9. Probar resolución DNS con nslookup','10. Verificar cable de red físico','11. Reemplazar cable de red si está dañado','12. Probar con otro cable de red','13. Reset de adaptador de red (ipconfig /reset)','14. Renovar IP (ipconfig /renew)','15. Limpiar DNS cache (ipconfig /flushdns)','16. Reset de Winsock (netsh winsock reset)','17. Verificar drivers de adaptador de red','18. Actualizar drivers de adaptador de red','19. Deshabilitar y habilitar adaptador de red','20. Probar con conexión cableada si era Wi-Fi','21. Probar con otro dispositivo en la misma red','22. Verificar configuración de firewall local','23. Deshabilitar firewall temporalmente para descartar','24. Configurar nuevo adaptador Wi-Fi si está dañado','25. Probar conexión final','26. Documentar problema y solución','27. Recomendar mejoras de red si aplica','28. Entregar equipo con red funcionando'] },
     { id: 'res-movil-config', icon: '📱', title: 'Configuración Móvil', children: ['1. Encender dispositivo móvil','2. Completar configuración inicial (idioma, región)','3. Conectar a Wi-Fi','4. Iniciar sesión con cuenta Google (Android) o iCloud (iOS)','5. Crear cuenta si no tiene','6. Configurar fecha y hora automática','7. Configurar seguridad (PIN, patrón, biometría)','8. Configurar bloqueo automático de pantalla','9. Instalar apps esenciales (WhatsApp, correo, navegador)','10. Configurar cuenta de correo electrónico','11. Sincronizar contactos con cuenta','12. Configurar respaldo automático a la nube','13. Configurar notificaciones de apps','14. Configurar permisos de apps (ubicación, cámara, etc.)','15. Instalar antivirus móvil si es Android','16. Configurar Find My Device / Encontrar mi dispositivo','17. Configurar datos móviles si aplica','18. Configurar hotspot si aplica','19. Optimizar batería (brillo, background apps)','20. Limpiar apps innecesarias preinstaladas','21. Actualizar sistema operativo','22. Actualizar todas las apps instaladas','23. Configurar ringtone y sonidos','24. Probar funcionamiento de todas las funciones','25. Entregar dispositivo configurado al cliente'] },
@@ -62,7 +63,7 @@ const DEFAULT_DATA = {
 
 const ICON_BG = {
   '🏢':'bg-emp','🚀':'bg-emp','🔄':'bg-emp','🔐':'bg-sec','👤':'bg-emp','🛡️':'bg-sec','🌐':'bg-net','🔧':'bg-hw','🌍':'bg-net','📁':'bg-emp','📧':'bg-emp','🏛️':'bg-emp','🗄️':'bg-emp','🚨':'bg-sec','🎧':'bg-emp','📝':'bg-emp','🍎':'bg-mob','♻️':'bg-bak','📺':'bg-mob','📋':'bg-sw','🖨️':'bg-prt',
-  '🔗':'bg-net','💾':'bg-bak','📊':'bg-sw','�':'bg-sw','⚙️':'bg-hw','�️':'bg-prt','🔍':'bg-hw','🧹':'bg-hw',
+  '🔗':'bg-net','💾':'bg-bak','📊':'bg-sw','⚙️':'bg-hw','🔍':'bg-hw','🧹':'bg-hw',
   '💻':'bg-sw','📦':'bg-sw','🦠':'bg-sec','⚡':'bg-sw','📡':'bg-net','📱':'bg-mob','📤':'bg-mob','🛠️':'bg-hw',
   '📹':'bg-net','🏠':'bg-mob','🖥️':'bg-emp','☁️':'bg-net','🔌':'bg-net'
 };
@@ -70,7 +71,11 @@ const ICON_BG = {
 const STORAGE_KEY = 'tareas_data_v2';
 const CHECKS_KEY = 'tareas_checks_v2';
 
-function loadData() {
+// ─── LÓGICA DE PERSISTENCIA Y INICIALIZACIÓN CON SUPABASE ─────
+let isInitialized = false;
+let checksCache = {};
+
+function loadDataLocal() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -81,25 +86,124 @@ function loadData() {
   return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 
-function saveData(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+export let TAREAS_DATA = loadDataLocal();
+
+export async function initTareasData() {
+  if (isInitialized) return TAREAS_DATA;
+
+  let localCache = loadDataLocal();
+  try {
+    const supabase = await getSupabase();
+    const { data: catData, error: catError } = await supabase.from('tareas_data').select('*');
+    if (!catError && catData) {
+      if (catData.length === 0) {
+        // La tabla está vacía en Supabase: sembrar datos iniciales
+        const flattened = [];
+        DEFAULT_DATA.empresarial.forEach(c => flattened.push({ id: c.id, icon: c.icon, title: c.title, type: 'empresarial', children: c.children }));
+        DEFAULT_DATA.residencial.forEach(c => flattened.push({ id: c.id, icon: c.icon, title: c.title, type: 'residencial', children: c.children }));
+        await supabase.from('tareas_data').insert(flattened);
+        TAREAS_DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      } else {
+        // Mapear de base de datos a formato TAREAS_DATA
+        const emps = catData.filter(c => c.type === 'empresarial').map(c => ({ id: c.id, icon: c.icon, title: c.title, children: c.children || [] }));
+        const ress = catData.filter(c => c.type === 'residencial').map(c => ({ id: c.id, icon: c.icon, title: c.title, children: c.children || [] }));
+        TAREAS_DATA = { empresarial: emps, residencial: ress };
+      }
+      isInitialized = true;
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    } else {
+      TAREAS_DATA = localCache;
+    }
+  } catch (e) {
+    TAREAS_DATA = localCache;
+  }
+  return TAREAS_DATA;
 }
 
-function loadChecks() {
-  try { return JSON.parse(localStorage.getItem(CHECKS_KEY)) || {}; } catch { return {}; }
+export async function loadChecks() {
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase.from('tareas_checks').select('id, checked');
+    if (!error && data) {
+      const map = {};
+      data.forEach(item => {
+        if (item.checked) map[item.id] = true;
+      });
+      checksCache = map;
+      try { localStorage.removeItem(CHECKS_KEY); } catch {}
+      return checksCache;
+    }
+  } catch (e) {}
+
+  try {
+    return JSON.parse(localStorage.getItem(CHECKS_KEY)) || {};
+  } catch {
+    return {};
+  }
 }
 
-function saveChecks(checks) {
-  try { localStorage.setItem(CHECKS_KEY, JSON.stringify(checks)); } catch {}
+export async function saveChecks(checks) {
+  try {
+    const supabase = await getSupabase();
+    
+    // Guardar en cache local por si acaso
+    localStorage.setItem(CHECKS_KEY, JSON.stringify(checks));
+
+    const payload = Object.keys(checks).map(id => ({ id, checked: true }));
+    if (payload.length > 0) {
+      await supabase.from('tareas_checks').upsert(payload);
+    }
+
+    const oldChecks = checksCache || {};
+    const removedIds = Object.keys(oldChecks).filter(id => !checks[id]);
+    if (removedIds.length > 0) {
+      await supabase.from('tareas_checks').delete().in('id', removedIds);
+    }
+
+    checksCache = { ...checks };
+    try { localStorage.removeItem(CHECKS_KEY); } catch {}
+  } catch (e) {
+    localStorage.setItem(CHECKS_KEY, JSON.stringify(checks));
+    toast('⚠️ Guardado localmente — sin conexión', 'warning');
+  }
 }
 
-export let TAREAS_DATA = loadData();
+export async function saveData(data) {
+  try {
+    const supabase = await getSupabase();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+    const rows = [];
+    data.empresarial.forEach(c => rows.push({ id: c.id, icon: c.icon, title: c.title, type: 'empresarial', children: c.children }));
+    data.residencial.forEach(c => rows.push({ id: c.id, icon: c.icon, title: c.title, type: 'residencial', children: c.children }));
+
+    await supabase.from('tareas_data').upsert(rows);
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  } catch (e) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    toast('⚠️ Guardado localmente — sin conexión', 'warning');
+  }
+}
+
+export async function deleteCategory(id) {
+  try {
+    const supabase = await getSupabase();
+    await supabase.from('tareas_data').delete().eq('id', id);
+  } catch (e) {
+    console.warn("Error al borrar categoría en la nube:", e);
+  }
+}
+
 let expandedCards = new Set();
 
 export async function tareasView() {
   const shell = ensureShell('/tareas');
   shell.setTitle(''); shell.setActions('');
   const c = shell.content();
+
+  // Cargar datos más recientes
+  await initTareasData();
+  const checks = await loadChecks();
 
   const empSubtotal = TAREAS_DATA.empresarial.reduce((s, c) => s + c.children.length, 0);
   const resSubtotal = TAREAS_DATA.residencial.reduce((s, c) => s + c.children.length, 0);
@@ -126,7 +230,7 @@ export async function tareasView() {
       <div class="tasks-category-count">${TAREAS_DATA.empresarial.length} categorías · ${empSubtotal} tareas</div>
     </div>
     <div class="tasks-grid" id="grid-emp">
-      ${TAREAS_DATA.empresarial.map(card => renderCard(card, 'empresarial')).join('')}
+      ${TAREAS_DATA.empresarial.map(card => renderCard(card, 'empresarial', checks)).join('')}
     </div>
   </div>
 
@@ -137,7 +241,7 @@ export async function tareasView() {
       <div class="tasks-category-count">${TAREAS_DATA.residencial.length} categorías · ${resSubtotal} tareas</div>
     </div>
     <div class="tasks-grid" id="grid-res">
-      ${TAREAS_DATA.residencial.map(card => renderCard(card, 'residencial')).join('')}
+      ${TAREAS_DATA.residencial.map(card => renderCard(card, 'residencial', checks)).join('')}
     </div>
   </div>
 
@@ -152,9 +256,8 @@ export async function tareasView() {
   initToolbar();
 }
 
-function renderCard(card, prefix) {
+function renderCard(card, prefix, checks = {}) {
   const bgClass = ICON_BG[card.icon] || 'bg-emp';
-  const checks = loadChecks();
   const checkedCount = card.children.filter((_, idx) => checks[`${card.id}-${idx}`]).length;
   const progress = card.children.length > 0 ? Math.round((checkedCount / card.children.length) * 100) : 0;
   const isCustom = card.id.includes('-custom-');
@@ -237,27 +340,27 @@ function initCardInteractions() {
   // Checkbox maestro (seleccionar todo en categoría)
   document.querySelectorAll('.task-master-checkbox').forEach(master => {
     master.addEventListener('click', (e) => e.stopPropagation());
-    master.addEventListener('change', (e) => {
+    master.addEventListener('change', async (e) => {
       e.stopPropagation();
       const id = master.dataset.master;
-      const checks = loadChecks();
+      const checks = await loadChecks();
       const card = findCard(id);
       if (!card) return;
       card.children.forEach((_, idx) => {
         checks[`${id}-${idx}`] = master.checked;
       });
-      saveChecks(checks);
-      tareasView();
+      await saveChecks(checks);
+      await tareasView();
     });
   });
 
   // Checkbox individual con persistencia
   document.querySelectorAll('.task-item-checkbox-input').forEach(box => {
-    box.addEventListener('change', (e) => {
+    box.addEventListener('change', async (e) => {
       e.stopPropagation();
       const id = box.dataset.check;
       const text = document.querySelector(`.task-item-text[data-text="${id}"]`);
-      const checks = loadChecks();
+      const checks = await loadChecks();
       if (box.checked) {
         text.classList.add('checked');
         checks[id] = true;
@@ -265,44 +368,44 @@ function initCardInteractions() {
         text.classList.remove('checked');
         delete checks[id];
       }
-      saveChecks(checks);
+      await saveChecks(checks);
     });
   });
 
   // Eliminar subtarea
   document.querySelectorAll('.task-item-delete').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const [catId, idx] = btn.dataset.del.split('-');
       const fullId = btn.dataset.del;
       const card = findCard(fullId.replace(/-\d+$/, ''));
       if (!card) return;
       const itemIdx = parseInt(fullId.split('-').pop());
       card.children.splice(itemIdx, 1);
-      saveData(TAREAS_DATA);
-      const checks = loadChecks();
+      await saveData(TAREAS_DATA);
+      const checks = await loadChecks();
       Object.keys(checks).forEach(k => { if (k.startsWith(`${card.id}-`)) delete checks[k]; });
-      saveChecks(checks);
-      tareasView();
+      await saveChecks(checks);
+      await tareasView();
     });
   });
 
   // Eliminar categoría personalizada
   document.querySelectorAll('.task-card-delete').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const id = btn.dataset.delCat;
       for (const type of ['empresarial', 'residencial']) {
         const idx = TAREAS_DATA[type].findIndex(c => c.id === id);
         if (idx >= 0) {
           TAREAS_DATA[type].splice(idx, 1);
-          saveData(TAREAS_DATA);
-          const checks = loadChecks();
+          await deleteCategory(id);
+          await saveData(TAREAS_DATA);
+          const checks = await loadChecks();
           Object.keys(checks).forEach(k => { if (k.startsWith(`${id}-`)) delete checks[k]; });
-          saveChecks(checks);
+          await saveChecks(checks);
           expandedCards.delete(id);
           toast('Categoría eliminada', 'success');
-          tareasView();
+          await tareasView();
           return;
         }
       }
@@ -316,10 +419,10 @@ function initCardInteractions() {
       const id = btn.dataset.editCat;
       const card = findCard(id);
       if (!card) return;
-      showTaskModal('Editar título', '', card.title, (val) => {
+      showTaskModal('Editar título', '', card.title, async (val) => {
         card.title = val;
-        saveData(TAREAS_DATA);
-        tareasView();
+        await saveData(TAREAS_DATA);
+        await tareasView();
       });
     });
   });
@@ -329,13 +432,13 @@ function initCardInteractions() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = btn.dataset.add;
-      showTaskModal('Nueva Subtarea', 'Ej: Describir tarea...', '', (val) => {
+      showTaskModal('Nueva Subtarea', 'Ej: Describir tarea...', '', async (val) => {
         const card = findCard(id);
         if (card) {
           card.children.push(val);
-          saveData(TAREAS_DATA);
+          await saveData(TAREAS_DATA);
           expandedCards.add(id);
-          tareasView();
+          await tareasView();
         }
       });
     });
@@ -345,13 +448,13 @@ function initCardInteractions() {
   const addCustomBtn = document.getElementById('btn-add-custom');
   if (addCustomBtn) {
     addCustomBtn.addEventListener('click', () => {
-      showCategoryModal((title, type) => {
+      showCategoryModal(async (title, type) => {
         const newId = type.substring(0,3) + '-custom-' + Date.now();
         TAREAS_DATA[type].push({ id: newId, icon: '📝', title, children: [] });
-        saveData(TAREAS_DATA);
+        await saveData(TAREAS_DATA);
         expandedCards.add(newId);
         toast('Tarea personalizada agregada', 'success');
-        tareasView();
+        await tareasView();
       });
     });
   }
@@ -389,8 +492,8 @@ function initToolbar() {
   // Exportar seleccionadas
   const exportBtn = document.getElementById('btn-export');
   if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
-      const checks = loadChecks();
+    exportBtn.addEventListener('click', async () => {
+      const checks = await loadChecks();
       const selected = [];
       for (const type of ['empresarial', 'residencial']) {
         for (const card of TAREAS_DATA[type]) {
@@ -416,14 +519,22 @@ function initToolbar() {
   // Restaurar valores por defecto
   const resetBtn = document.getElementById('btn-reset');
   if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
+    resetBtn.addEventListener('click', async () => {
       if (confirm('¿Restaurar todas las tareas a los valores por defecto? Se perderán las personalizadas.')) {
+        try {
+          const supabase = await getSupabase();
+          await supabase.from('tareas_data').delete().neq('id', 'dummy');
+          await supabase.from('tareas_checks').delete().neq('id', 'dummy');
+        } catch (e) {
+          console.warn("Error al restaurar base de datos:", e);
+        }
+
         TAREAS_DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        saveData(TAREAS_DATA);
-        saveChecks({});
+        await saveData(TAREAS_DATA);
+        await saveChecks({});
         expandedCards.clear();
         toast('Tareas restauradas', 'success');
-        tareasView();
+        await tareasView();
       }
     });
   }

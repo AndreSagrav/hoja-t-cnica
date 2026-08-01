@@ -8,7 +8,7 @@ import { clientesListView, clienteDetalleView } from './views/clientes.js';
 import { serviciosView } from './views/servicios.js';
 import { inventarioView } from './views/inventario.js';
 import { cuentasView } from './views/cuentas.js';
-import { tareasView } from './views/tareas.js';
+import { tareasView, initTareasData } from './views/tareas.js';
 import { dispositivosView } from './views/dispositivos.js';
 import { editorNuevoView, editorEditarView } from './views/editor.js';
 import { wizardNuevoView } from './views/wizard.js';
@@ -57,6 +57,8 @@ router.beforeEach(({ path }) => {
 
   try {
     await initAuth();
+    // Pre-cargar tareas en segundo plano
+    initTareasData().catch(err => console.warn('Failed pre-loading tasks:', err));
   } catch (e) {
     console.error('Auth init error:', e);
   }
