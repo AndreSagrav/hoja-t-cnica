@@ -37,15 +37,17 @@
     </div>
   </div>
   <div id="toast-container" aria-live="polite"></div>
-  <script type="module" src="./src/main.js?v=7"></script>
+  <script type="module" src="./src/main.js?v=2.2"></script>
   <script>
-    // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js').catch(function() {});
+        navigator.serviceWorker.register('./sw.js').then(function(reg) {
+          reg.update();
+        }).catch(function() {});
       });
     }
   </script>
+
   <script>
     (function(){
       setTimeout(function(){
