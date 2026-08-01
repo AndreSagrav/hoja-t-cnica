@@ -205,15 +205,24 @@ function buildComprobanteHTML(d) {
     trabajosHtml = '<div class="text-box" style="color:var(--text-muted); font-style:italic;">No hay trabajos marcados.</div>';
   }
 
-  // Líneas de tarifa
   const lines = d.lines || [];
   const linesHTML = lines.filter(l => l.descripcion || l.desc).map(l => {
     const desc = l.descripcion || l.desc || '';
     const qty = Number(l.cantidad || l.qty) || 0;
     const price = Number(l.precio || l.price) || 0;
     const ltot = qty * price;
-    return `<tr><td>${esc(desc)}</td><td class="right">${esc(qty)}</td><td class="right">${fmtMoney(price, currencyCode)}</td><td class="right">${fmtMoney(ltot, currencyCode)}</td></tr>`;
+    const codigo = l.codigo || l.code || '—';
+    const unidad = l.unidad || l.unit || 'Hora';
+    return `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--brand-blue);font-size:11px;">${esc(codigo)}</td>
+      <td>${esc(desc)}</td>
+      <td style="font-weight:600;color:var(--text-muted);font-size:11px;">${esc(unidad)}</td>
+      <td class="right">${esc(qty)}</td>
+      <td class="right">${fmtMoney(price, currencyCode)}</td>
+      <td class="right" style="font-weight:700;">${fmtMoney(ltot, currencyCode)}</td>
+    </tr>`;
   }).join('');
+
 
   // Totales
   const totals = calcTotals({
@@ -354,15 +363,18 @@ function buildComprobanteHTML(d) {
             <table class="tariff-table">
               <thead>
                 <tr>
+                  <th style="width:80px">Código</th>
                   <th>Descripción</th>
-                  <th class="right" style="width:80px">Cant.</th>
-                  <th class="right" style="width:120px">Precio Unit.</th>
-                  <th class="right" style="width:120px">Total</th>
+                  <th style="width:75px">Unidad</th>
+                  <th class="right" style="width:60px">Cant.</th>
+                  <th class="right" style="width:110px">Precio Unit.</th>
+                  <th class="right" style="width:115px">Total</th>
                 </tr>
               </thead>
               <tbody>${linesHTML}</tbody>
             </table>
           ` : ''}
+
 
           <!-- TIEMPO LABORADO (solo OT) -->
           ${isOrden && laborTxt ? `

@@ -51,13 +51,28 @@ export async function wizardNuevoView(params = {}) {
   wState.docNum = ''; // Se generará al guardar, no al abrir
   try {
     if (kind === 'orden') {
-      const supabase = await getSupabase();
-      const { data } = await supabase.from('catalogo_servicios').select('*').eq('activo', true).eq('tipo', 'servicio').order('nombre', { ascending: true });
-      if (data) wState.availableServices = data;
+      let localCache = [];
+      try { localCache = JSON.parse(localStorage.getItem('local_servicios_overrides') || '[]'); } catch {}
+      let fetched = [];
+      try {
+        const supabase = await getSupabase();
+        const { data } = await supabase.from('catalogo_servicios').select('*').eq('activo', true).eq('tipo', 'servicio').order('nombre', { ascending: true });
+        if (data) fetched = data;
+      } catch {}
+
+      const merged = fetched.map(s => {
+        const cached = localCache.find(c => String(c.id) === String(s.id));
+        return cached ? { ...s, ...cached } : s;
+      });
+      localCache.filter(c => String(c.id).startsWith('s_local_')).forEach(c => {
+        if (!merged.some(x => String(x.id) === String(c.id))) merged.push(c);
+      });
+      wState.availableServices = merged;
     }
   } catch (e) {
     console.error("Error inicializando wizard:", e);
   }
+
   renderWizard();
 }
 
@@ -1118,12 +1133,31 @@ function bindStep3Events() {
           catDataCache[section] = allTareas;
         } else {
           const tipoFilter = section === 'productos' ? 'producto' : 'servicio';
-          const { data } = await supabase.from('catalogo_servicios')
-            .select('*')
-            .eq('activo', true)
-            .eq('tipo', tipoFilter)
-            .order('nombre');
-          catDataCache[section] = data || [];
+          let fetched = [];
+          try {
+            const { data } = await supabase.from('catalogo_servicios')
+              .select('*')
+              .eq('activo', true)
+              .eq('tipo', tipoFilter)
+              .order('nombre');
+            if (data) fetched = data;
+          } catch {}
+
+          let localCache = [];
+          try {
+            const storageKey = section === 'productos' ? 'local_productos_overrides' : 'local_servicios_overrides';
+            localCache = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          } catch {}
+
+          const merged = fetched.map(item => {
+            const cached = localCache.find(c => String(c.id) === String(item.id));
+            return cached ? { ...item, ...cached } : item;
+          });
+          localCache.filter(c => String(c.id).startsWith("s_local_") || String(c.id).startsWith("p_local_")).forEach(c => {
+            if (!merged.some(x => String(x.id) === String(c.id))) merged.push(c);
+          });
+
+          catDataCache[section] = merged;
         }
       } catch(e) {
         console.warn('Error cargando catálogo:', e);
@@ -1180,15 +1214,22 @@ function bindStep3Events() {
           const isTarea = !!tareaNombre;
 
           const newItem = isTarea
-            ? { descripcion: tareaNombre, cantidad: 1, precio: 0, codigo: '' }
+            ? { descripcion: tareaNombre, cantidad: 1, precio: 0, codigo: '', unidad: 'Servicio' }
             : (() => {
                 const item = catDataCache[section]?.find(x => String(x.id) === id);
                 if (!item) return null;
                 const precioFinal = wState.clientType === 'empresarial'
                   ? (item.precio_empresarial || item.precio_residencial || item.precio || 0)
                   : (item.precio_residencial || item.precio || 0);
-                return { descripcion: item.nombre, cantidad: 1, precio: precioFinal, codigo: item.codigo || '' };
+                return {
+                  descripcion: item.nombre,
+                  cantidad: 1,
+                  precio: precioFinal,
+                  codigo: item.codigo || '',
+                  unidad: item.unidad || (section === 'productos' ? 'Unidad' : 'Hora')
+                };
               })();
+
 
           if (!newItem) return;
 
