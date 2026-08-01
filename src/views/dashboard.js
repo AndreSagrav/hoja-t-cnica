@@ -3,7 +3,6 @@ import { getSupabase, withTimeout } from '../lib/supabase.js';
 import { fmtMoney, esc } from '../lib/utils.js';
 
 export async function dashboardView() {
-  console.log("dashboardView() was called!");
   const shell = ensureShell('/dashboard');
   shell.setTitle('Panel de Control');
   shell.setActions('');

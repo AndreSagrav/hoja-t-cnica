@@ -16,21 +16,21 @@ export async function clientesListView() {
   <div class="crm-header">
     <h2>👥 Directorio de Clientes <span class="crm-header-count" id="cli-count">—</span></h2>
     <div class="crm-header-actions">
-      <button class="crm-action-btn primary" id="cli-new-btn" style="flex:none;">＋ Nuevo Cliente</button>
+      <button class="crm-action-btn primary" id="cli-new-btn">＋ Nuevo Cliente</button>
     </div>
   </div>
   <div class="crm-kpi-row" id="cli-kpis"></div>
   <div class="crm-body">
     <div class="crm-list-pane">
-      <div class="crm-search-bar" style="display:flex; gap:16px; align-items:center; border-bottom:1px solid var(--border-light); padding:16px 24px; background:var(--surface);">
-        <input class="crm-search-input" id="cli-search" placeholder="🔍  Buscar por nombre, empresa o contacto…" style="flex:1; max-width: 400px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-size: 13px;" />
-        <div style="width:1px; height:24px; background:var(--border-light); margin: 0 4px;"></div>
-        <div id="cli-filters" style="display:flex; align-items:center;">
-          <select id="select-cli-type" style="padding: 10px 36px 10px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface) url('data:image/svg+xml;utf8,<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23475569\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 9l6 6 6-6\"/></svg>') no-repeat right 12px center; appearance: none; color: var(--text-mid); font-size: 13px; outline: none; cursor: pointer; min-width: 180px; font-weight: 600;">
-            <option value="todos">Todos los clientes</option>
-            <option value="empresarial">🏢 Empresariales</option>
-            <option value="residencial">🏠 Residenciales</option>
-          </select>
+      <div class="crm-search-bar">
+        <div class="crm-search-wrap">
+          <svg class="crm-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input class="crm-search-input" id="cli-search" placeholder="Buscar por nombre, empresa o cédula…" />
+        </div>
+        <div class="crm-filter-tabs" id="cli-filter-tabs">
+          <button class="crm-filter-tab active" data-filter="todos">Todos</button>
+          <button class="crm-filter-tab" data-filter="empresarial">🏢 Empresas</button>
+          <button class="crm-filter-tab" data-filter="residencial">🏠 Personas</button>
         </div>
       </div>
       <div class="crm-list-scroll" id="cli-list">
@@ -50,8 +50,12 @@ export async function clientesListView() {
   document.getElementById("cli-new-btn").addEventListener("click", () => showForm(null));
   document.getElementById("cli-search").addEventListener("input", debounce(e => { search = e.target.value.trim().toLowerCase(); renderList(); }, 220));
   
-  document.getElementById("select-cli-type").addEventListener("change", (e) => {
-    typeFilter = e.target.value;
+  document.getElementById("cli-filter-tabs").addEventListener("click", (e) => {
+    const btn = e.target.closest(".crm-filter-tab");
+    if (!btn) return;
+    document.querySelectorAll(".crm-filter-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    typeFilter = btn.dataset.filter;
     renderList();
   });
 
@@ -130,23 +134,19 @@ function renderList() {
   }
   box.innerHTML = filtered.map(c => {
     const isEmp = c.tipo_cliente === "empresarial";
-    const clr = isEmp ? "var(--green-mid)" : "var(--blue)";
-    const bg  = isEmp ? "var(--green-light)" : "var(--surface-2)";
-    
     const mainText = isEmp && c.empresa ? c.empresa : c.nombre;
     const subText  = isEmp && c.empresa ? `Contacto: ${c.nombre}` : "Persona Física";
+    const avatarClass = isEmp ? "av-cli av-emp" : "av-cli av-res";
 
     return `<div class="crm-item ${String(selectedId)===String(c.id)?"selected":""}" data-id="${c.id}">
-      <div class="crm-item-avatar av-cli" style="background:${bg};color:${clr};font-size:14px;font-weight:700;">${getInitials(mainText)}</div>
-      <div class="crm-item-body">
-        <div class="crm-item-top">
-          <span class="crm-item-name">${esc(mainText)}</span>
-          ${c.codigo_fiscal ? `<span class="crm-item-code">#${String(c.codigo_fiscal).padStart(5,'0')}</span>` : ''}
-        </div>
-        <div class="crm-item-bottom">
-          <span class="crm-item-sub">${esc(subText)}</span>
-          <span class="badge badge-${c.tipo_cliente}">${esc(c.tipo_cliente)}</span>
-        </div>
+      <div class="crm-item-avatar ${avatarClass}">${getInitials(mainText)}</div>
+      <div class="crm-item-info">
+        <div class="crm-item-name">${esc(mainText)}</div>
+        <div class="crm-item-sub">${esc(subText)}</div>
+      </div>
+      <div class="crm-item-meta">
+        ${c.codigo_fiscal ? `<span class="cli-code-badge">#${String(c.codigo_fiscal).padStart(5,'0')}</span>` : ''}
+        <span class="badge badge-${c.tipo_cliente}">${esc(c.tipo_cliente)}</span>
       </div>
     </div>`;
   }).join('');
@@ -186,30 +186,24 @@ function showDetail(id) {
       Volver a la lista
     </button>
     <!-- HERO -->
-    <div class="detail-hero" style="padding: 20px 28px; gap: 20px;">
-      <div style="display:flex; gap:16px; flex:1; min-width:0; align-items:center;">
-        <div class="detail-hero-avatar" style="width:52px; height:52px; font-size:20px;">${initials}</div>
-        <div class="detail-hero-info" style="display:flex; flex-direction:column; justify-content:center; min-width:0; gap:8px;">
-          <div class="detail-hero-name" style="font-size:20px; font-weight:800; word-break:break-word; line-height:1.3; margin:0;">${esc(displayName)}</div>
-          <div class="detail-hero-sub" style="margin:0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            ${subName ? `<span style="font-size:13px; opacity:0.7; font-weight:500;">Contacto: ${esc(subName)}</span>` : ''}
-            <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:${tipoBg}; color:${tipoColor}; border:1px solid ${tipoColor}22;">
-              ${isEmp ? '🏢' : '🏠'} ${tipoLabel}
-            </span>
-            ${item.cargo ? `<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);">💼 ${esc(item.cargo)}</span>` : ''}
-            ${item.codigo_fiscal ? `<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(0,194,168,0.12); color:#00c2a8; border:1px solid rgba(0,194,168,0.2);">#${String(item.codigo_fiscal).padStart(5,'0')}</span>` : ''}
-          </div>
+    <div class="detail-hero">
+      <div class="detail-hero-avatar">${initials}</div>
+      <div class="detail-hero-info">
+        <div class="detail-hero-name">${esc(displayName)}</div>
+        <div class="detail-hero-sub">
+          ${subName ? `<span>👤 ${esc(subName)}</span>` : ''}
+          <span>${isEmp ? '🏢' : '🏠'} ${tipoLabel}</span>
+          ${item.cargo ? `<span>💼 ${esc(item.cargo)}</span>` : ''}
+          ${item.codigo_fiscal ? `<span class="hero-code-badge">#${String(item.codigo_fiscal).padStart(5,'0')}</span>` : ''}
         </div>
       </div>
-      <div style="display:flex; align-items:center; flex-shrink:0;">
-        <div class="detail-hero-actions" style="margin:0; gap:8px;">
-          <button class="hero-btn hero-btn-edit" style="padding:8px 14px; font-size:12px; font-weight:600;" onclick="editClient('${item.id}')">
-            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar
-          </button>
-          <button class="hero-btn hero-btn-del" style="padding:8px 14px; font-size:12px; font-weight:600; background:transparent;" onclick="deleteClient('${item.id}')">
-            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar
-          </button>
-        </div>
+      <div class="detail-hero-actions">
+        <button class="hero-btn hero-btn-edit" onclick="editClient('${item.id}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar
+        </button>
+        <button class="hero-btn hero-btn-del" onclick="deleteClient('${item.id}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar
+        </button>
       </div>
     </div>
 
