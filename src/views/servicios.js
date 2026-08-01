@@ -173,6 +173,7 @@ function showDetail(s) {
       <div class="detail-info-item"><div class="detail-info-label"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1v1H9V7zm5 0h1v1h-1V7zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1z"></path></svg>Precio Empresarial</div><div class="detail-info-value">${pEmp?fmtMoney(pEmp):"—"}</div></div>
       <div class="detail-info-item"><div class="detail-info-label">Código</div><div class="detail-info-value mono">${esc(s.codigo||"—")}</div></div>
       <div class="detail-info-item"><div class="detail-info-label">Categoría</div><div class="detail-info-value">${esc(s.categoria||"—")}</div></div>
+      <div class="detail-info-item"><div class="detail-info-label">Unidad de Medida</div><div class="detail-info-value">${esc(s.unidad||"Hora")}</div></div>
       <div class="detail-info-item"><div class="detail-info-label">Garantía</div><div class="detail-info-value">${esc(s.garantia||"—")}</div></div>
       <div class="detail-info-item"><div class="detail-info-label">Estado</div><div class="detail-info-value"><span class="crm-item-tag ${s.activo===false?"tag-out":"tag-ok"}">${s.activo===false?"Inactivo":"Activo"}</span></div></div>
     </div></div>`;
@@ -190,6 +191,8 @@ function showForm(srv) {
     if (crmBody) crmBody.classList.add('show-detail');
   }
 
+  const currentUnidad = srv?.unidad || 'Hora';
+
   detailEl.innerHTML = `
     <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -201,6 +204,17 @@ function showForm(srv) {
         <div class="field full"><label class="field-label">Descripción</label><textarea id="sf-desc" class="textarea" style="min-height:70px;" placeholder="Detalles del servicio...">${esc(srv?.descripcion||"")}</textarea></div>
         <div class="field"><label class="field-label">Código</label><input id="sf-codigo" class="input" value="${esc(srv?.codigo||"")}" placeholder="SRV-001" /></div>
         <div class="field"><label class="field-label">Categoría</label><input id="sf-cat" class="input" value="${esc(srv?.categoria||"")}" placeholder="soporte, redes…" /></div>
+        <div class="field"><label class="field-label">Unidad de Medida</label>
+          <select id="sf-unidad" class="select">
+            <option value="Hora" ${currentUnidad==='Hora'?'selected':''}>Hora (por hora)</option>
+            <option value="Servicio" ${currentUnidad==='Servicio'?'selected':''}>Servicio (por evento)</option>
+            <option value="Unidad" ${currentUnidad==='Unidad'?'selected':''}>Unidad (por ítem)</option>
+            <option value="Día" ${currentUnidad==='Día'?'selected':''}>Día (por jornada/día)</option>
+            <option value="Sesión" ${currentUnidad==='Sesión'?'selected':''}>Sesión</option>
+            <option value="Km" ${currentUnidad==='Km'?'selected':''}>Km (por kilometraje)</option>
+            <option value="Mes" ${currentUnidad==='Mes'?'selected':''}>Mes (mensualidad)</option>
+          </select>
+        </div>
         <div class="field"><label class="field-label">Precio Residencial ₡</label><input id="sf-pres" type="number" class="input" value="${srv?.precio_residencial||srv?.precio||""}" placeholder="0" /></div>
         <div class="field"><label class="field-label">Precio Empresarial ₡</label><input id="sf-pemp" type="number" class="input" value="${srv?.precio_empresarial||""}" placeholder="0" /></div>
         <div class="field"><label class="field-label">Garantía</label><input id="sf-gar" class="input" value="${esc(srv?.garantia||"30 días")}" placeholder="30 días" /></div>
@@ -226,12 +240,14 @@ async function save(id) {
     descripcion: document.getElementById("sf-desc").value.trim() || null,
     codigo: document.getElementById("sf-codigo").value.trim() || null,
     categoria: document.getElementById("sf-cat").value.trim() || null,
+    unidad: document.getElementById("sf-unidad").value || "Hora",
     precio_residencial: Number(document.getElementById("sf-pres").value) || 0,
     precio_empresarial: Number(document.getElementById("sf-pemp").value) || 0,
     precio: Number(document.getElementById("sf-pres").value) || Number(document.getElementById("sf-pemp").value) || 0,
     garantia: document.getElementById("sf-gar").value.trim() || null,
     activo: document.getElementById("sf-activo").checked
   };
+
 
   try {
     const supabase = await getSupabase();

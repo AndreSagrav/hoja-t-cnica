@@ -4,8 +4,10 @@ import { esc, debounce, toast } from "../lib/utils.js";
 import { parseUsuarios } from "../data/documentos.js";
 import { asignarCodigoFiscal } from "../lib/hacienda.js";
 import { consultarIdentificacionHacienda } from "../lib/hacienda-api.js";
+import { PROVINCIAS_CR, CANTONES_CR, DISTRITOS_CR } from "../data/ubicaciones-cr.js";
 
 let items = [], selectedId = null, search = "", typeFilter = "todos";
+
 
 export async function clientesListView() {
   const shell = ensureShell("/clientes");
@@ -482,19 +484,19 @@ function showForm(id) {
         </div>
         <div class="field">
           <label class="field-label">Provincia</label>
-          <input class="input" id="cli-fact-prov" value="${esc(item?.fact_provincia || "")}" />
+          <select class="select" id="cli-fact-prov"></select>
         </div>
         <div class="field">
           <label class="field-label">Cantón</label>
-          <input class="input" id="cli-fact-can" value="${esc(item?.fact_canton || "")}" />
+          <select class="select" id="cli-fact-can"></select>
         </div>
         <div class="field">
           <label class="field-label">Distrito</label>
-          <input class="input" id="cli-fact-dis" value="${esc(item?.fact_distrito || "")}" />
+          <select class="select" id="cli-fact-dis"></select>
         </div>
         <div class="field">
           <label class="field-label">Barrio</label>
-          <input class="input" id="cli-fact-bar" value="${esc(item?.fact_barrio || "")}" />
+          <input class="input" id="cli-fact-bar" value="${esc(item?.fact_barrio || "")}" placeholder="Nombre de barrio / residencial" />
         </div>
         <div class="field full-width">
           <label class="field-label">Otras Señas (Facturación)</label>
@@ -517,7 +519,57 @@ function showForm(id) {
   `;
   renderAuthUsers();
   bindHaciendaConsulta();
+  initUbicacionesCascada(item);
 }
+
+function initUbicacionesCascada(item) {
+  const provEl = document.getElementById("cli-fact-prov");
+  const canEl  = document.getElementById("cli-fact-can");
+  const disEl  = document.getElementById("cli-fact-dis");
+  if (!provEl || !canEl || !disEl) return;
+
+  const currentProv = (item?.fact_provincia || "").trim();
+  const currentCan  = (item?.fact_canton || "").trim();
+  const currentDis  = (item?.fact_distrito || "").trim();
+
+  // Populate Provincias
+  provEl.innerHTML = `<option value="">(Seleccionar provincia)</option>` +
+    PROVINCIAS_CR.map(p => `<option value="${p.id}" ${currentProv.toLowerCase() === p.nombre.toLowerCase() || currentProv === p.id ? 'selected' : ''}>${p.nombre}</option>`).join('');
+
+  function updateCantones(provId, selectedCantonName) {
+    const list = CANTONES_CR[provId] || [];
+    canEl.innerHTML = `<option value="">(Seleccionar cantón)</option>` +
+      list.map(c => `<option value="${c.id}" data-name="${c.nombre}" ${selectedCantonName.toLowerCase() === c.nombre.toLowerCase() || selectedCantonName === c.id ? 'selected' : ''}>${c.nombre}</option>`).join('');
+    updateDistritos(provId, canEl.value, currentDis);
+  }
+
+  function updateDistritos(provId, cantonId, selectedDistritoName) {
+    const key = `${provId}-${cantonId}`;
+    const list = DISTRITOS_CR[key] || [];
+    disEl.innerHTML = `<option value="">(Seleccionar distrito)</option>` +
+      list.map(d => `<option value="${d}" ${selectedDistritoName.toLowerCase() === d.toLowerCase() ? 'selected' : ''}>${d}</option>`).join('');
+  }
+
+  // Pre-select logic for editing
+  let initialProvObj = PROVINCIAS_CR.find(p => p.nombre.toLowerCase() === currentProv.toLowerCase() || p.id === currentProv);
+  if (initialProvObj) {
+    provEl.value = initialProvObj.id;
+    let cantonesList = CANTONES_CR[initialProvObj.id] || [];
+    let initialCanObj = cantonesList.find(c => c.nombre.toLowerCase() === currentCan.toLowerCase() || c.id === currentCan);
+    updateCantones(initialProvObj.id, initialCanObj ? initialCanObj.nombre : currentCan);
+  } else {
+    updateCantones(provEl.value, currentCan);
+  }
+
+  provEl.addEventListener("change", () => {
+    updateCantones(provEl.value, "");
+  });
+
+  canEl.addEventListener("change", () => {
+    updateDistritos(provEl.value, canEl.value, "");
+  });
+}
+
 
 async function bindHaciendaConsulta() {
   const btn = document.getElementById('btn-consultar-hacienda');
@@ -722,9 +774,20 @@ async function saveClient() {
     fact_email: document.getElementById("cli-fact-email")?.value || null,
     fact_telefono: document.getElementById("cli-fact-tel")?.value || null,
     fact_regimen: document.getElementById("cli-fact-regimen")?.value || null,
-    fact_provincia: document.getElementById("cli-fact-prov")?.value || null,
-    fact_canton: document.getElementById("cli-fact-can")?.value || null,
+    fact_provincia: (() => {
+      const el = document.getElementById("cli-fact-prov");
+      if (!el || !el.value) return null;
+      const match = PROVINCIAS_CR.find(p => p.id === el.value);
+      return match ? match.nombre : el.value;
+    })(),
+    fact_canton: (() => {
+      const el = document.getElementById("cli-fact-can");
+      if (!el || !el.value) return null;
+      const selOpt = el.options[el.selectedIndex];
+      return selOpt ? (selOpt.dataset.name || selOpt.text) : el.value;
+    })(),
     fact_distrito: document.getElementById("cli-fact-dis")?.value || null,
+
     fact_barrio: document.getElementById("cli-fact-bar")?.value || null,
     fact_otras_senas: document.getElementById("cli-fact-senas")?.value || null,
     fact_actividad: document.getElementById("cli-fact-act")?.value || null,
