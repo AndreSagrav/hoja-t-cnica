@@ -1,8 +1,10 @@
 import { ensureShell } from "../components/shell.js";
 import { getSupabase } from "../lib/supabase.js";
 import { esc, fmtMoney, debounce, toast } from "../lib/utils.js";
+import { generateSmartCode, PRESET_ACTIVITIES } from "../lib/code-generator.js";
 
 let items = [], selectedId = null, catFilter = "todos", search = "", showInactive = false;
+
 
 export async function serviciosView() {
   const shell = ensureShell("/servicios");
@@ -77,8 +79,19 @@ async function loadData() {
   } catch (err) {
     if (localCache.length) items = localCache;
   }
+
+  items = items.map(s => {
+    if (!s.codigo || s.codigo.startsWith('SRV-177') || s.codigo === 'REPP') {
+      const auto = generateSmartCode(s.nombre);
+      return { ...s, codigo: auto || s.codigo || 'ST' };
+    }
+    return s;
+  });
+
   renderAll();
 }
+
+
 
 function renderAll() {
   document.getElementById("srv-count").textContent = items.length;
@@ -202,6 +215,7 @@ function showForm(srv) {
   }
 
   const currentUnidad = srv?.unidad || 'Hora';
+  const presetOptions = PRESET_ACTIVITIES.map(a => `<option value="${a.code}">${esc(a.label)}</option>`).join('');
 
   detailEl.innerHTML = `
     <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
@@ -212,7 +226,18 @@ function showForm(srv) {
       <div class="crm-form-grid">
         <div class="field full"><label class="field-label">Nombre *</label><input id="sf-nombre" class="input" value="${esc(srv?.nombre||"")}" placeholder="Ej: Diagnóstico Avanzado de Laptops" /></div>
         <div class="field full"><label class="field-label">Descripción</label><textarea id="sf-desc" class="textarea" style="min-height:70px;" placeholder="Detalles del servicio...">${esc(srv?.descripcion||"")}</textarea></div>
-        <div class="field"><label class="field-label">Código</label><input id="sf-codigo" class="input" value="${esc(srv?.codigo||"")}" placeholder="SRV-001" /></div>
+        <div class="field">
+          <label class="field-label">Actividad Frecuente (Prefijo Rápido)</label>
+          <select id="sf-code-preset" class="select">
+            <option value="">⚡ Seleccionar Actividad Predeterminada...</option>
+            ${presetOptions}
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Código (Inteligente / Personalizado)</label>
+          <input id="sf-codigo" class="input mono" value="${esc(srv?.codigo||"")}" placeholder="Ej: DG, SM, ST..." />
+        </div>
         <div class="field"><label class="field-label">Categoría</label><input id="sf-cat" class="input" value="${esc(srv?.categoria||"")}" placeholder="soporte, redes…" /></div>
         <div class="field"><label class="field-label">Unidad de Medida</label>
           <select id="sf-unidad" class="select">
@@ -234,6 +259,28 @@ function showForm(srv) {
         <button class="btn btn-ghost" id="sf-cancel">Cancelar</button>
         <button class="btn btn-primary" id="sf-save"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:bottom;margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Guardar</button>
       </div></div>`;
+
+  const nombreInput = document.getElementById("sf-nombre");
+  const codigoInput = document.getElementById("sf-codigo");
+  const presetSelect = document.getElementById("sf-code-preset");
+  let manualTouched = isEdit && !!srv?.codigo;
+
+  codigoInput.addEventListener("input", () => { manualTouched = true; });
+
+  nombreInput.addEventListener("input", () => {
+    if (!manualTouched || !codigoInput.value.trim()) {
+      const auto = generateSmartCode(nombreInput.value);
+      if (auto) codigoInput.value = auto;
+    }
+  });
+
+  presetSelect.addEventListener("change", (e) => {
+    if (e.target.value) {
+      codigoInput.value = e.target.value;
+      manualTouched = true;
+    }
+  });
+
   document.getElementById("sf-cancel").addEventListener("click", () => {
     document.querySelector('.crm-body')?.classList.remove('show-detail');
     if (selectedId) showDetail(items.find(s => String(s.id) === String(selectedId)));
@@ -241,6 +288,7 @@ function showForm(srv) {
   });
   document.getElementById("sf-save").addEventListener("click", () => save(srv?.id));
 }
+
 
 async function save(id) {
   const nombre = document.getElementById("sf-nombre").value.trim();
