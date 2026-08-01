@@ -246,6 +246,14 @@ function showDetail(s) {
 
 function showForm(item) {
   const isEdit = !!item;
+  selectedId = item ? String(item.id) : null;
+
+  const detailEl = document.getElementById("inv-detail");
+  if (detailEl) {
+    const crmBody = detailEl.closest('.crm-body');
+    if (crmBody) crmBody.classList.add('show-detail');
+  }
+
   const catOpts = ["accesorios", "almacenamiento", "fuentes", "gabinetes", "componentes", "monitores", "perifericos", "tarjetas_graficas", "tarjetas_madre", "equipos", "otros"];
   let catSelect = `<select id="if-cat" class="input"><option value="">-- Seleccione --</option>`;
   catOpts.forEach(c => {
@@ -253,7 +261,11 @@ function showForm(item) {
   });
   catSelect += `</select>`;
 
-  document.getElementById("inv-detail").innerHTML = `
+  detailEl.innerHTML = `
+    <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      Volver a la lista
+    </button>
     <div class="crm-form">
       <div class="crm-form-title">${isEdit?"✏️ Editar":"➕ Nuevo"} Producto</div>
       <div class="crm-form-grid">

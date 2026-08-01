@@ -183,23 +183,39 @@ function showDetail(s) {
 
 function showForm(srv) {
   const isEdit = !!srv;
-  document.getElementById("srv-detail").innerHTML = `
+  selectedId = srv ? String(srv.id) : null;
+
+  const detailEl = document.getElementById("srv-detail");
+  if (detailEl) {
+    const crmBody = detailEl.closest('.crm-body');
+    if (crmBody) crmBody.classList.add('show-detail');
+  }
+
+  detailEl.innerHTML = `
+    <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      Volver a la lista
+    </button>
     <div class="crm-form"><div class="crm-form-title">${isEdit?`<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:bottom;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar`:"＋ Nuevo"} Servicio</div>
       <div class="crm-form-grid">
-        <div class="field full"><label class="field-label">Nombre *</label><input id="sf-nombre" class="input" value="${esc(srv?.nombre||"")}" /></div>
-        <div class="field full"><label class="field-label">Descripción</label><textarea id="sf-desc" class="textarea" style="min-height:70px;">${esc(srv?.descripcion||"")}</textarea></div>
+        <div class="field full"><label class="field-label">Nombre *</label><input id="sf-nombre" class="input" value="${esc(srv?.nombre||"")}" placeholder="Ej: Diagnóstico Avanzado de Laptops" /></div>
+        <div class="field full"><label class="field-label">Descripción</label><textarea id="sf-desc" class="textarea" style="min-height:70px;" placeholder="Detalles del servicio...">${esc(srv?.descripcion||"")}</textarea></div>
         <div class="field"><label class="field-label">Código</label><input id="sf-codigo" class="input" value="${esc(srv?.codigo||"")}" placeholder="SRV-001" /></div>
         <div class="field"><label class="field-label">Categoría</label><input id="sf-cat" class="input" value="${esc(srv?.categoria||"")}" placeholder="soporte, redes…" /></div>
-        <div class="field"><label class="field-label">Precio Residencial ₡</label><input id="sf-pres" type="number" class="input" value="${srv?.precio_residencial||srv?.precio||""}" /></div>
-        <div class="field"><label class="field-label">Precio Empresarial ₡</label><input id="sf-pemp" type="number" class="input" value="${srv?.precio_empresarial||""}" /></div>
-        <div class="field"><label class="field-label">Garantía</label><input id="sf-gar" class="input" value="${esc(srv?.garantia||"30 días")}" /></div>
+        <div class="field"><label class="field-label">Precio Residencial ₡</label><input id="sf-pres" type="number" class="input" value="${srv?.precio_residencial||srv?.precio||""}" placeholder="0" /></div>
+        <div class="field"><label class="field-label">Precio Empresarial ₡</label><input id="sf-pemp" type="number" class="input" value="${srv?.precio_empresarial||""}" placeholder="0" /></div>
+        <div class="field"><label class="field-label">Garantía</label><input id="sf-gar" class="input" value="${esc(srv?.garantia||"30 días")}" placeholder="30 días" /></div>
         <div class="field" style="display:flex;align-items:center;gap:8px;"><label class="field-label">Activo</label><input id="sf-activo" type="checkbox" ${srv?.activo!==false?"checked":""} /></div>
       </div>
       <div class="crm-form-actions">
         <button class="btn btn-ghost" id="sf-cancel">Cancelar</button>
         <button class="btn btn-primary" id="sf-save"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:bottom;margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Guardar</button>
       </div></div>`;
-  document.getElementById("sf-cancel").addEventListener("click", () => selectedId ? showDetail(items.find(s => String(s.id) === String(selectedId))) : renderAll());
+  document.getElementById("sf-cancel").addEventListener("click", () => {
+    document.querySelector('.crm-body')?.classList.remove('show-detail');
+    if (selectedId) showDetail(items.find(s => String(s.id) === String(selectedId)));
+    else renderAll();
+  });
   document.getElementById("sf-save").addEventListener("click", () => save(srv?.id));
 }
 
