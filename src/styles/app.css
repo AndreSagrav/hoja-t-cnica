@@ -1354,14 +1354,16 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   .topbar { padding: 0 var(--sp-4); padding-top: env(safe-area-inset-top, 0px); }
   .content { padding: var(--sp-4) var(--sp-4) calc(72px + env(safe-area-inset-bottom, 0px)); }
 
-  /* CRM: split-pane → stack con navegación lista/detalle */
-  .crm-panel { height: calc(100vh - var(--topbar-h)); }
-  .crm-body { flex-direction: column; }
-  .crm-list-pane { width: 100%; border-right: none; border-bottom: 1px solid var(--border-light); max-height: 42vh; }
-  .crm-detail-pane { padding: var(--sp-4); display: none; }
-  .crm-body.show-detail .crm-list-pane { display: none; }
-  .crm-body.show-detail .crm-detail-pane { display: block; flex: 1; overflow-y: auto; }
-  .crm-back-btn { display: inline-flex !important; }
+  /* CRM: split-pane → full screen list / detail toggle on mobile */
+  .crm-panel { height: auto; min-height: calc(100vh - var(--topbar-h) - 70px); }
+  .crm-body { flex-direction: column; flex: 1; }
+  .crm-list-pane { width: 100%; border-right: none; max-height: none; flex: 1; display: flex; flex-direction: column; }
+  .crm-list-scroll { flex: 1; max-height: none; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .crm-detail-pane { padding: var(--sp-4); display: none; width: 100%; }
+  .crm-body.show-detail .crm-list-pane { display: none !important; }
+  .crm-body.show-detail .crm-detail-pane { display: block !important; flex: 1; overflow-y: auto; }
+  .crm-back-btn { display: inline-flex !important; margin-bottom: 12px; }
+
 
   /* CRM header: botones wrappean */
   .crm-header { height: auto; padding: var(--sp-3) var(--sp-4); flex-wrap: wrap; gap: var(--sp-2); }
