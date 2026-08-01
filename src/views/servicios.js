@@ -220,13 +220,35 @@ async function save(id) {
 
   try {
     const supabase = await getSupabase();
-    const { data, error } = id
-      ? await supabase.from("catalogo_servicios").update(payload).eq("id", id).select().single()
-      : await supabase.from("catalogo_servicios").insert([payload]).select().single();
-    if (error) throw error;
-    toast(id ? "Servicio actualizado" : "Servicio creado");
+    let currentPayload = { ...payload };
+    let success = false;
+    let maxRetries = 10;
+    let savedData = null;
+
+    while (!success && maxRetries > 0) {
+      maxRetries--;
+      const { data, error } = id
+        ? await supabase.from("catalogo_servicios").update(currentPayload).eq("id", id).select().single()
+        : await supabase.from("catalogo_servicios").insert([currentPayload]).select().single();
+
+      if (error) {
+        if (error.message && error.message.includes("Could not find the") && error.message.includes("column")) {
+          const match = error.message.match(/Could not find the '([^']+)' column/);
+          if (match && match[1]) {
+            delete currentPayload[match[1]];
+            continue;
+          }
+        }
+        throw error;
+      }
+      savedData = data;
+      success = true;
+    }
+
+    if (!success) throw new Error("No se pudo guardar el servicio.");
+    toast(id ? "Servicio actualizado" : "Servicio creado", "success");
     await loadData();
-    selectedId = String(data.id);
+    if (savedData?.id) selectedId = String(savedData.id);
   } catch (err) {
     console.error("Error guardando servicio en Supabase:", err);
     toast("Error al guardar en Supabase: " + (err.message || err), "error");

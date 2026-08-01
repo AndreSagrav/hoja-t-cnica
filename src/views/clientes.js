@@ -743,6 +743,12 @@ async function saveClient() {
         : await supabase.from("clientes").insert(currentData);
         
       if (error) {
+        if (error.code === '23505' || (error.message && (error.message.toLowerCase().includes('unique') || error.message.toLowerCase().includes('duplicate')))) {
+          if (error.message && error.message.includes('codigo_fiscal')) {
+            toast(`El Código Fiscal #${codigoFiscalInput} ya pertenece a otro cliente. Usá otro código.`, 'error');
+            return;
+          }
+        }
         if (error.message && error.message.includes("Could not find the") && error.message.includes("column")) {
           const match = error.message.match(/Could not find the '([^']+)' column/);
           if (match && match[1]) {
