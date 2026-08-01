@@ -537,6 +537,7 @@ async function startImapWatcher() {
 }
 
 export default {
+  base: './',
   plugins: [facturaAPIPlugin()],
   server: { host: true, port: 5173 }
 };
