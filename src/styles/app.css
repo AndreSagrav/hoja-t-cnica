@@ -497,6 +497,30 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
 .av-cli { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .av-emp { background: var(--green-light); color: var(--green-mid); }
 .av-res { background: var(--surface-2); color: var(--blue); }
+
+/* ── Categoría Avatars (Servicios) ── */
+.av-diag { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color: #1e40af; }
+.av-support { background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #15803d; }
+.av-remote { background: linear-gradient(135deg,#e0e7ff,#c7d2fe); color: #4338ca; }
+.av-maint { background: linear-gradient(135deg,#fef3c7,#fde68a); color: #b45309; }
+.av-visit { background: linear-gradient(135deg,#ffedd5,#fed7aa); color: #c2410c; }
+.av-install { background: linear-gradient(135deg,#ccfbf1,#99f6e4); color: #0f766e; }
+.av-network { background: linear-gradient(135deg,#f3e8ff,#e9d5ff); color: #7e22ce; }
+.av-hosting { background: linear-gradient(135deg,#fae8ff,#f5d0fe); color: #a21caf; }
+.av-dev { background: linear-gradient(135deg,#e0f2fe,#7dd3fc); color: #0369a1; }
+.av-consult { background: linear-gradient(135deg,#f1f5f9,#e2e8f0); color: #475569; }
+
+/* ── Skeleton Loading & Button Spinner ── */
+.skeleton-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border-light); }
+.skeleton-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--surface-2); flex-shrink: 0; animation: skel-pulse 1.5s infinite ease-in-out; }
+.skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.skeleton-line { height: 10px; border-radius: 4px; background: var(--surface-2); animation: skel-pulse 1.5s infinite ease-in-out; }
+.skeleton-line.w70 { width: 70%; }
+.skeleton-line.w40 { width: 40%; }
+@keyframes skel-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+
+.btn-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: btn-spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes btn-spin { to { transform: rotate(360deg); } }
 .crm-item-info { flex: 1; min-width: 0; overflow: hidden; }
 .crm-item-name {
   font-size: 13px; font-weight: var(--fw-bold); color: var(--navy);
@@ -614,6 +638,13 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   font-weight: var(--fw-extrabold) !important;
   letter-spacing: 0.5px;
 }
+.hero-unit-badge { color: #5eead4 !important; font-weight: 700 !important; }
+.hero-prices { display: flex; gap: 16px; text-align: right; align-items: flex-end; margin-right: 8px; }
+.hero-price-block { display: flex; flex-direction: column; }
+.hero-price-label { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.hero-price-value { font-size: 18px; font-weight: 900; line-height: 1; }
+.hero-price-value.res { color: #5eead4; }
+.hero-price-value.emp { color: #93c5fd; }
 
 /* ── Detail sections ── */
 .detail-section {
@@ -1371,7 +1402,11 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   .crm-body.show-detail .crm-detail-pane { display: block !important; flex: 1; min-height: 0; overflow-y: auto; }
   .crm-back-btn { display: inline-flex !important; margin-bottom: 12px; }
 
-
+  /* CRM Detail & Form Responsive overrides */
+  .crm-form-grid { grid-template-columns: 1fr; }
+  .detail-hero { flex-direction: column; align-items: flex-start; gap: 16px; padding: var(--sp-5); }
+  .detail-hero-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; margin-left: 0; gap: 10px; }
+  .hero-prices { width: 100%; justify-content: flex-start; margin-right: 0; margin-bottom: 4px; text-align: left; }
 
   /* CRM header: botones wrappean */
   .crm-header { height: auto; padding: var(--sp-3) var(--sp-4); flex-wrap: wrap; gap: var(--sp-2); }
