@@ -367,6 +367,7 @@ function showDetail(id) {
 let tempAuthUsers = [];
 
 function showForm(id) {
+  selectedId = id || null;
   const item = items.find(c => String(c.id) === String(id));
   const shell = ensureShell("/clientes");
   
@@ -644,6 +645,11 @@ window.toggleEmpresarialFields = function(tipo) {
   document.getElementById('wrap-empresa').style.display = isEmp ? 'block' : 'none';
   document.getElementById('wrap-cargo').style.display = isEmp ? 'block' : 'none';
   document.getElementById('wrap-autorizados').style.display = isEmp ? 'block' : 'none';
+}
+
+window.cancelForm = function() {
+  selectedId = null;
+  clientesListView();
 }
 
 async function saveClient() {
