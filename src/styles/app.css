@@ -1385,8 +1385,15 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   .topbar { padding: 0 var(--sp-4); padding-top: env(safe-area-inset-top, 0px); }
   /* CRM: split-pane → full screen list / detail toggle on mobile with 100dvh viewport scroll */
   .content { padding: var(--sp-2) var(--sp-2) calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .content:has(.crm-panel) {
+    padding: 0 !important;
+    overflow: hidden !important;
+    height: calc(100dvh - var(--topbar-h) - 58px - env(safe-area-inset-bottom, 0px)) !important;
+  }
   .crm-panel {
-    height: calc(100dvh - var(--topbar-h) - 86px - env(safe-area-inset-bottom, 0px));
+    height: 100%;
+    margin: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1414,8 +1421,25 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   .crm-header-actions { flex-wrap: wrap; gap: 6px; }
   .crm-header-actions .crm-action-btn { font-size: 10px; padding: 7px 10px; }
 
-  /* KPI row: 2 columnas en tablet */
-  .crm-kpi-row { grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); padding: var(--sp-2) var(--sp-4) 0; }
+  /* KPI row: Horizontal scroll strip on mobile */
+  .crm-kpi-row {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: var(--sp-2) !important;
+    padding: var(--sp-2) var(--sp-3) var(--sp-2) !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+    flex-wrap: nowrap !important;
+    grid-template-columns: none !important;
+  }
+  .crm-kpi-row::-webkit-scrollbar { display: none !important; }
+  .crm-kpi {
+    flex: 0 0 135px !important;
+    padding: 8px 10px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
 
   .dash-wrap { padding: var(--sp-4) var(--sp-4) var(--sp-8); }
   .dash-hero { padding: var(--sp-6); border-radius: var(--r-lg); flex-direction: column; align-items: flex-start; }
@@ -1437,8 +1461,6 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
 
 @media (max-width: 480px) {
   .dash-kpi-grid { grid-template-columns: 1fr; }
-  .crm-kpi-row { grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px 8px 0; }
-  .crm-kpi { padding: 8px 10px; }
   .crm-kpi-value { font-size: 15px; }
   .crm-kpi-icon { width: 30px; height: 30px; font-size: 13px; }
   .crm-search-bar { padding: 8px 10px; }
