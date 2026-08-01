@@ -138,13 +138,15 @@ function renderList() {
 
     return `<div class="crm-item ${String(selectedId)===String(c.id)?"selected":""}" data-id="${c.id}">
       <div class="crm-item-avatar av-cli" style="background:${bg};color:${clr};font-size:14px;font-weight:700;">${getInitials(mainText)}</div>
-      <div class="crm-item-info">
-        <div class="crm-item-name">${esc(mainText)}</div>
-        <div class="crm-item-sub">${esc(subText)}</div>
-      </div>
-      <div class="crm-item-meta">
-        ${c.codigo_fiscal ? `<span style="font-size:10px;font-weight:700;color:var(--navy);background:#e0f2fe;padding:2px 8px;border-radius:20px;margin-right:6px;">#${String(c.codigo_fiscal).padStart(5,'0')}</span>` : ''}
-        <span class="badge badge-${c.tipo_cliente}">${esc(c.tipo_cliente)}</span>
+      <div class="crm-item-body">
+        <div class="crm-item-top">
+          <span class="crm-item-name">${esc(mainText)}</span>
+          ${c.codigo_fiscal ? `<span class="crm-item-code">#${String(c.codigo_fiscal).padStart(5,'0')}</span>` : ''}
+        </div>
+        <div class="crm-item-bottom">
+          <span class="crm-item-sub">${esc(subText)}</span>
+          <span class="badge badge-${c.tipo_cliente}">${esc(c.tipo_cliente)}</span>
+        </div>
       </div>
     </div>`;
   }).join('');

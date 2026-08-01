@@ -442,16 +442,27 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
 .av-prd { background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #15803d; }
 .av-ban { background: linear-gradient(135deg,#fef9c3,#fde68a); color: #a16207; }
 .av-cli { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.crm-item-info { flex: 1; min-width: 0; }
+.crm-item-body {
+  display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 4px;
+}
+.crm-item-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+}
+.crm-item-bottom {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+}
 .crm-item-name {
-  font-size: 11px; font-weight: var(--fw-bold); color: var(--navy);
-  white-space: nowrap; overflow: visible; text-overflow: clip;
-  letter-spacing: -0.02em; line-height: 1.2;
+  font-size: 12.5px; font-weight: var(--fw-bold); color: var(--navy);
+  flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: -0.01em; line-height: 1.25;
+}
+.crm-item-code {
+  font-size: 10px; font-weight: 700; color: #0284c7; background: #e0f2fe;
+  padding: 2px 8px; border-radius: 20px; flex-shrink: 0; font-family: monospace;
 }
 .crm-item-sub {
-  font-size: 10px; color: var(--text-soft); margin-top: 2px;
-  white-space: nowrap; overflow: visible; text-overflow: clip;
-  letter-spacing: -0.01em;
+  font-size: 11px; color: var(--text-soft);
+  flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .crm-item-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 .crm-item-price { font-size: var(--fs-xs); font-weight: var(--fw-extrabold); color: var(--navy); }
