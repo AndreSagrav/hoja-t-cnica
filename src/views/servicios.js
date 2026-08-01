@@ -215,7 +215,11 @@ function showForm(srv) {
   }
 
   const currentUnidad = srv?.unidad || 'Hora';
-  const presetOptions = PRESET_ACTIVITIES.map(a => `<option value="${a.code}">${esc(a.label)}</option>`).join('');
+  const currentCat = srv?.categoria || 'general';
+  const catOptions = `
+    <option value="general" ${currentCat === 'general' ? 'selected' : ''}>general — General</option>
+    ${PRESET_ACTIVITIES.map(a => `<option value="${a.code}" ${currentCat === a.code || srv?.codigo === a.code ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
+  `;
 
   detailEl.innerHTML = `
     <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
@@ -227,18 +231,15 @@ function showForm(srv) {
         <div class="field full"><label class="field-label">Nombre *</label><input id="sf-nombre" class="input" value="${esc(srv?.nombre||"")}" placeholder="Ej: Diagnóstico Avanzado de Laptops" /></div>
         <div class="field full"><label class="field-label">Descripción</label><textarea id="sf-desc" class="textarea" style="min-height:70px;" placeholder="Detalles del servicio...">${esc(srv?.descripcion||"")}</textarea></div>
         <div class="field">
-          <label class="field-label">Actividad Frecuente (Prefijo Rápido)</label>
-          <select id="sf-code-preset" class="select">
-            <option value="">⚡ Seleccionar Actividad Predeterminada...</option>
-            ${presetOptions}
+          <label class="field-label">Categoría / Actividad *</label>
+          <select id="sf-cat" class="select">
+            ${catOptions}
           </select>
         </div>
-
         <div class="field">
           <label class="field-label">Código (Inteligente / Personalizado)</label>
           <input id="sf-codigo" class="input mono" value="${esc(srv?.codigo||"")}" placeholder="Ej: DG, SM, ST..." />
         </div>
-        <div class="field"><label class="field-label">Categoría</label><input id="sf-cat" class="input" value="${esc(srv?.categoria||"")}" placeholder="soporte, redes…" /></div>
         <div class="field"><label class="field-label">Unidad de Medida</label>
           <select id="sf-unidad" class="select">
             <option value="Hora" ${currentUnidad==='Hora'?'selected':''}>Hora (por hora)</option>
@@ -262,7 +263,7 @@ function showForm(srv) {
 
   const nombreInput = document.getElementById("sf-nombre");
   const codigoInput = document.getElementById("sf-codigo");
-  const presetSelect = document.getElementById("sf-code-preset");
+  const catSelect = document.getElementById("sf-cat");
   let manualTouched = isEdit && !!srv?.codigo;
 
   codigoInput.addEventListener("input", () => { manualTouched = true; });
@@ -274,12 +275,14 @@ function showForm(srv) {
     }
   });
 
-  presetSelect.addEventListener("change", (e) => {
-    if (e.target.value) {
-      codigoInput.value = e.target.value;
+  catSelect.addEventListener("change", (e) => {
+    const val = e.target.value;
+    if (val && val !== 'general') {
+      codigoInput.value = val;
       manualTouched = true;
     }
   });
+
 
   document.getElementById("sf-cancel").addEventListener("click", () => {
     document.querySelector('.crm-body')?.classList.remove('show-detail');
