@@ -194,33 +194,21 @@ export function buildEmailSubject(data) {
 // ─── Compartir via WhatsApp ─────────────────────────────────
 export async function shareViaWhatsApp(pdfBlob, filename, data) {
   const message = buildMessage(data);
-  const pdfFile = blobToFile(pdfBlob, filename);
 
-  // En móvil con Web Share API: compartir archivo + texto
-  if (canShareFiles()) {
-    try {
-      await navigator.share({
-        files: [pdfFile],
-        title: 'INNOVIO',
-        text: message
-      });
-      return { success: true, method: 'native' };
-    } catch (err) {
-      if (err.name === 'AbortError') return { success: false, cancelled: true };
-      // Si falla, hacer fallback
-    }
-  }
-
-  // Fallback: descargar PDF + abrir wa.me con texto
+  // Descargar PDF para que el usuario lo tenga en su teléfono y pueda adjuntarlo
   downloadBlob(pdfBlob, filename);
+
+  // Abrir chat de WhatsApp con el mensaje de la plantilla predeterminado
   let num = (data.clientPhone || '').replace(/\D/g, '');
   if (num.startsWith('0')) num = num.substring(1);
   if (!num.startsWith('506') && num.length === 8) num = '506' + num;
+  
   if (num) {
     window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(message), '_blank');
   } else {
     window.open('https://wa.me/?text=' + encodeURIComponent(message), '_blank');
   }
+  
   return { success: true, method: 'fallback' };
 }
 
