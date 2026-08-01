@@ -1352,17 +1352,25 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   .sidebar.open { left: 0; }
   .main { margin-left: 0; width: 100%; }
   .topbar { padding: 0 var(--sp-4); padding-top: env(safe-area-inset-top, 0px); }
-  .content { padding: var(--sp-4) var(--sp-4) calc(72px + env(safe-area-inset-bottom, 0px)); }
-
-  /* CRM: split-pane → full screen list / detail toggle on mobile */
-  .crm-panel { height: auto; min-height: calc(100vh - var(--topbar-h) - 70px); }
-  .crm-body { flex-direction: column; flex: 1; }
-  .crm-list-pane { width: 100%; border-right: none; max-height: none; flex: 1; display: flex; flex-direction: column; }
-  .crm-list-scroll { flex: 1; max-height: none; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .crm-detail-pane { padding: var(--sp-4); display: none; width: 100%; }
+  /* CRM: split-pane → full screen list / detail toggle on mobile with 100dvh viewport scroll */
+  .content { padding: var(--sp-2) var(--sp-2) calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .crm-panel {
+    height: calc(100dvh - var(--topbar-h) - 86px - env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .crm-header { flex-shrink: 0; }
+  .crm-kpi-row { flex-shrink: 0; }
+  .crm-body { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .crm-list-pane { width: 100%; border-right: none; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .crm-search-bar { flex-shrink: 0; }
+  .crm-list-scroll { flex: 1; min-height: 0; overflow-y: auto !important; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+  .crm-detail-pane { padding: var(--sp-4); display: none; width: 100%; height: 100%; overflow-y: auto; }
   .crm-body.show-detail .crm-list-pane { display: none !important; }
-  .crm-body.show-detail .crm-detail-pane { display: block !important; flex: 1; overflow-y: auto; }
+  .crm-body.show-detail .crm-detail-pane { display: block !important; flex: 1; min-height: 0; overflow-y: auto; }
   .crm-back-btn { display: inline-flex !important; margin-bottom: 12px; }
+
 
 
   /* CRM header: botones wrappean */
