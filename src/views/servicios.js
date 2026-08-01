@@ -224,11 +224,13 @@ function showForm(srv) {
     if (crmBody) crmBody.classList.add('show-detail');
   }
 
+  const currentUnidad = srv?.unidad || 'Hora';
   const currentCat = getCategoryName(srv?.categoria || 'General');
   const catOptions = `
     <option value="General" ${currentCat === 'General' ? 'selected' : ''}>General</option>
     ${PRESET_ACTIVITIES.map(a => `<option value="${a.catName}" data-code="${a.code}" ${currentCat === a.catName || srv?.codigo === a.code ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
   `;
+
 
 
   detailEl.innerHTML = `
