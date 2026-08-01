@@ -382,29 +382,29 @@ function showForm(id) {
     <div class="form-section-premium">
       <h3>👤 Datos Principales</h3>
       <div class="form-grid-premium">
-        <div class="field full-width">
-          <label class="field-label">Nombre del Contacto / Cliente *</label>
-          <input class="input" id="cli-nombre" value="${esc(item?.nombre || "")}" placeholder="Nombre completo" />
-        </div>
         <div class="field">
-          <label class="field-label">Código Fiscal (Terminal Hacienda)</label>
-          <input class="input" id="cli-codigo-fiscal" type="number" min="1" max="99999" value="${item?.codigo_fiscal || ""}" placeholder="Auto-asignado al guardar" />
-          <div style="font-size:11px; color:var(--text-soft); margin-top:4px;">Se usa como terminal en consecutivos de Hacienda. Dejar vacío para auto-asignar.</div>
-        </div>
-        <div class="field">
-          <label class="field-label">Tipo de cliente</label>
+          <label class="field-label">Tipo de Cliente *</label>
           <select class="select" id="cli-tipo" onchange="toggleEmpresarialFields(this.value)">
-            <option value="residencial" ${item?.tipo_cliente === "residencial" ? "selected" : ""}>Residencial</option>
-            <option value="empresarial" ${item?.tipo_cliente === "empresarial" ? "selected" : ""}>Empresarial</option>
+            <option value="residencial" ${item?.tipo_cliente === "residencial" ? "selected" : ""}>🏠 Residencial</option>
+            <option value="empresarial" ${item?.tipo_cliente === "empresarial" ? "selected" : ""}>🏢 Empresarial</option>
           </select>
         </div>
         <div class="field" id="wrap-empresa" style="display:${item?.tipo_cliente === 'empresarial' ? 'block' : 'none'};">
-          <label class="field-label">Empresa *</label>
-          <input class="input" id="cli-empresa" value="${esc(item?.empresa || "")}" placeholder="Razón Social" />
+          <label class="field-label">Nombre de la Empresa / Razón Social *</label>
+          <input class="input" id="cli-empresa" value="${esc(item?.empresa || "")}" placeholder="Ej. Servicios e Inversiones S.A." />
+        </div>
+        <div class="field full-width">
+          <label class="field-label" id="lbl-cli-nombre">${item?.tipo_cliente === 'empresarial' ? 'Persona de Contacto Principal *' : 'Nombre del Cliente *'}</label>
+          <input class="input" id="cli-nombre" value="${esc(item?.nombre || "")}" placeholder="${item?.tipo_cliente === 'empresarial' ? 'Ej. Juan Pérez (Contacto)' : 'Nombre completo del cliente'}" />
+        </div>
+        <div class="field">
+          <label class="field-label">Código Fiscal (Terminal de 5 dígitos)</label>
+          <input class="input" id="cli-codigo-fiscal" type="number" min="1" max="99999" value="${item?.codigo_fiscal || ""}" placeholder="Ej: 00100, 00099, 99999 (auto-asignado si está vacío)" />
+          <div style="font-size:11px; color:var(--text-soft); margin-top:4px;">Define los 5 dígitos de Terminal en el Consecutivo de Hacienda. Podés cambiarlo en cualquier momento.</div>
         </div>
         <div class="field" id="wrap-cargo" style="display:${item?.tipo_cliente === 'empresarial' ? 'block' : 'none'};">
           <label class="field-label">Cargo del Contacto</label>
-          <input class="input" id="cli-cargo" value="${esc(item?.cargo || "")}" placeholder="Ej. Gerente de TI" />
+          <input class="input" id="cli-cargo" value="${esc(item?.cargo || "")}" placeholder="Ej. Gerente de TI / Operaciones" />
         </div>
         <div class="field">
           <label class="field-label">Email Principal</label>
@@ -642,9 +642,22 @@ window.removeAuthUser = function(index) {
 
 window.toggleEmpresarialFields = function(tipo) {
   const isEmp = tipo === 'empresarial';
-  document.getElementById('wrap-empresa').style.display = isEmp ? 'block' : 'none';
-  document.getElementById('wrap-cargo').style.display = isEmp ? 'block' : 'none';
-  document.getElementById('wrap-autorizados').style.display = isEmp ? 'block' : 'none';
+  const wrapEmpresa = document.getElementById('wrap-empresa');
+  const wrapCargo = document.getElementById('wrap-cargo');
+  const wrapAutorizados = document.getElementById('wrap-autorizados');
+  const lblNombre = document.getElementById('lbl-cli-nombre');
+  const inputNombre = document.getElementById('cli-nombre');
+
+  if (wrapEmpresa) wrapEmpresa.style.display = isEmp ? 'block' : 'none';
+  if (wrapCargo) wrapCargo.style.display = isEmp ? 'block' : 'none';
+  if (wrapAutorizados) wrapAutorizados.style.display = isEmp ? 'block' : 'none';
+
+  if (lblNombre) {
+    lblNombre.textContent = isEmp ? 'Persona de Contacto Principal *' : 'Nombre del Cliente *';
+  }
+  if (inputNombre) {
+    inputNombre.placeholder = isEmp ? 'Ej. Juan Pérez (Contacto)' : 'Nombre completo del cliente';
+  }
 }
 
 window.cancelForm = function() {
@@ -655,9 +668,15 @@ window.cancelForm = function() {
 async function saveClient() {
   const nombre = document.getElementById("cli-nombre").value;
   const tipo = document.getElementById("cli-tipo").value;
-  
+  const empresaInput = document.getElementById("cli-empresa")?.value || "";
+
+  if (tipo === 'empresarial' && !empresaInput.trim()) {
+    toast("El nombre de la empresa / razón social es obligatorio para clientes empresariales", "error");
+    return;
+  }
+
   if (!nombre.trim()) {
-    toast("El nombre del cliente es obligatorio", "error");
+    toast(tipo === 'empresarial' ? "El nombre del contacto principal es obligatorio" : "El nombre del cliente es obligatorio", "error");
     return;
   }
   
