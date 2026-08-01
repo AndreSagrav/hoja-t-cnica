@@ -56,60 +56,28 @@ export async function serviciosView() {
   await loadData();
 }
 
-const DEFAULT_CATALOG_SERVICES = [
-  { id: 'srv_def_1', nombre: 'Diagnóstico e Inspección Técnica', codigo: 'DG', categoria: 'Diagnóstico', unidad: 'Servicio', precio_residencial: 10000, precio_empresarial: 15000, garantia: '30 días', activo: true, descripcion: 'Inspección física y lógica completa de equipo.' },
-  { id: 'srv_def_2', nombre: 'Soporte Técnico Especializado', codigo: 'ST', categoria: 'Soporte Técnico', unidad: 'Hora', precio_residencial: 12500, precio_empresarial: 17500, garantia: '30 días', activo: true, descripcion: 'Soporte presencial para reparación, ensamblaje y software.' },
-  { id: 'srv_def_3', nombre: 'Soporte Remoto por Hora', codigo: 'SR', categoria: 'Soporte Remoto', unidad: 'Hora', precio_residencial: 10000, precio_empresarial: 12000, garantia: '15 días', activo: true, descripcion: 'Asistencia remota mediante AnyDesk / TeamViewer.' },
-  { id: 'srv_def_4', nombre: 'Mantenimiento Preventivo de Equipos', codigo: 'MP', categoria: 'Mantenimiento', unidad: 'Servicio', precio_residencial: 15000, precio_empresarial: 20000, garantia: '60 días', activo: true, descripcion: 'Limpieza física, cambio de pasta térmica y optimización.' },
-  { id: 'srv_def_5', nombre: 'Mantenimiento Correctivo y Reparación', codigo: 'MC', categoria: 'Mantenimiento', unidad: 'Servicio', precio_residencial: 25000, precio_empresarial: 30000, garantia: '60 días', activo: true, descripcion: 'Reparación de fallas de hardware y sustitución de piezas.' },
-  { id: 'srv_def_6', nombre: 'Visita Técnica a Domicilio', codigo: 'VT', categoria: 'Visita Técnica', unidad: 'Servicio', precio_residencial: 30000, precio_empresarial: 35000, garantia: '30 días', activo: true, descripcion: 'Desplazamiento y revisión en sitio del cliente.' },
-  { id: 'srv_def_7', nombre: 'Instalación y Configuración de Software', codigo: 'IC', categoria: 'Instalación', unidad: 'Servicio', precio_residencial: 12000, precio_empresarial: 18000, garantia: '30 días', activo: true, descripcion: 'Formateo, instalación de SO, Office y utilitarios.' },
-  { id: 'srv_def_8', nombre: 'Infraestructura y Redes LAN/WiFi', codigo: 'IR', categoria: 'Redes', unidad: 'Hora', precio_residencial: 20000, precio_empresarial: 25000, garantia: '90 días', activo: true, descripcion: 'Cableado estructurado, puntos de acceso y routers.' },
-  { id: 'srv_def_9', nombre: 'Hosting y Mantenimiento Web', codigo: 'HS', categoria: 'Hosting & Web', unidad: 'Mes', precio_residencial: 15000, precio_empresarial: 25000, garantia: 'Soporte activo', activo: true, descripcion: 'Alojamiento web, certificados SSL y respaldo mensual.' },
-  { id: 'srv_def_10', nombre: 'Desarrollo de Software a Medida', codigo: 'DS', categoria: 'Desarrollo', unidad: 'Hora', precio_residencial: 25000, precio_empresarial: 35000, garantia: '90 días', activo: true, descripcion: 'Programación de aplicaciones web, móviles y bases de datos.' }
-];
-
 async function loadData() {
-  const listEl = document.getElementById("srv-list");
   let localCache = [];
   try {
     localCache = JSON.parse(localStorage.getItem("local_servicios_overrides") || "[]");
   } catch {}
 
-  let mergedMap = new Map();
-
-  // 1. Cargar catálogo por defecto completo
-  DEFAULT_CATALOG_SERVICES.forEach(s => mergedMap.set(String(s.id), { ...s }));
-
-  // 2. Fusionar datos de Supabase si existen
   try {
     const supabase = await getSupabase();
     const { data, error } = await supabase.from("catalogo_servicios").select("*").eq("tipo", "servicio").order("nombre");
     if (!error && data && data.length) {
-      data.forEach(dbItem => {
-        const key = String(dbItem.id);
-        const existing = [...mergedMap.values()].find(x => x.nombre.toLowerCase() === dbItem.nombre.toLowerCase());
-        if (existing) {
-          mergedMap.set(String(existing.id), { ...existing, ...dbItem });
-        } else {
-          mergedMap.set(key, dbItem);
-        }
-      });
+      // Supabase loaded OK — use cloud data as single source of truth
+      items = data;
+      // Clear local overrides since cloud is working
+      try { localStorage.removeItem("local_servicios_overrides"); } catch {}
+    } else if (localCache.length) {
+      items = localCache;
     }
-  } catch (err) {}
+  } catch (err) {
+    if (localCache.length) items = localCache;
+  }
 
-  // 3. Fusionar datos locales creados/editados
-  localCache.forEach(c => {
-    const key = String(c.id);
-    const existing = mergedMap.get(key) || [...mergedMap.values()].find(x => x.nombre.toLowerCase() === c.nombre.toLowerCase());
-    if (existing) {
-      mergedMap.set(String(existing.id), { ...existing, ...c });
-    } else {
-      mergedMap.set(key, c);
-    }
-  });
-
-  items = Array.from(mergedMap.values()).map(s => {
+  items = items.map(s => {
     let codigo = s.codigo;
     if (!codigo || codigo.startsWith('SRV-177') || codigo === 'REPP') {
       codigo = generateSmartCode(s.nombre) || 'ST';
