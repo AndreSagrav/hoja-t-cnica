@@ -1,28 +1,15 @@
 // ============================================================
-// COMPROBANTE — Diseño premium original replicado
-// Carga datos de Supabase y renderiza con el estilo visual V1
+// COMPROBANTE — Diseño V2 (mismo que vista previa del wizard)
+// Carga datos de Supabase y renderiza con el estilo visual V2
 // ============================================================
 import { obtenerDocumentoCompleto, CODE_TO_LABEL } from '../data/documentos.js';
 import { fmtMoney, esc, toast } from '../lib/utils.js';
 import { calcTotals } from '../lib/comprobante.js';
 import { generarPDFComprobante, shareViaWhatsApp, shareViaEmail, downloadPDF, canShareFiles } from '../lib/share.js';
+import { LOGO_DATA_URL } from '../assets/logo.js';
 
 // ── Utilidades ──────────────────────────────────────────────
 const safe = (v, fallback = '—') => (v && String(v).trim()) ? String(v).trim() : fallback;
-
-function tagClass(desc = '') {
-  const d = desc.toLowerCase();
-  if (d.includes('hora') || d.includes('servicio') || d.includes('mano de obra')) return 'comp-lt-bh';
-  if (d.includes('transporte') || d.includes('envío') || d.includes('visita')) return 'comp-lt-eh';
-  return 'comp-lt-def';
-}
-
-function tagLabel(desc = '') {
-  const d = desc.toLowerCase();
-  if (d.includes('hora') || d.includes('servicio') || d.includes('mano de obra')) return 'BH';
-  if (d.includes('transporte') || d.includes('envío') || d.includes('visita')) return 'EH';
-  return 'OT';
-}
 
 function calcLaborTime(timeIn, timeOut) {
   if (!timeIn || !timeOut) return null;
@@ -42,68 +29,193 @@ function formatDate(dateStr) {
   } catch { return dateStr; }
 }
 
-// ── Generar HTML del comprobante ─────────────────────────────
+// ── CSS V2 (extraído del wizard) ─────────────────────────────
+const V2_CSS = `
+  :root {
+    --brand-blue: #0b244e;
+    --brand-blue-light: #114188;
+    --text-main: #2d3748;
+    --text-muted: #718096;
+    --text-light: #a0aec0;
+    --border-color: #e2e8f0;
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .comp-v2-page { background: #e6eaf0; font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 13px; color: var(--text-main); line-height: 1.5; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+  .a4-sheet { background: #fff; width: 100%; max-width: 850px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); font-size: 13px; color: var(--text-main); position: relative; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0b244e 0%, #0d3266 40%, #114188 100%);
+    color: #fff;
+    padding: 36px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; right: -40px; top: -40px; width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); z-index: 1;
+  }
+  .header::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.5) 50%, transparent 100%); z-index: 2;
+  }
+  .header-content { position: relative; z-index: 3; display: flex; width: 100%; justify-content: space-between; align-items: flex-start; gap: 30px; }
+  .header-left { display: flex; flex-direction: column; gap: 14px; }
+  .logo-container { display: flex; align-items: center; }
+  .logo-container img { height: 80px; width: auto; max-width: 280px; object-fit: contain; filter: drop-shadow(0 3px 10px rgba(0,0,0,0.2)); }
+  .contact-info { display: flex; flex-wrap: wrap; align-items: center; gap: 0; font-size: 11px; color: #cbd5e1; font-weight: 500; letter-spacing: 0.3px; }
+  .contact-info .ci-item { display: flex; align-items: center; gap: 5px; padding: 0 14px; }
+  .contact-info .ci-item:first-child { padding-left: 0; }
+  .contact-info .ci-sep { width: 1px; height: 12px; background: rgba(255,255,255,0.2); }
+
+  .header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 200px; }
+  .doc-type { border: 1px solid rgba(255,255,255,0.25); padding: 5px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #e2e8f0; }
+  .doc-number { font-size: 22px; font-weight: 800; line-height: 1.1; color: #fff; letter-spacing: 0.5px; }
+  .doc-date { font-size: 11px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px; }
+
+  /* Content Body */
+  .content-body { padding: 30px 40px; }
+
+  .top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+  .card { border: 1px solid var(--border-color); padding: 16px 20px; background: #f8fafc; }
+  .card-title { font-size: 10px; font-weight: 700; color: var(--text-light); letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase; }
+  .client-name { font-size: 16px; font-weight: 800; color: var(--text-main); }
+  .client-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+  .client-contact { margin-top: 12px; font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; }
+
+  .device-name { font-size: 16px; font-weight: 800; color: var(--text-main); }
+  .device-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+  .device-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .device-tag { font-size: 10px; padding: 3px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; color: var(--text-muted); }
+
+  .section-title-wrap { display: flex; align-items: center; margin-bottom: 20px; margin-top: 20px; }
+  .section-title { font-size: 11px; font-weight: 800; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; padding-right: 15px; white-space: nowrap; }
+  .section-line { height: 1px; background: var(--border-color); flex-grow: 1; }
+
+  .tarea-category { margin-bottom: 20px; }
+  .cat-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .cat-line { height: 1px; border-bottom: 1px dashed var(--border-color); flex-grow: 1; }
+
+  .tarea-group { margin-bottom: 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--border-color); border-top: none; border-left: none; }
+  .tarea-item { font-size: 11px; padding: 6px 10px; display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--border-color); border-left: 1px solid var(--border-color); line-height: 1.3; }
+  .tarea-item.checked { color: var(--green); font-weight: 500; }
+  .tarea-item.checked::before { content: '✔'; font-weight: 800; font-size: 10px; }
+  .tarea-item.unchecked { color: var(--text-light); text-decoration: line-through; }
+  .tarea-item.unchecked::before { content: '—'; }
+
+  .writable-box {
+    border: 1px dashed #cbd5e1; border-radius: 6px; padding: 16px; min-height: 100px;
+    background: #f8fafc; color: #94a3b8; font-style: italic; font-size: 12px; margin-bottom: 20px;
+  }
+  .text-box { font-size: 13px; color: var(--text-main); margin-bottom: 20px; white-space: pre-wrap; }
+
+  .tariff-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+  .tariff-table th { background: #f8fafc; color: var(--text-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 10px; border-bottom: 2px solid var(--border-color); text-align: left; }
+  .tariff-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+  .tariff-table th.right, .tariff-table td.right { text-align: right; }
+
+  .totals-area { display: flex; justify-content: flex-end; margin-top: 20px; }
+  .totals-box { width: 300px; }
+  .total-line { display: flex; justify-content: space-between; padding: 6px 0; color: var(--text-muted); font-size: 13px; }
+  .total-line.grand { font-size: 18px; font-weight: 800; color: var(--brand-blue); border-top: 2px solid var(--brand-blue); padding-top: 12px; margin-top: 6px; }
+
+  .signatures { display: flex; justify-content: flex-start; margin-top: 60px; padding: 0 40px; }
+  .sig-block { width: 220px; text-align: center; }
+  .sig-line { border-top: 1px solid var(--text-muted); margin-bottom: 8px; }
+  .sig-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .warning-badge { background: #fef08a; color: #b45309; font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 800; display: inline-block; margin-top: 6px; }
+
+  @media print {
+    @page { size: A4 portrait; margin: 4mm; }
+    body { background: white; margin: 0; padding: 0; }
+    .header, .header::before, .header::after, .card, .warning-badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .a4-sheet { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; }
+    .comp-fab-group { display: none !important; }
+    .comp-v2-page { padding: 0; }
+    /* Forzar layout desktop al imprimir (A4 ~764px activa el breakpoint 768px) */
+    .header { padding: 36px 44px !important; }
+    .header-content { flex-direction: row !important; gap: 30px !important; justify-content: space-between !important; }
+    .header-right { align-items: flex-end !important; text-align: right !important; min-width: 200px !important; }
+    .content-body { padding: 30px 40px !important; }
+    .top-cards { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
+    .tarea-group { grid-template-columns: repeat(4, 1fr) !important; }
+    .totals-box { width: 300px !important; }
+  }
+  @media (max-width: 768px) {
+    .comp-v2-page { padding: 0; }
+    .a4-sheet { box-shadow: none; }
+    .header { padding: 24px 20px; }
+    .header-content { flex-direction: column; gap: 16px; }
+    .header-right { align-items: flex-start; text-align: left; }
+    .content-body { padding: 20px; }
+    .top-cards { grid-template-columns: 1fr; gap: 12px; }
+    .tarea-group { grid-template-columns: repeat(2, 1fr); }
+    .totals-box { width: 100%; }
+  }
+`;
+
+// ── Generar HTML del comprobante V2 ──────────────────────────
 function buildComprobanteHTML(d) {
   const currencyCode = d.currency?.code || 'CRC';
   const sym = currencyCode === 'CRC' ? '₡' : '$';
-  const isEmp = d.clientType === 'empresarial';
-  const isCotizacion = (d.docType || '').toUpperCase().includes('COTIZ');
+  const isOrden = (d.docType || '').toUpperCase().includes('ORDEN');
+  const title = d.docType || 'ORDEN DE TRABAJO';
 
-  // Equipos/dispositivos del documento
-  const equip = d.equipos?.[0] || d.equip || {};
-  const specs = [
-    equip.serie    ? ['SERIE', equip.serie]   : null,
-    equip.nombre   ? ['HOST',  equip.nombre]  : null,
-    equip.tipo     ? ['TIPO',  equip.tipo]    : null,
-    (equip.marca || equip.fabricante)
-      ? ['MARCA', [equip.marca || equip.fabricante, equip.modelo].filter(Boolean).join(' ')]
-      : null,
-    equip.so       ? ['S.O.',  equip.so]      : null,
-    equip.password ? ['PASS',  equip.password]: null,
-  ].filter(Boolean);
+  // Cliente
+  const cNombre = d.clientCompany || d.clientName || 'Consumidor Final';
+  const cSub = d.clientCompany ? d.clientName : '';
+  const cId = d.clientCedula || '';
+  const cTel = d.clientPhone || '';
+  const cEmail = d.clientEmail || '';
+  const warningBadge = (!cId || cId === '000000000') ? '<div class="warning-badge">⚠️ SIN DATOS DE FACTURACIÓN ELECTRÓNICA</div>' : '';
 
-  const specsHTML = specs.map(([k, v]) =>
-    `<span class="comp-spec-key">${esc(k)}</span><span class="comp-spec-val">${esc(v)}</span>`
-  ).join('');
+  // Equipos
+  const equipos = d.equipos || [];
+  const equiposHtml = equipos.length > 0 ? equipos.map((eq, i) => {
+    const eqObj = typeof eq === 'object' ? eq : {};
+    const nombre = eqObj['DISPOSITIVO'] || eqObj.tipo || eqObj.dispositivo || eqObj.nombre || 'Equipo';
+    const fabricante = eqObj['FABRICANTE'] || eqObj.marca || eqObj.fabricante || '';
+    const modelo = eqObj['MODELO'] || eqObj.modelo || '';
+    const so = eqObj['S.O.'] || eqObj.so || '';
+    return `${i > 0 ? '<div style="height:1px; background:var(--border-color); margin: 16px 0;"></div>' : ''}
+      <div class="device-name">${esc(nombre)}</div>
+      <div class="device-sub">${esc(fabricante)}${fabricante && modelo ? ' ' : ''}${esc(modelo)}</div>
+      ${so ? `<div class="device-tags"><span class="device-tag">SO: ${esc(so)}</span></div>` : ''}`;
+  }).join('') : '<div class="device-name">Equipo No Especificado</div>';
 
   // Trabajos realizados
   const workItems = d.workItems || d.tareasRealizadas || [];
-  let tasksHTML = '';
-  if (workItems.length) {
-    const items = workItems.map(w => {
-      const text = typeof w === 'string' ? w : (w.descripcion || w.text || '');
-      const checked = typeof w === 'string' ? true : (w.realizada ?? w.checked ?? true);
-      return `
-        <div class="comp-task-item">
-          <span class="comp-check-icon ${checked ? 'done' : 'pend'}">${checked ? '✓' : '○'}</span>
-          <span class="comp-task-text ${checked ? 'done' : 'pend'}">${esc(text)}</span>
-        </div>`;
-    }).join('');
-    // Si no es múltiplo de 4, agregar celdas vacías para completar la fila
-    const remainder = workItems.length % 4;
-    const extra = remainder !== 0 ? Array(4 - remainder).fill('<div class="comp-task-item" style="border-top:1px solid var(--c-rule);border-left:1px solid var(--c-rule);"></div>').join('') : '';
-    tasksHTML = items + extra;
+  let trabajosHtml = '';
+  if (workItems.length > 0) {
+    trabajosHtml = `
+      <div class="tarea-category">
+        <div class="cat-title">🔧 TRABAJOS <div class="cat-line"></div></div>
+        <div class="tarea-group">
+          ${workItems.map(w => {
+            const text = typeof w === 'string' ? w : (w.descripcion || w.text || '');
+            const checked = typeof w === 'string' ? true : (w.realizada ?? w.checked ?? true);
+            return `<div class="tarea-item ${checked ? 'checked' : 'unchecked'}">${esc(text)}</div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  } else {
+    trabajosHtml = '<div class="text-box" style="color:var(--text-muted); font-style:italic;">No hay trabajos marcados.</div>';
   }
 
   // Líneas de tarifa
   const lines = d.lines || [];
   const linesHTML = lines.filter(l => l.descripcion || l.desc).map(l => {
     const desc = l.descripcion || l.desc || '';
-    const qty  = Number(l.cantidad || l.qty) || 0;
+    const qty = Number(l.cantidad || l.qty) || 0;
     const price = Number(l.precio || l.price) || 0;
-    const total = qty * price;
-    const tag = tagLabel(desc);
-    const cls = tagClass(desc);
-    return `<tr>
-      <td><span class="comp-line-tag ${cls}">${tag}</span></td>
-      <td>${esc(desc)}</td>
-      <td class="r mono">${qty}</td>
-      <td class="r mono">${price ? fmtMoney(price, currencyCode) : '—'}</td>
-      <td class="r mono">${total ? fmtMoney(total, currencyCode) : '—'}</td>
-    </tr>`;
+    const ltot = qty * price;
+    return `<tr><td>${esc(desc)}</td><td class="right">${esc(qty)}</td><td class="right">${fmtMoney(price, currencyCode)}</td><td class="right">${fmtMoney(ltot, currencyCode)}</td></tr>`;
   }).join('');
 
-  // Calcular totales
+  // Totales
   const totals = calcTotals({
     lines: lines.map(l => ({
       qty: Number(l.cantidad || l.qty) || 0,
@@ -114,22 +226,24 @@ function buildComprobanteHTML(d) {
     currency: d.currency || { code: 'CRC' }
   });
 
+  const sub = lines.reduce((a, l) => a + (Number(l.precio || l.price) || 0) * (Number(l.cantidad || l.qty) || 0), 0);
+  const desc = d.discount?.enabled ? (sub * (Number(d.discount.value) || 0) / 100) : 0;
+  const net = sub - desc;
+  const iva = d.iva?.enabled ? (net * Number(d.iva.value) / 100) : 0;
+
   // Tiempo laborado
   const laborTxt = calcLaborTime(d.timeIn, d.timeOut);
 
-  // Contacto de empresa
-  const contact = d.contact || { address: 'Cartago, La Unión', phone: '(506) 62 777 500', email: 'innoviocr@outlook.com' };
+  // Fecha
+  const docDateStr = d.date || new Date().toISOString().split('T')[0];
 
-  // Timestamp
-  const now = new Date();
-  const ts = now.toLocaleDateString('es-CR') + ' · ' + now.toLocaleTimeString('es-CR', { hour:'2-digit', minute:'2-digit' });
-
-  // Verificar si el teléfono del cliente es válido para WhatsApp
+  // Botones flotantes
   const hasValidPhone = d.clientPhone && d.clientPhone.replace(/\D/g, '').length >= 8;
   const hasEmail = d.clientEmail && d.clientEmail.includes('@');
-  const shareSupported = canShareFiles();
 
   return `
+    <style>${V2_CSS}</style>
+
     <!-- BOTONES FLOTANTES -->
     <div class="comp-fab-group">
       <button class="comp-fab comp-fab-close" id="comp-btn-close" title="Cerrar">✕</button>
@@ -139,179 +253,151 @@ function buildComprobanteHTML(d) {
       <button class="comp-fab comp-fab-print" id="comp-btn-print" title="Imprimir">🖨️</button>
     </div>
 
-    <!-- COMPROBANTE -->
-    <div class="comprobante">
+    <div class="comp-v2-page">
+      <div class="a4-sheet">
 
-      <!-- CABECERA -->
-      <div class="comp-header">
-        <div class="comp-header-brand">
-          <div class="comp-brand-title">INNOVIO</div>
-          <div class="comp-brand-sub">Soluciones Tecnológicas</div>
-          <div class="comp-brand-contact">
-            <span>📍 ${esc(contact.address || contact.addr || '')}</span>
-            <span>📱 ${esc(contact.phone || '')}</span>
-            <span>✉️ ${esc(contact.email || '')}</span>
-          </div>
-        </div>
-        <div class="comp-header-doc">
-          <span class="comp-doc-badge">${esc(d.docType || 'ORDEN DE TRABAJO')}</span>
-          <div class="comp-doc-num">${esc(d.docNum || '—')}</div>
-          <div class="comp-doc-date">${formatDate(d.date)}</div>
-        </div>
-      </div>
-      <div class="comp-accent-bar"></div>
-
-      <!-- CUERPO -->
-      <div class="comp-body">
-
-        <!-- META: CLIENTE + EQUIPO -->
-        <div class="comp-meta-grid">
-
-          <!-- CLIENTE -->
-          <div class="comp-meta-panel comp-client">
-            <div class="comp-panel-label">Cliente</div>
-            <div class="comp-panel-name">${safe(d.clientName)}</div>
-            <div class="comp-panel-sub">${safe(d.clientCompany, '')}</div>
-            ${d.clientCompany ? `<div class="comp-tipo-chip ${isEmp ? 'emp' : 'res'}">${isEmp ? '🏢 Empresarial' : '🏠 Residencial'}</div>` : ''}
-            <div class="comp-panel-contact">
-              ${d.clientPhone ? `<span>📱 ${esc(d.clientPhone)}</span>` : ''}
-              ${d.clientEmail ? `<span>✉️ ${esc(d.clientEmail)}</span>` : ''}
-              ${d.clientAddress ? `<span>📍 ${esc(d.clientAddress)}</span>` : ''}
+        <!-- HEADER -->
+        <div class="header">
+          <div class="header-content">
+            <div class="header-left">
+              <div class="logo-container">
+                <img src="${LOGO_DATA_URL}" alt="INNOVIO" />
+              </div>
+              <div class="contact-info">
+                <span class="ci-item">📍 Cartago, La Unión</span>
+                <span class="ci-sep"></span>
+                <span class="ci-item">📱 (506) 6277 7500</span>
+                <span class="ci-sep"></span>
+                <span class="ci-item">✉️ innoviocr@outlook.es</span>
+              </div>
+            </div>
+            <div class="header-right">
+              <div class="doc-type">${esc(title)}</div>
+              <div class="doc-number">${esc(d.docNum || '—')}</div>
+              <div class="doc-date">${formatDate(docDateStr)}</div>
             </div>
           </div>
+        </div>
 
-          ${isCotizacion ? `
-          <!-- TIEMPO DE ENTREGA (solo cotización) -->
-          ${d.tiempoEstimado ? `
-          <div class="comp-meta-panel comp-equip">
-            <div class="comp-panel-label">Tiempo de Entrega</div>
-            <div class="comp-panel-name">${esc(d.tiempoEstimado)}</div>
-          </div>` : ''}
-          ` : `
-          <!-- EQUIPO (solo OT) -->
-          <div class="comp-meta-panel comp-equip">
-            <div class="comp-panel-label">Equipo</div>
-            <div class="comp-panel-name">${safe(equip.tipo || equip.dispositivo, 'Sin equipo')}</div>
-            <div class="comp-panel-sub">${[safe(equip.marca || equip.fabricante, ''), safe(equip.modelo, '')].filter(v => v && v !== '—').join(' — ') || '—'}</div>
-            <div class="comp-equip-specs">${specsHTML || '<span class="comp-spec-val" style="grid-column:span 2;">Sin especificaciones registradas</span>'}</div>
+        <!-- CONTENT BODY -->
+        <div class="content-body">
+
+          <!-- TOP CARDS: CLIENTE + EQUIPO/ENTREGA -->
+          <div class="top-cards">
+            <div class="card">
+              <div class="card-title">CLIENTE</div>
+              <div class="client-name">${esc(cNombre)}</div>
+              ${cSub ? `<div class="client-sub">${esc(cSub)}</div>` : ''}
+              ${warningBadge}
+              <div class="client-contact">
+                ${cTel ? `<div>📱 ${esc(cTel)}</div>` : ''}
+                ${cEmail ? `<div>✉️ ${esc(cEmail)}</div>` : ''}
+              </div>
+            </div>
+            ${!isOrden ? `
+              ${d.tiempoEstimado ? `
+              <div class="card">
+                <div class="card-title">TIEMPO DE ENTREGA</div>
+                <div class="client-name" style="font-size:16px;">${esc(d.tiempoEstimado)}</div>
+              </div>` : '<div class="card"></div>'}
+            ` : `
+            <div class="card">
+              <div class="card-title">EQUIPO</div>
+              ${equiposHtml}
+            </div>
+            `}
           </div>
+
+          ${isOrden ? `
+          <!-- TRABAJOS REALIZADOS (solo OT) -->
+          <div class="section-title-wrap">
+            <div class="section-title">TRABAJOS REALIZADOS</div>
+            <div class="section-line"></div>
+          </div>
+          ${trabajosHtml}
+
+          <!-- DIAGNÓSTICO / OBSERVACIONES (solo OT) -->
+          <div class="section-title-wrap">
+            <div class="section-title">DIAGNÓSTICO / OBSERVACIONES</div>
+            <div class="section-line"></div>
+          </div>
+          ${(d.diagnosis || d.observations || d.problem) ? `
+            <div class="text-box">
+              ${d.problem ? `<strong>Problema Reportado:</strong>\n${esc(d.problem)}\n\n` : ''}
+              ${d.diagnosis ? `<strong>Diagnóstico:</strong>\n${esc(d.diagnosis)}\n\n` : ''}
+              ${d.observations ? `<strong>Observaciones:</strong>\n${esc(d.observations)}` : ''}
+            </div>
+          ` : `
+            <div class="writable-box">
+              Espacio para notas, diagnóstico u observaciones del técnico...
+            </div>
+          `}
+          ` : `
+          <!-- CONDICIONES Y OBSERVACIONES (cotización) -->
+          <div class="section-title-wrap">
+            <div class="section-title">CONDICIONES Y OBSERVACIONES</div>
+            <div class="section-line"></div>
+          </div>
+          ${d.observations ? `
+            <div class="text-box">
+              ${esc(d.observations).replace(/\n/g, '<br>')}
+            </div>
+          ` : `
+            <div class="writable-box">
+              Espacio para condiciones y observaciones...
+            </div>
+          `}
           `}
 
-        </div>
+          <!-- TABLA DE TARIFAS -->
+          ${linesHTML ? `
+            <table class="tariff-table">
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th class="right" style="width:80px">Cant.</th>
+                  <th class="right" style="width:120px">Precio Unit.</th>
+                  <th class="right" style="width:120px">Total</th>
+                </tr>
+              </thead>
+              <tbody>${linesHTML}</tbody>
+            </table>
+          ` : ''}
 
-        <!-- PROBLEMA (solo OT) -->
-        ${(!isCotizacion && d.problem) ? `
-        <div class="comp-section">
-          <div class="comp-section-head">
-            <div class="comp-section-title">Problema Reportado</div>
-            <div class="comp-section-head-line"></div>
+          <!-- TIEMPO LABORADO (solo OT) -->
+          ${isOrden && laborTxt ? `
+          <div style="margin-top:16px; margin-bottom:8px; padding:10px 16px; background:#f5f5f0; border:1px solid #d8d8d0; border-radius:8px; display:inline-block;">
+            <div style="font-size:9px; font-weight:600; opacity:0.6; letter-spacing:2px; text-transform:uppercase;">⏱ Tiempo Laborado</div>
+            <div style="font-size:18px; font-weight:800; color:#0a0e1a; font-family:'Syne',sans-serif;">${laborTxt}</div>
+            ${d.timeIn && d.timeOut ? `<div style="font-size:10px; opacity:0.5; color:#4a5270;">${esc(d.timeIn)} → ${esc(d.timeOut)}</div>` : ''}
           </div>
-          <div class="comp-text-block">${esc(d.problem)}</div>
-        </div>` : ''}
+          ` : ''}
 
-        <!-- TRABAJO REALIZADO (solo OT) -->
-        ${(!isCotizacion && tasksHTML) ? `
-        <div class="comp-section">
-          <div class="comp-section-head">
-            <div class="comp-section-title">Trabajo Realizado</div>
-            <div class="comp-section-head-line"></div>
-          </div>
-          <div class="comp-tasks-grid">${tasksHTML}</div>
-        </div>` : ''}
-
-        <!-- DIAGNÓSTICO (solo OT) -->
-        ${(!isCotizacion && d.diagnosis) ? `
-        <div class="comp-section">
-          <div class="comp-section-head">
-            <div class="comp-section-title">Diagnóstico / Resultado</div>
-            <div class="comp-section-head-line"></div>
-          </div>
-          <div class="comp-text-block">${esc(d.diagnosis)}</div>
-        </div>` : ''}
-
-        <!-- TARIFA -->
-        ${linesHTML ? `
-        <div class="comp-section">
-          <div class="comp-section-head">
-            <div class="comp-section-title">Detalle de Tarifas</div>
-            <div class="comp-section-head-line"></div>
-          </div>
-          <table class="comp-tariff-table">
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th class="r">Cant.</th>
-                <th class="r">Precio Unit.</th>
-                <th class="r">Total</th>
-              </tr>
-            </thead>
-            <tbody>${linesHTML}</tbody>
-          </table>
-
-          ${laborTxt ? `
-          <div class="comp-tiempo-block">
-            <div class="comp-tiempo-label">⏱ Tiempo Laborado</div>
-            <div class="comp-tiempo-val">${laborTxt}</div>
-            ${d.timeIn && d.timeOut ? `<div class="comp-tiempo-hours">${d.timeIn} → ${d.timeOut}</div>` : ''}
-          </div>` : ''}
-
-          <div class="comp-totals-wrapper">
-            <div class="comp-totals-box">
-              <div class="comp-total-row">
-                <span>Importe bruto</span>
-                <span class="comp-amount">${totals.gross}</span>
-              </div>
-              ${d.discount?.enabled ? `
-              <div class="comp-total-row comp-disc-row">
-                <span>Descuento (${d.discount.value}%)</span>
-                <span class="comp-amount">▼ ${totals.discount}</span>
-              </div>` : ''}
-              <div class="comp-total-row" style="font-weight:600">
-                <span>Subtotal</span>
-                <span class="comp-amount">${d.iva?.enabled ? fmtMoney(totals.grossNum * (1 - ((d.discount?.enabled ? d.discount.value : 0) / 100)), currencyCode) : totals.total}</span>
-              </div>
-              ${d.iva?.enabled ? `
-              <div class="comp-total-row comp-iva-row">
-                <span>IVA (${d.iva.value}%)</span>
-                <span class="comp-amount">${totals.iva}</span>
-              </div>` : ''}
-              <div class="comp-total-row comp-grand-total">
-                <span class="comp-label">TOTAL ${currencyCode}</span>
-                <span class="comp-amount">${totals.total}</span>
-              </div>
+          <!-- TOTALES -->
+          ${linesHTML ? `
+          <div class="totals-area">
+            <div class="totals-box">
+              <div class="total-line"><span>Subtotal</span><span>${fmtMoney(sub, currencyCode)}</span></div>
+              ${d.discount?.enabled ? `<div class="total-line"><span>Descuento (${d.discount.value}%)</span><span>- ${fmtMoney(desc, currencyCode)}</span></div>` : ''}
+              ${d.iva?.enabled ? `<div class="total-line"><span>IVA (${d.iva.value}%)</span><span>${fmtMoney(iva, currencyCode)}</span></div>` : ''}
+              <div class="total-line grand"><span>TOTAL</span><span>${fmtMoney(net + iva, currencyCode)}</span></div>
             </div>
           </div>
-        </div>` : ''}
+          ` : ''}
 
-        <!-- OBSERVACIONES -->
-        ${d.observations ? `
-        <div class="comp-obs-block">
-          <div class="comp-obs-head">Observaciones</div>
-          <div>${esc(d.observations)}</div>
-        </div>` : ''}
+          <!-- FIRMA TÉCNICO (solo OT) -->
+          ${isOrden ? `
+          <div class="signatures">
+            <div class="sig-block">
+              <div class="sig-line"></div>
+              <div class="sig-label">Firma del Técnico</div>
+            </div>
+          </div>
+          ` : ''}
 
-      </div><!-- /comp-body -->
-
-      ${!isCotizacion ? `
-      <!-- FIRMA TÉCNICO (solo OT) -->
-      <div class="comp-sigs" style="grid-template-columns:1fr;gap:0;padding:20px 40px 16px;">
-        <div class="comp-sig-block">
-          <div class="comp-sig-line"></div>
-          <div class="comp-sig-label">Firma del Técnico</div>
-        </div>
-      </div>` : ''}
-
-      <!-- PIE -->
-      <div class="comp-footer">
-        <div class="comp-footer-brand">INNOVIO</div>
-        <div class="comp-footer-note">
-          Documento generado digitalmente<br>
-          <span>${ts}</span>
-        </div>
-      </div>
-
-    </div><!-- /comprobante -->
+        </div><!-- /content-body -->
+      </div><!-- /a4-sheet -->
+    </div><!-- /comp-v2-page -->
   `;
 }
 
@@ -320,21 +406,38 @@ function bindCompEvents(container, data) {
   const btnClose = container.querySelector('#comp-btn-close');
   if (btnClose) {
     btnClose.addEventListener('click', () => {
-      container.remove();
+      const overlay = document.querySelector('.comprobante-page');
+      if (overlay) overlay.remove();
       window.history.back();
     });
   }
 
   const btnPrint = container.querySelector('#comp-btn-print');
   if (btnPrint) {
-    btnPrint.addEventListener('click', () => window.print());
+    btnPrint.addEventListener('click', () => {
+      // Necesitamos comprobanteEl y filename que se definen abajo,
+      // pero el event listener es lazy — se ejecuta después, cuando ya existen.
+      const sheet = container.querySelector('.a4-sheet');
+      const fname = `${(data.docType || 'documento').replace(/\s+/g, '_')}_${data.docNum || 'sin_numero'}.pdf`;
+      const origHTML = btnPrint.innerHTML;
+      btnPrint.innerHTML = '⏳';
+      btnPrint.disabled = true;
+      generarPDFComprobante(sheet, fname).then(blob => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }).catch(e => {
+        toast('Error al generar PDF: ' + e.message, 'error');
+      }).finally(() => {
+        btnPrint.innerHTML = origHTML;
+        btnPrint.disabled = false;
+      });
+    });
   }
 
-  // Obtener el elemento .comprobante para generar el PDF
-  const comprobanteEl = container.querySelector('.comprobante');
+  const comprobanteEl = container.querySelector('.a4-sheet');
   const filename = `${(data.docType || 'documento').replace(/\s+/g, '_')}_${data.docNum || 'sin_numero'}.pdf`;
 
-  // Calcular total para el mensaje
   const totals = calcTotals({
     lines: (data.lines || []).map(l => ({ qty: Number(l.cantidad || l.qty) || 0, price: Number(l.precio || l.price) || 0 })),
     discount: data.discount || { enabled: false, value: 0 },
@@ -345,13 +448,12 @@ function bindCompEvents(container, data) {
   const shareData = {
     docType: data.docType || 'documento',
     docNum: data.docNum || '',
-    clientName: data.clientName || '',
+    clientName: data.clientCompany || data.clientName || '',
     clientPhone: data.clientPhone || '',
     clientEmail: data.clientEmail || '',
     totalText: totals.total
   };
 
-  // Helper: mostrar loading en botón
   function withLoading(btn, asyncFn) {
     const originalHTML = btn.innerHTML;
     btn.innerHTML = '⏳';
@@ -362,7 +464,6 @@ function bindCompEvents(container, data) {
     });
   }
 
-  // Descargar PDF
   const btnDownload = container.querySelector('#comp-btn-download');
   if (btnDownload) {
     btnDownload.addEventListener('click', () => {
@@ -377,7 +478,6 @@ function bindCompEvents(container, data) {
     });
   }
 
-  // WhatsApp con PDF
   const btnWA = container.querySelector('#comp-btn-wa');
   if (btnWA && data.clientPhone) {
     btnWA.addEventListener('click', () => {
@@ -394,7 +494,6 @@ function bindCompEvents(container, data) {
     });
   }
 
-  // Correo con PDF
   const btnEmail = container.querySelector('#comp-btn-email');
   if (btnEmail && data.clientEmail) {
     btnEmail.addEventListener('click', () => {
@@ -412,19 +511,43 @@ function bindCompEvents(container, data) {
   }
 }
 
-// ── Renderizar como overlay fullscreen ──────────────────────
+// ── Renderizar como overlay fullscreen con iframe ───────────
 function renderComprobante(data) {
-  // Remover overlay previo si existe
   const existing = document.querySelector('.comprobante-page');
   if (existing) existing.remove();
 
   const overlay = document.createElement('div');
   overlay.className = 'comprobante-page';
-  overlay.innerHTML = buildComprobanteHTML(data);
-  document.body.appendChild(overlay);
-  bindCompEvents(overlay, data);
 
-  // Cerrar con Escape
+  const iframe = document.createElement('iframe');
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.style.border = 'none';
+  iframe.style.background = '#e6eaf0';
+  overlay.appendChild(iframe);
+  document.body.appendChild(overlay);
+
+  iframe.addEventListener('load', () => {
+    const doc = iframe.contentDocument;
+    const html = buildComprobanteHTML(data);
+    // Extraer el <style> y el body del HTML
+    const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
+    const css = styleMatch ? styleMatch[1] : '';
+    const bodyContent = html.replace(/<style>[\s\S]*?<\/style>/, '').replace(/<!--[\s\S]*?-->/g, '').trim();
+
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><style>${css}</style></head><body>${bodyContent}</body></html>`);
+    doc.close();
+
+    // Guardar HTML completo para generar PDF
+    iframe._compHTML = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><style>${css}</style></head><body>${bodyContent}</body></html>`;
+
+    // Bind eventos dentro del iframe
+    bindCompEvents(doc.body, data, iframe);
+  });
+
+  iframe.src = 'about:blank';
+
   const onEsc = (e) => {
     if (e.key === 'Escape') {
       overlay.remove();
@@ -437,7 +560,6 @@ function renderComprobante(data) {
 
 // ── Vista: Comprobante de un documento guardado ─────────────
 export async function comprobanteDocumentoView({ id }) {
-  // Mostrar loading mientras cargamos
   const loadingEl = document.createElement('div');
   loadingEl.className = 'comprobante-page';
   loadingEl.innerHTML = `
@@ -453,7 +575,6 @@ export async function comprobanteDocumentoView({ id }) {
     const completo = await obtenerDocumentoCompleto(id);
     const { doc, cliente, lineas, hoja, trabajos } = completo;
 
-    // Mapear datos al formato que espera el renderizador
     const data = {
       docType: CODE_TO_LABEL[doc.doc_type] || 'ORDEN DE TRABAJO',
       docNum: doc.doc_num || '',
@@ -465,19 +586,20 @@ export async function comprobanteDocumentoView({ id }) {
       clientPhone: cliente?.telefono || '',
       clientEmail: cliente?.email || '',
       clientAddress: cliente?.direccion || '',
-      equipos: cliente?.equipos || [],
-      lines: lineas.map(l => ({ descripcion: l.descripcion, cantidad: l.cantidad, precio: l.precio })),
+      clientCedula: cliente?.cedula || '',
+      equipos: (Array.isArray(doc.equipos) && doc.equipos.length > 0) ? doc.equipos : (cliente?.equipos || []),
+      lines: lineas.map(l => ({ descripcion: l.descripcion, cantidad: l.cantidad, precio: l.precio_unitario || l.precio })),
       discount: { enabled: (doc.descuento || 0) > 0, value: doc.descuento || 0 },
       iva:      { enabled: (doc.iva || 0) > 0, value: doc.iva || 0 },
-      currency: { code: doc.moneda || 'CRC', symbol: (doc.moneda === 'CRC' ? '₡' : '$') },
-      problem: hoja?.diagnostico || '',
+      currency: { code: doc.moneda || 'CRC', symbol: doc.moneda === 'CRC' ? '₡' : '$' },
+      problem: hoja?.problema_reportado || '',
       diagnosis: hoja?.diagnostico || '',
-      observations: doc.observaciones || '',
+      observations: hoja?.observaciones || doc.observaciones || '',
       tiempoEstimado: doc.tiempo_estimado || '',
       timeIn: hoja?.hora_entrada || '',
       timeOut: hoja?.hora_salida || '',
       workItems: trabajos || [],
-      contact: { address: 'Cartago, La Unión', phone: '(506) 62 777 500', email: 'innoviocr@outlook.com' }
+      contact: { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' }
     };
 
     loadingEl.remove();
@@ -500,7 +622,6 @@ export function comprobantePreviewView() {
     return;
   }
 
-  // Mapear desde el formato del editor
   const data = {
     docType: raw.docType || 'ORDEN DE TRABAJO',
     docNum: raw.docNum || '',
@@ -511,6 +632,7 @@ export function comprobantePreviewView() {
     clientPhone: raw.clientPhone || '',
     clientEmail: raw.clientEmail || '',
     clientAddress: raw.clientAddress || '',
+    clientCedula: raw.clientCedula || '',
     equipos: raw.equipos || [],
     lines: raw.lines || [],
     discount: raw.discount || { enabled: false, value: 0 },
@@ -523,7 +645,7 @@ export function comprobantePreviewView() {
     timeIn: raw.timeIn || '',
     timeOut: raw.timeOut || '',
     workItems: raw.workItems || raw.tareasRealizadas || [],
-    contact: raw.contact || { address: 'Cartago, La Unión', phone: '(506) 62 777 500', email: 'innoviocr@outlook.com' }
+    contact: raw.contact || { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' }
   };
 
   renderComprobante(data);

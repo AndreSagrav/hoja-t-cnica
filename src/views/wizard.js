@@ -748,6 +748,21 @@ function saveCurrentStepData() {
     }
   }
   else if ((wState.docKind === 'orden' && wState.step === 5) || (wState.docKind !== 'orden' && wState.step === 3)) {
+    // Guardar líneas desde el DOM
+    const rows = document.querySelectorAll('.wiz-line-row');
+    rows.forEach(row => {
+      const idx = parseInt(row.dataset.idx, 10);
+      if (idx >= 0 && wState.lines[idx]) {
+        const descEl = row.querySelector('[data-field="descripcion"]');
+        const qtyEl = row.querySelector('[data-field="cantidad"]');
+        const priceEl = row.querySelector('[data-field="precio"]');
+        if (descEl && !descEl.classList.contains('wiz-service-select')) {
+          wState.lines[idx].descripcion = descEl.value;
+        }
+        if (qtyEl) wState.lines[idx].cantidad = parseFloat(qtyEl.value) || 0;
+        if (priceEl) wState.lines[idx].precio = parseFloat(priceEl.value) || 0;
+      }
+    });
     // Guardar IVA y descuento del paso de servicios
     const chkIva = document.getElementById('wiz-chk-iva-step5');
     if (chkIva) {
@@ -1164,20 +1179,25 @@ function bindStep3Events() {
           const tareaNombre = el.dataset.tarea;
           const isTarea = !!tareaNombre;
 
-          if (isTarea) {
-            wState.lines.push({ descripcion: tareaNombre, cantidad: 1, precio: 0, codigo: '' });
+          const newItem = isTarea
+            ? { descripcion: tareaNombre, cantidad: 1, precio: 0, codigo: '' }
+            : (() => {
+                const item = catDataCache[section]?.find(x => String(x.id) === id);
+                if (!item) return null;
+                const precioFinal = wState.clientType === 'empresarial'
+                  ? (item.precio_empresarial || item.precio_residencial || item.precio || 0)
+                  : (item.precio_residencial || item.precio || 0);
+                return { descripcion: item.nombre, cantidad: 1, precio: precioFinal, codigo: item.codigo || '' };
+              })();
+
+          if (!newItem) return;
+
+          const lastIdx = wState.lines.length - 1;
+          const lastIsEmpty = lastIdx >= 0 && !wState.lines[lastIdx].descripcion?.trim();
+          if (lastIsEmpty) {
+            wState.lines[lastIdx] = newItem;
           } else {
-            const item = catDataCache[section]?.find(x => String(x.id) === id);
-            if (!item) return;
-            const precioFinal = wState.clientType === 'empresarial'
-              ? (item.precio_empresarial || item.precio_residencial || item.precio || 0)
-              : (item.precio_residencial || item.precio || 0);
-            wState.lines.push({
-              descripcion: item.nombre,
-              cantidad: 1,
-              precio: precioFinal,
-              codigo: item.codigo || ''
-            });
+            wState.lines.push(newItem);
           }
           renderWizard();
           toast('Item agregado', 'success');
@@ -1233,9 +1253,11 @@ function bindStep3Events() {
           if (b) b.style.display = 'none';
           if (se) se.classList.remove('open');
         });
+        wState._openSection = null;
 
         if (!isOpen) {
           // Abrir esta
+          wState._openSection = section;
           sectionEl.classList.add('open');
           body.style.display = 'block';
           body.innerHTML = '<div class="wiz-cat-empty">Cargando...</div>';
@@ -1246,6 +1268,12 @@ function bindStep3Events() {
         }
       });
     });
+
+    // Re-abrir sección que estaba abierta antes de re-render
+    if (wState._openSection) {
+      const header = document.getElementById(`wiz-cat-${wState._openSection}-header`);
+      if (header) header.click();
+    }
 
     // Buscador
     const searchInput = document.getElementById('wiz-catalog-search');
@@ -1275,19 +1303,6 @@ function bindStep3Events() {
       saveCurrentStepData();
       wState.iva.enabled = e.target.checked;
       wState.iva.value = 13;
-      if (wState.iva.enabled) {
-        wState.convertFactura = true;
-        // Auto-llenar datos de facturación desde el perfil del cliente
-        if (wState.clientFact?.fact_tipo_id) {
-          wState.clientCedula = wState.clientFact.fact_numero_id || wState.clientCedula || '';
-          wState.clientEmail = wState.clientFact.fact_email || wState.clientEmail || '';
-          toast('Datos de facturación cargados del perfil del cliente', 'success');
-        } else if (wState.clientId) {
-          toast('El cliente no tiene datos fiscales completos en su perfil', 'error');
-        } else {
-          toast('Seleccione un cliente para auto-completar datos fiscales', 'error');
-        }
-      }
       updateLiveTotal();
     });
   }

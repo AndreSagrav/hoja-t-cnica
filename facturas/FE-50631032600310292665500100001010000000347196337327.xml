@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FacturaElectronica xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica.xsd">
+  <Clave>50631032600310292665500100001010000000347196337327</Clave>
+  <ProveedorSistemas>3101225890</ProveedorSistemas>
+  <CodigoActividadEmisor>5610.0</CodigoActividadEmisor>
+  <NumeroConsecutivo>00100001010000000347</NumeroConsecutivo>
+  <FechaEmision>2026-03-31T20:10:29-06:00</FechaEmision>
+  <Emisor>
+    <Nombre>HALCON PERLA AGUAMARINA S.R.L</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3102926655</Numero>
+    </Identificacion>
+    <NombreComercial>La 45 - Street Food</NombreComercial>
+    <Ubicacion>
+      <Provincia>1</Provincia>
+      <Canton>15</Canton>
+      <Distrito>01</Distrito>
+      <Barrio>San Pedro centro</Barrio>
+      <OtrasSenas>San José Montes de Oca San Pedro (SJ) Los Yoses.</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>72178015</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>halconaguafacturacion@gmail.com</CorreoElectronico>
+  </Emisor>
+  <Receptor>
+    <Nombre>CESAR ANDRES BATISTA VARGAS</Nombre>
+    <Identificacion>
+      <Tipo>01</Tipo>
+      <Numero>205390118</Numero>
+    </Identificacion>
+    <CorreoElectronico>factura.e@outlook.es</CorreoElectronico>
+  </Receptor>
+  <CondicionVenta>01</CondicionVenta>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <CodigoCABYS>6331000000000</CodigoCABYS>
+      <CodigoComercial>
+        <Tipo>01</Tipo>
+        <Codigo>C01</Codigo>
+      </CodigoComercial>
+      <Cantidad>1.00</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <Detalle>Suministro de comida, servicio de restaurante con mesero</Detalle>
+      <PrecioUnitario>9100.00</PrecioUnitario>
+      <MontoTotal>9100.00</MontoTotal>
+      <SubTotal>9100.00</SubTotal>
+      <BaseImponible>9100.00</BaseImponible>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifaIVA>08</CodigoTarifaIVA>
+        <Tarifa>13.00</Tarifa>
+        <Monto>1183.00</Monto>
+      </Impuesto>
+      <ImpuestoAsumidoEmisorFabrica>0</ImpuestoAsumidoEmisorFabrica>
+      <ImpuestoNeto>1183.00</ImpuestoNeto>
+      <MontoTotalLinea>10283.00</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalServGravados>9100.00</TotalServGravados>
+    <TotalServExentos>0</TotalServExentos>
+    <TotalServExonerado>0</TotalServExonerado>
+    <TotalServNoSujeto>0</TotalServNoSujeto>
+    <TotalMercanciasGravadas>0</TotalMercanciasGravadas>
+    <TotalMercanciasExentas>0</TotalMercanciasExentas>
+    <TotalMercExonerada>0</TotalMercExonerada>
+    <TotalMercNoSujeta>0</TotalMercNoSujeta>
+    <TotalGravado>9100.00</TotalGravado>
+    <TotalExento>0</TotalExento>
+    <TotalExonerado>0</TotalExonerado>
+    <TotalVenta>9100.00</TotalVenta>
+    <TotalDescuentos>0</TotalDescuentos>
+    <TotalVentaNeta>9100.00</TotalVentaNeta>
+    <TotalDesgloseImpuesto>
+      <Codigo>01</Codigo>
+      <CodigoTarifaIVA>08</CodigoTarifaIVA>
+      <TotalMontoImpuesto>1183.00</TotalMontoImpuesto>
+    </TotalDesgloseImpuesto>
+    <TotalImpuesto>1183.00</TotalImpuesto>
+    <TotalImpAsumEmisorFabrica>0</TotalImpAsumEmisorFabrica>
+    <TotalIVADevuelto>0</TotalIVADevuelto>
+    <MedioPago>
+      <TipoMedioPago>01</TipoMedioPago>
+    </MedioPago>
+    <TotalComprobante>10283.00</TotalComprobante>
+  </ResumenFactura>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-3d706a20-6092-4406-86e0-65facd8595f1"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="Reference-d0276f8f-b5a9-4803-b7f7-8728686de712" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>d9UCPP4jLTk3p2QZFIqT5aXMEVUAvEnkQziXewbUDHo=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-3d706a20-6092-4406-86e0-65facd8595f1"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>s9inasCZijIik6Tllz6gX5ZntMWGGQNN9yrsuVnYdi0=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-3d706a20-6092-4406-86e0-65facd8595f1"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>9JuqtZDVImiJaqnMVkuZxsSAbblJik3P38EJRoHF3WQ=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-3d706a20-6092-4406-86e0-65facd8595f1">GXAJ6gdrUVCgH2hZX3PNJK71PdXnIbhzdtrOanFyWIkOpb2ThovUuyfrP+Y7/q7yd/OhAj1WtpPvjy/mcR4SYoFhjwwzuTxN3EjZITNgE45s1zT2zKDcAw2gmq0ydiVGtFA8L4DDXYg7p+JE0ukHOoLLorA/Ymr/v81luT3QCEq8u2ydzSCWo+zs83dRso96NmIN9Vk04+TE3l4lB9kUtVPzNYxf9oNl4kcOIsMJrj6TYD3Cf/pYgtYqOhP31tTHGYqtncO3KqhGexNVTdSia6PDVF0BFt2FkApMdOxILnH/5MaUsdZw573E10811N1HU5k2t0VowmaZaJKI7Fq1qw==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-Signature-3d706a20-6092-4406-86e0-65facd8595f1"><ds:X509Data><ds:X509Certificate>MIIFPjCCAyagAwIBAgIGAZfMRU8jMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjUwNzAyMTc1MzAzWhcNMjkwNzAxMTc1MzAzWjCBmDEZMBcGA1UEBRMQQ1BKLTMtMTAyLTkyNjY1NTELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjFFMEMGA1UEAww8SEFMQ09OIFBFUkxBIEFHVUFNQVJJTkEgU09DSUVEQUQgREUgUkVTUE9OU0FCSUxJREFEIExJTUlUQURBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqy0vuO4TytT2euM2km8GozHFvyfHU3j0IUtAecKVVNa2wdOW6MgtXgSERseA7X5P91JB/uQwUa2gTvuRjyW6y+V7sb+Eyf63C3yLeVyJo3FA7qroVOxqgy9pihDkXew4/l/4k3eqnDB0P4zW6DHuJIgMUhr6UWx61hVjtoqoKSe6Qx6Wh2iTqKuZg/dQ0sVr6O3JvgxJrh26m3oTYZ4RhRpistd+dVLabkQVBE1S2XrOX1O+opxf7MIw5xfPhhk1nKBxnc8DHkiNPxTuvBYCzWr3QBhV4w3Ef2u80p0JTXddmIh47+p9efr6AVXhrpBtvAiB9pg4MQi98wjXN8zMjwIDAQABo4HKMIHHMB8GA1UdIwQYMBaAFDttV/XWfOmeEAIgQeO9GszPs06VMB0GA1UdDgQWBBS2CnSr3LQ8MPit/qrLKIBSXyCfWzALBgNVHQ8EBAMCBsAwEwYDVR0lBAwwCgYIKwYBBQUHAwQwYwYIKwYBBQUHAQEEVzBVMFMGCCsGAQUFBzAChkdodHRwczovL3BraS5jb21wcm9iYW50ZXNlbGVjdHJvbmljb3MuZ28uY3IvcHJvZC9pbnRlcm1lZGlhdGUtcGotcGVtLmNydDANBgkqhkiG9w0BAQsFAAOCAgEAm1a+U7SmLR/JYMJv7gWzAge9fi1bydijV7I5jCbfMkfCfmLvlDS3vXi6CXZebdpnFI7nDiD6LrgW5v0QuKRowLs6cqm6yIZDW6rmAOAVoHELemYiIJ8A+1b2z+gXnrBCfJYgfZegTUL5SJOFx5KFG+lcQ9mz4jBjPTOtJjqGgqizJrEOfCR6l+PHy8V6d09H9WFJfy9oW1xtfnYbMOEnPgTTBc6xvCIgGpoKC2cA4BCvR5G2Dl1zctRy8K2ZHe0sNSPolytmCzSjGBRSlrAMmGHAEi2WPul7/oX3i06/ntgPWhs1joYpDw09uOJWwmv/Rwcslb/AoxBVSCYEJ/ZSviPcPeaSkrlLZ3NBrFpeo6hBwnlHGFLJCGmqH+K4BYTNRMQQrM5aPBxB+AjUMzZssu5mvrKB0odqBIptmUABrjfDkV01ZJG5EF8ubvewGVdgo/z/I2wzfVomvCTGqjy3dRwgLn+axM8aXTkc4fR98VevlBsZaotPN7HQWbKO+Vm0UA9xzvdStTvKqwgsIPxD0VJy7z67tjQcQPs3iqXZC6vwLAZBh47T5gTXz545Ogj4fSQthsl3oB0DMORJDkcOhLJGRSe+WiXzqsKryT6KeCj0VMx/xiAFdLRJF/sbplHMlEeFuePa61jbiJySwL35vVQr3jTHVZxyCjL/YvOgpwo=</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>qy0vuO4TytT2euM2km8GozHFvyfHU3j0IUtAecKVVNa2wdOW6MgtXgSERseA7X5P91JB/uQwUa2gTvuRjyW6y+V7sb+Eyf63C3yLeVyJo3FA7qroVOxqgy9pihDkXew4/l/4k3eqnDB0P4zW6DHuJIgMUhr6UWx61hVjtoqoKSe6Qx6Wh2iTqKuZg/dQ0sVr6O3JvgxJrh26m3oTYZ4RhRpistd+dVLabkQVBE1S2XrOX1O+opxf7MIw5xfPhhk1nKBxnc8DHkiNPxTuvBYCzWr3QBhV4w3Ef2u80p0JTXddmIh47+p9efr6AVXhrpBtvAiB9pg4MQi98wjXN8zMjw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-5c7d7766-1b5f-403a-9c40-0ac68752c849"><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-20b65e6d-8d74-4da2-ad24-260c19badbbd" Target="#Signature-3d706a20-6092-4406-86e0-65facd8595f1"><xades:SignedProperties Id="SignedProperties-Signature-3d706a20-6092-4406-86e0-65facd8595f1"><xades:SignedSignatureProperties><xades:SigningTime>2026-03-31T20:10:29-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>/KSr6VoCeBXMf1NCGwCycreHD32c9SoavVJrb3J5s7o=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1751478783779</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica</xades:Identifier><xades:Description /></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>Ohixl6upD6av8N7pEvDABhEL6hM=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>ObligadoTributario</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#Reference-d0276f8f-b5a9-4803-b7f7-8728686de712"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

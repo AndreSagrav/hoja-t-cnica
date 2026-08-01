@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/FacturaElectronica_V4.4.xsd http://uri.etsi.org/01903/v1.3.2# http://uri.etsi.org/01903/v1.3.2/xsd/xades.xsd">
+<Clave>50625032600310262002700400002010000000055183004211</Clave>
+<ProveedorSistemas>3101598979</ProveedorSistemas>
+<CodigoActividadEmisor>4730.0</CodigoActividadEmisor>
+<NumeroConsecutivo>00400002010000000055</NumeroConsecutivo>
+<FechaEmision>2026-03-25T18:55:57-06:00</FechaEmision>
+<Emisor>
+<Nombre>Lubricantes Next Gen Lng S.R.L</Nombre>
+<Identificacion>
+<Tipo>02</Tipo>
+<Numero>3102620027</Numero>
+</Identificacion>
+<Ubicacion>
+<Provincia>1</Provincia>
+<Canton>01</Canton>
+<Distrito>07</Distrito>
+<OtrasSenas>200 mts este de migración y 25 mts sur</OtrasSenas>
+</Ubicacion>
+<Telefono>
+<CodigoPais>506</CodigoPais>
+<NumTelefono>22204957</NumTelefono>
+</Telefono>
+<CorreoElectronico>Facturas@metalub.net</CorreoElectronico>
+</Emisor>
+<Receptor>
+<Nombre>CESAR ANDRES BATISTA VARGAS</Nombre>
+<Identificacion>
+<Tipo>01</Tipo>
+<Numero>205390118</Numero>
+</Identificacion>
+<CorreoElectronico>factura.e@outlook.es</CorreoElectronico>
+</Receptor>
+<CondicionVenta>01</CondicionVenta>
+<PlazoCredito>0</PlazoCredito>
+<DetalleServicio>
+<LineaDetalle>
+<NumeroLinea>1</NumeroLinea>
+<CodigoCABYS>4391501009900</CodigoCABYS>
+<CodigoComercial>
+<Tipo>04</Tipo>
+<Codigo>P981T</Codigo>
+</CodigoComercial>
+<Cantidad>1.0</Cantidad>
+<UnidadMedida>Unid</UnidadMedida>
+<TipoTransaccion>01</TipoTransaccion>
+<Detalle>[P981T] P981T</Detalle>
+<PrecioUnitario>5265.49</PrecioUnitario>
+<MontoTotal>5265.49</MontoTotal>
+<SubTotal>5265.49</SubTotal>
+<BaseImponible>5265.49</BaseImponible>
+<Impuesto>
+<Codigo>01</Codigo>
+<CodigoTarifaIVA>08</CodigoTarifaIVA>
+<Tarifa>13.0</Tarifa>
+<Monto>684.51</Monto>
+</Impuesto>
+<ImpuestoAsumidoEmisorFabrica>0.0</ImpuestoAsumidoEmisorFabrica>
+<ImpuestoNeto>684.51</ImpuestoNeto>
+<MontoTotalLinea>5950.0</MontoTotalLinea>
+</LineaDetalle>
+<LineaDetalle>
+<NumeroLinea>2</NumeroLinea>
+<CodigoCABYS>3338000010100</CodigoCABYS>
+<CodigoComercial>
+<Tipo>04</Tipo>
+<Codigo>00015</Codigo>
+</CodigoComercial>
+<Cantidad>4.0</Cantidad>
+<UnidadMedida>Sp</UnidadMedida>
+<TipoTransaccion>01</TipoTransaccion>
+<Detalle>[00015] METALUB 15W40 CK4/SN FM SEMI SINTETICO CUARTO
+METALUB 15W40 CK4/SN FM SEMI SINTETICO CUARTO</Detalle>
+<PrecioUnitario>5265.49</PrecioUnitario>
+<MontoTotal>21061.96</MontoTotal>
+<Descuento>
+<MontoDescuento>9557.91745</MontoDescuento>
+<CodigoDescuento>07</CodigoDescuento>
+<NaturalezaDescuento>Descuento Comercial</NaturalezaDescuento>
+</Descuento>
+<SubTotal>11504.04255</SubTotal>
+<BaseImponible>11504.04255</BaseImponible>
+<Impuesto>
+<Codigo>01</Codigo>
+<CodigoTarifaIVA>08</CodigoTarifaIVA>
+<Tarifa>13.0</Tarifa>
+<Monto>1495.53</Monto>
+</Impuesto>
+<ImpuestoAsumidoEmisorFabrica>0.0</ImpuestoAsumidoEmisorFabrica>
+<ImpuestoNeto>1495.53</ImpuestoNeto>
+<MontoTotalLinea>12999.57255</MontoTotalLinea>
+</LineaDetalle>
+</DetalleServicio>
+<ResumenFactura>
+<CodigoTipoMoneda>
+<CodigoMoneda>CRC</CodigoMoneda>
+<TipoCambio>1.0</TipoCambio>
+</CodigoTipoMoneda>
+<TotalServGravados>0.0</TotalServGravados>
+<TotalServExentos>0.0</TotalServExentos>
+<TotalServExonerado>0.0</TotalServExonerado>
+<TotalServNoSujeto>0.0</TotalServNoSujeto>
+<TotalMercanciasGravadas>26327.45</TotalMercanciasGravadas>
+<TotalMercanciasExentas>0.0</TotalMercanciasExentas>
+<TotalMercExonerada>0.0</TotalMercExonerada>
+<TotalMercNoSujeta>0.0</TotalMercNoSujeta>
+<TotalGravado>26327.45</TotalGravado>
+<TotalExento>0.0</TotalExento>
+<TotalExonerado>0.0</TotalExonerado>
+<TotalNoSujeto>0.0</TotalNoSujeto>
+<TotalVenta>26327.45</TotalVenta>
+<TotalDescuentos>9557.91745</TotalDescuentos>
+<TotalVentaNeta>16769.53255</TotalVentaNeta>
+<TotalDesgloseImpuesto>
+<Codigo>01</Codigo>
+<CodigoTarifaIVA>08</CodigoTarifaIVA>
+<TotalMontoImpuesto>2180.04</TotalMontoImpuesto>
+</TotalDesgloseImpuesto>
+<TotalImpuesto>2180.04</TotalImpuesto>
+<TotalOtrosCargos>0.0</TotalOtrosCargos>
+<MedioPago>
+<TipoMedioPago>02</TipoMedioPago>
+<TotalMedioPago>18949.57255</TotalMedioPago>
+</MedioPago>
+<TotalComprobante>18949.57255</TotalComprobante>
+</ResumenFactura>
+<ds:Signature Id="Signature-5481">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference Id="Reference-3741" URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>vU2JLwT0hPxzT6OPw4UOMMpLDwuye72UzqsEoVK965w=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-5481">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>2cKPhX3ql3GBX7BS/Pqys2dGLWK9ITYmiMJDiaubfBs=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#SignedProperties-Signature-5481" Type="http://uri.etsi.org/01903#SignedProperties">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>3TuzVfFUUZR8hK0FF49QN0cyb2VtLLjEMtrvDHOwkac=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>mU68MG7/QdydreM6umPfGKh3TBBep2fLfw9UvZ3v4XQy045w0b9lWQ4PnzKp/qiRRFR5TYAFeWCTZSqYejC9jtjbIdeIpCPZns3Dsmkql3+NC4G2+S0MQAYptbRl2/kGuJptzHf2k4CZuCpgWwzltutn6FnsVTyVV3/UI6DskzPFK8Wa0mA08TqoR8yQ2Mh0j2cKbZSKOjbmKKLvy8TVNV/9ibzD8c2o34nX+KKBaVc/gB70uPBdDzeFe9L5QTEpbL87oHKNaJV+NwuDXGXr3rCtE4EuegFziOOTIrZeL50KwxhrKVspEk4j4FB+JQNviOLX6LSwsIdwGYH8vF2BeQ==</ds:SignatureValue>
+<ds:KeyInfo Id="KeyInfoId-Signature-5481">
+<ds:X509Data>
+<ds:X509Certificate>MIIFRDCCAyygAwIBAgIGAZufu+mUMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjYwMTA4MjIzMDUxWhcNMzAwMTA3MjIzMDUxWjCBnjEZMBcGA1UEBRMQQ1BKLTMtMTAyLTYyMDAyNzELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjFLMEkGA1UEAwxCTFVCUklDQU5URVMgTkVYVCBHRU4gTE5HIFNPQ0lFREFEIERFIFJFU1BPTlNBQklMSURBRCBMSU1JVEFEQSBudWxsMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyBBq7vfXKPeTDruLqexykm1DsuwJieNw7cP9/l6lu8VSNPEsAJVi1u10X1MFu7c2cYtmwU4Qr+tgfWqhk5J6O+mJA4Efsm10NSMX792sBzw58t0GjOjgOjt98d2HxJcK2hfkCFHwoF8sIl7xQBCMxiOoW6ieFnluHKHyGhOaqEgtajKZtQwxPB9VNN+3FqI5Bd6CcHFeBRHH6F9tQpyo9Aamb0qOcSeqMentDbKOcgR1h3YPojRAyOC+fCEzrWp5DZcK1+vZYHT7GdVn7isMDvIFn+AyyvvkCi6a+HSHGYulceSUKwNn1+in/aSskZXrtMEpJ/AMnmkST3hFzfSz6QIDAQABo4HKMIHHMB8GA1UdIwQYMBaAFDttV/XWfOmeEAIgQeO9GszPs06VMB0GA1UdDgQWBBR2S/sJKo1phY+w0o281sqNsC9FczALBgNVHQ8EBAMCBsAwEwYDVR0lBAwwCgYIKwYBBQUHAwQwYwYIKwYBBQUHAQEEVzBVMFMGCCsGAQUFBzAChkdodHRwczovL3BraS5jb21wcm9iYW50ZXNlbGVjdHJvbmljb3MuZ28uY3IvcHJvZC9pbnRlcm1lZGlhdGUtcGotcGVtLmNydDANBgkqhkiG9w0BAQsFAAOCAgEAJTHMxbH6ro6aNEBke2o9eGbPuCW1G1gRUA1+0/Pjnh/Wc0HhCroM8l+QAEOIwN1czF/RoeKmBDueGLdWuYiu8yITbrS5w+9zFBv3OQEByl8O9RPpPFN6fNwzRyW6bf8UeCG7Lmz7V5LDOEB3tOfCOBAXc+vI8QH34dIAcEt1mZEoQBnAN54b6ESpkDkydQnxhHCfcZDZMHnMifb/m52tVhh0EryPdbT4sE5HE/PL0hqr87oZoRINWA6Fi+KecoaelFd+af2H/GgPO0o4cG0eQVSZPFJVBkRfL9lTT6pF4qJDguKACardGRcf16XZj8b8Bz7pGdCnZlH1UEeD/rD1bPgY5VUcXDGZ3RUMume+lTooiBRrnrm277o2ArQ+7eJx1yAjaANyqAzIxSUF8oI9OhGokEuJ2hXjhkX24mI2yrGoUgaO4DmD135N2KLSrpfbK9p+5v3eUDkusWg6Sop764ERhaFcwjGqj27B5StpooPKxOj3ARR80GTGZ0tXHVBNIL2Yb54r5s+YGt1WvWrCrqJkpDtVRU0rm0w7hc9AdqfsjzIixb68ECj6XbW/3AkPB4CgfFXHNgpM8V97e4CjGCh0eb9Kkuc4ZpYeJAQV/ymhtXtfMgVaoBtSyWgI31ZZVIpvpXE75siY99+bMrgWp/d97iT4tKTyymZAqkV53Mc=</ds:X509Certificate>
+</ds:X509Data>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>yBBq7vfXKPeTDruLqexykm1DsuwJieNw7cP9/l6lu8VSNPEsAJVi1u10X1MFu7c2cYtmwU4Qr+tgfWqhk5J6O+mJA4Efsm10NSMX792sBzw58t0GjOjgOjt98d2HxJcK2hfkCFHwoF8sIl7xQBCMxiOoW6ieFnluHKHyGhOaqEgtajKZtQwxPB9VNN+3FqI5Bd6CcHFeBRHH6F9tQpyo9Aamb0qOcSeqMentDbKOcgR1h3YPojRAyOC+fCEzrWp5DZcK1+vZYHT7GdVn7isMDvIFn+AyyvvkCi6a+HSHGYulceSUKwNn1+in/aSskZXrtMEpJ/AMnmkST3hFzfSz6Q==</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="#Signature-5481" Id="XadesObjects"><xades:SignedProperties Id="SignedProperties-Signature-5481"><xades:SignedSignatureProperties><xades:SigningTime>2026-03-25T23:26:18.519859+00:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>4gwclJ3MvkfEXwHoCLBEZE9gL50=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>C=CR, O=MINISTERIO DE HACIENDA, OU=DGT, CN=CA PERSONA JURIDICA</ds:X509IssuerName><ds:X509SerialNumber>1767911451028</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://www.hacienda.go.cr/ATV/ComprobanteElectronico/docs/esquemas/2016/v4.2/ResolucionComprobantesElectronicosDGT-R-48-2016_4.2.pdf</xades:Identifier><xades:Description/></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>E9/BBP0G1Z3JJQzOpwqpJuf7xdY=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#Reference-3741"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

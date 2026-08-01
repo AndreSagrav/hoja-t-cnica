@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica.xsd"><Clave>50605042600310112981300400001010000216880353563623</Clave><ProveedorSistemas>3101332025</ProveedorSistemas><CodigoActividadEmisor>4730.0</CodigoActividadEmisor><CodigoActividadReceptor>9511.0</CodigoActividadReceptor><NumeroConsecutivo>00400001010000216880</NumeroConsecutivo><FechaEmision>2026-04-05T12:57:40</FechaEmision><Emisor><Nombre>GASOLINERA BARRANTES Y VARGAS, S.A.</Nombre><Identificacion><Tipo>02</Tipo><Numero>3101129813</Numero></Identificacion><NombreComercial>SERVICENTRO JSM SAN RAFAEL</NombreComercial><Ubicacion><Provincia>1</Provincia><Canton>15</Canton><Distrito>02</Distrito><OtrasSenas>ALTO DE SABANILLA, DIAGONAL AL SUPERMERCADO PALI</OtrasSenas></Ubicacion><Telefono><CodigoPais>506</CodigoPais><NumTelefono>22217480</NumTelefono></Telefono><CorreoElectronico>facturasalto@jsm.com</CorreoElectronico></Emisor><Receptor><Nombre>CESAR ANDRES BATISTA VARGAS</Nombre><Identificacion><Tipo>01</Tipo><Numero>205390118</Numero></Identificacion><CorreoElectronico>factura.e@outlook.es</CorreoElectronico></Receptor><CondicionVenta>01</CondicionVenta><PlazoCredito>0</PlazoCredito><DetalleServicio><LineaDetalle><NumeroLinea>1</NumeroLinea><CodigoCABYS>3331100010000</CodigoCABYS><CodigoComercial><Tipo>01</Tipo><Codigo>505</Codigo></CodigoComercial><Cantidad>15.799</Cantidad><UnidadMedida>L</UnidadMedida><UnidadMedidaComercial>L</UnidadMedidaComercial><Detalle>SUPER</Detalle><PrecioUnitario>633.00000</PrecioUnitario><MontoTotal>10001.00000</MontoTotal><SubTotal>10001.00000</SubTotal><BaseImponible>10001.00000</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>11</CodigoTarifaIVA><Tarifa>0.00</Tarifa><Monto>0.00000</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>0</ImpuestoNeto><MontoTotalLinea>10001.00000</MontoTotalLinea></LineaDetalle></DetalleServicio><ResumenFactura><CodigoTipoMoneda><CodigoMoneda>CRC</CodigoMoneda><TipoCambio>1.00000</TipoCambio></CodigoTipoMoneda><TotalMercNoSujeta>10001.00000</TotalMercNoSujeta><TotalNoSujeto>10001.00000</TotalNoSujeto><TotalVenta>10001.00000</TotalVenta><TotalVentaNeta>10001.00000</TotalVentaNeta><TotalDesgloseImpuesto><Codigo>01</Codigo><CodigoTarifaIVA>11</CodigoTarifaIVA><TotalMontoImpuesto>0.00000</TotalMontoImpuesto></TotalDesgloseImpuesto><TotalImpuesto>0.00000</TotalImpuesto><TotalImpAsumEmisorFabrica>0.00000</TotalImpAsumEmisorFabrica><MedioPago><TipoMedioPago>01</TipoMedioPago><TotalMedioPago>10001.00000</TotalMedioPago></MedioPago><TotalComprobante>10001.00000</TotalComprobante></ResumenFactura><Otros><OtroTexto>Secuencia: M285584 Dispensador: 08 Manguera: 03 Atiende: KAREN MISSURI VINDAS PEREZ OBSERVACION: </OtroTexto></Otros><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference Id="xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d-ref0" URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>WucLQni131N8snWnNtSEVZSLTJZOWTQUyEJPu9XraKc=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d-signedprops">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>gC3jbkVb9GL/A3YItIpTIUvN/HgzDbXQwTgfkzkjPmM=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d-sigvalue">
+W5SVO6DEifItDfjRXQVBHkl8AXI+xcFuNhRM3B8Vo0+GUtCZ1hpGYyqxTLKXrG8cCBXQZJe1xqh8&#13;
+w5nF5UJAHfNKvuvDTikqiBeBI3FCvHb0U9tZAj3dXXlV9foCtiWClmnm5hzr1sEbPG6h6UNtDTxV&#13;
+CFjZOnNojoP4UiW40RzpQxSP53IIFPgka1W2e3V2tOMU0dAgSMSk7XY8tZ7XP6c8JwU/Cl8ql2GR&#13;
+RhWL8uLdVofqlLsA3H2dJ59qzCqnvQ+7p1pzj2Fopit7j/nNJGS/MRhUxItEFxmygVEQaLBKGAas&#13;
+GbRoWLqYLdsuqfMZfku6KpoONWFLKDX04uSxsQ==
+</ds:SignatureValue>
+<ds:KeyInfo>
+<ds:X509Data>
+<ds:X509Certificate>
+MIIFMDCCAxigAwIBAgIGAYOAHgCWMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYD&#13;
+VQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBF&#13;
+UlNPTkEgSlVSSURJQ0EwHhcNMjIwOTI3MTgwMzEzWhcNMjYwOTI2MTgwMzEzWjCBijEZMBcGA1UE&#13;
+BRMQQ1BKLTMtMTAxLTEyOTgxMzELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJ&#13;
+Q0ExDDAKBgNVBAsMA0NQSjE3MDUGA1UEAwwuR0FTT0xJTkVSQSBCQVJSQU5URVMgWSBWQVJHQVMg&#13;
+U09DSUVEQUQgQU5PTklNQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZomYRyylgH&#13;
+ncN0Equ1Fbvm5tVjVaDrm3uhak1XpprTOoNRFu7snznkmsBtB2EcwauDiDF2+trIYTmYFqCueT+p&#13;
+IlzR63H10Y8fpgOmKPEl1LWL1TAAjvzZwTxMolsis4CzoRMRTWbYPqc/KlvIPcfO143+rwFy6Ebb&#13;
+s0fqxsXKnPKyzunlSxkqgzgyvIBE8OvTHuFLOsQ+9Rn/Ru9mS/ouzxCHromDfAHqxBlRqZP5xmLd&#13;
+YEHEZW6wxGf9ahKrktBmxJs29FLsINs77W11XeIzlyYJimrfexpb19f/IEQc3Umh6xq600HLtbRB&#13;
+sMo0syKY1wiUkbpJCOisQJNGwq0CAwEAAaOByjCBxzAfBgNVHSMEGDAWgBQ7bVf11nzpnhACIEHj&#13;
+vRrMz7NOlTAdBgNVHQ4EFgQUnE1rmsGP+0KY9EoiVoCCdXLmg1cwCwYDVR0PBAQDAgbAMBMGA1Ud&#13;
+JQQMMAoGCCsGAQUFBwMEMGMGCCsGAQUFBwEBBFcwVTBTBggrBgEFBQcwAoZHaHR0cHM6Ly9wa2ku&#13;
+Y29tcHJvYmFudGVzZWxlY3Ryb25pY29zLmdvLmNyL3Byb2QvaW50ZXJtZWRpYXRlLXBqLXBlbS5j&#13;
+cnQwDQYJKoZIhvcNAQELBQADggIBAGEp8lbBTcvxdmgNpATN9dyyGb4dL5mXwUtmfBGTJh+aVYmD&#13;
+ql8kAqOkGwl5crGEOIqVbvMsBeHJSLvhS5ONLCNjpkuPvkps+OStCNVVks6u93Hz/nMg1Xxlm0Qf&#13;
+knVohNrCB8ZE+DCaxXZss0/C/FmYoeZOLerapGhpS3ft/0MqYDypnqfPVNpHO9mwKy940Drh9mJ4&#13;
+AO2abDzgCXm7oCh2q67h/Ll6jbhDH2lsEi0TxpBo+Y9CH+5bLkxrT0QQkV09wlDw7rGgcsUQCYa7&#13;
+x0kAnHwl6D2c5Qj3MnDfUGDegU9F5XmYo9kaF5igW7pHCA3TiuHamhOqkqMeLfEuOBgJyPfZZemV&#13;
+JqrXpmu3CS35JBVD8+FUfHc9E4Y9IJS43nMK5K5uYTcaf/ufJ7e4MClI6k0yAHhZVi7p8BRzZE1N&#13;
+cSvouomF65btx6d3WtRZIJwXCDrr41kjYjliRz7T+J4DO4whVEKpNjLLFafZL4syuvGUU9gMZGvn&#13;
++tLLF+kHsew71SvkDMpMC1uFdodxM0gPeI4KNm7JByDo/JXhVWToROW01yP8hlTkw87zBti+NdgF&#13;
+AidJTzU6JC+QH8IWLSaC+N9CFW3+1TRh8jiUnpuZofb3W8QISvi4h9wNRYP3HxDSHTGE6Erl76VW&#13;
+J3CZZFwKCHQ2YgBAxe3ShDf5X3F0
+</ds:X509Certificate>
+</ds:X509Data>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" Target="#xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d"><xades:SignedProperties Id="xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d-signedprops"><xades:SignedSignatureProperties><xades:SigningTime>2026-04-05T12:59:02.109-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>KM2dItX6OcIMn0oC2+Gk9FfZ5XZtSRE76QDggpM7azM=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>cn=CA PERSONA JURIDICA,ou=DGT,o=MINISTERIO DE HACIENDA,c=CR</ds:X509IssuerName><ds:X509SerialNumber>1664301793430</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier Qualifier="OIDAsURI">https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.2/ResolucionComprobantesElectronicosDGT-R-48-2016_4.2.pdf</xades:Identifier></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>nVCrSwvK8dNnGHwfLYAzNAQMe5FCQjMl2Pf+Nfu5IBw=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#xmldsig-d4bb2a0a-5ae2-454a-933e-98ce3f47a39d-ref0"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>utf-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object>
+</ds:Signature></FacturaElectronica>

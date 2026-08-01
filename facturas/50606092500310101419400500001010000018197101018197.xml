@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?><FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica_V.4.4.xsd">
+  <Clave>50606092500310101419400500001010000018197101018197</Clave>
+  <ProveedorSistemas>3101595167</ProveedorSistemas>
+  <CodigoActividadEmisor>552004</CodigoActividadEmisor>
+  <NumeroConsecutivo>00500001010000018197</NumeroConsecutivo>
+  <FechaEmision>2025-09-06T07:13:48</FechaEmision>
+  <Emisor>
+    <Nombre>Arcos Dorados Costa Rica ADCR S.A</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3101014194</Numero>
+    </Identificacion>
+    <Ubicacion>
+      <Provincia>1</Provincia>
+      <Canton>15</Canton>
+      <Distrito>01</Distrito>
+      <Barrio>LOS YOSES</Barrio>
+      <OtrasSenas>CALLE TREINTA Y NUEVE</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>25230000</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>conta.costarica@cr.mcd.com</CorreoElectronico>
+  </Emisor>
+  <Receptor>
+    <Nombre>Csar Batista</Nombre>
+    <Identificacion>
+      <Tipo>01</Tipo>
+      <Numero>205390118</Numero>
+    </Identificacion>
+    <NombreComercial>Csar Batista</NombreComercial>
+    <CorreoElectronico>factura.e@outlook.es</CorreoElectronico>
+  </Receptor>
+  <CondicionVenta>01</CondicionVenta>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <CodigoCABYS>6332000000000</CodigoCABYS>
+      <Cantidad>1</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <Detalle>2SalchMuff2Cafe</Detalle>
+      <PrecioUnitario>1761.06000</PrecioUnitario>
+      <MontoTotal>1761.06000</MontoTotal>
+      <SubTotal>1761.06000</SubTotal>
+      <BaseImponible>1761.06000</BaseImponible>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifaIVA>08</CodigoTarifaIVA>
+        <Tarifa>13</Tarifa>
+        <Monto>228.94000</Monto>
+      </Impuesto>
+      <ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica>
+      <ImpuestoNeto>228.94000</ImpuestoNeto>
+      <MontoTotalLinea>1990.00000</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalServGravados>1761.06000</TotalServGravados>
+    <TotalServExentos>0.00000</TotalServExentos>
+    <TotalServExonerado>0.00000</TotalServExonerado>
+    <TotalServNoSujeto>0.00000</TotalServNoSujeto>
+    <TotalMercanciasGravadas>0.00000</TotalMercanciasGravadas>
+    <TotalMercanciasExentas>0.00000</TotalMercanciasExentas>
+    <TotalMercExonerada>0.00000</TotalMercExonerada>
+    <TotalMercNoSujeta>0.00000</TotalMercNoSujeta>
+    <TotalGravado>1761.06000</TotalGravado>
+    <TotalExento>0.00000</TotalExento>
+    <TotalExonerado>0.00000</TotalExonerado>
+    <TotalNoSujeto>0.00000</TotalNoSujeto>
+    <TotalVenta>1761.06000</TotalVenta>
+    <TotalVentaNeta>1761.06000</TotalVentaNeta>
+    <TotalDesgloseImpuesto>
+      <Codigo>01</Codigo>
+      <CodigoTarifaIVA>08</CodigoTarifaIVA>
+      <TotalMontoImpuesto>228.94000</TotalMontoImpuesto>
+    </TotalDesgloseImpuesto>
+    <TotalImpuesto>228.94000</TotalImpuesto>
+    <TotalIVADevuelto>0.00000</TotalIVADevuelto>
+    <TotalOtrosCargos>0.00000</TotalOtrosCargos>
+    <MedioPago>
+      <TipoMedioPago>02</TipoMedioPago>
+      <MedioPagoOtros>TARJETA</MedioPagoOtros>
+      <TotalMedioPago>1990.00000</TotalMedioPago>
+    </MedioPago>
+    <TotalComprobante>1990.00000</TotalComprobante>
+  </ResumenFactura>
+  
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-05ee8407-4fa2-47be-bb32-dc2822146cb3"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="Reference-c13cfd62-d6e1-4000-b08b-3f000804b4e5" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>PHmUk2ITkPf26xE+dMTcKSF3HAVvsFVsE8MZUF257Ow=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-05ee8407-4fa2-47be-bb32-dc2822146cb3"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>QfRy4Tiqzir7BSzbRknAZhmHPRjKsEFAwW+CeGop7YE=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-05ee8407-4fa2-47be-bb32-dc2822146cb3"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>gGLLLlvu1wPh+AONvNhKTAPmVj1QhXs3S22cpl38MiM=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-05ee8407-4fa2-47be-bb32-dc2822146cb3">VO1xkdVUSu5Sq7Usuik/stPdV6ZJGslI6/niAGGAjwTFzEDNGOdV5C1f1FpyRlmAHhpyrgiqRMep7A8DH/rmUGtbZR5sD76OUX2yrjXUiyM/TIGMKxLJwpiMOxilrG/1nfkFjrHE7sbT+bUdP7QT/p0Al15GqhntbqPkqulDyZ7td1zjNR+0soB+rjq+cb/rW9wFI5fPi5GmOTvF/RnvwRkrIgW6ab4e/Fb4apMzDP6KrJjMcbMG3uj24zhshPBJ1wfopDLvO8ctVfq/O36SGYCMmEJdgddS1Um+HEY15KX817GHnd+DrS6rHC21mj6NjTMqsndYmI+4rytp9T8+6w==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-Signature-05ee8407-4fa2-47be-bb32-dc2822146cb3"><ds:X509Data><ds:X509Certificate>MIIFMDCCAxigAwIBAgIGAYJ/Ea0QMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjIwODA4MjAwNzIxWhcNMjYwODA3MjAwNzIxWjCBijEZMBcGA1UEBRMQQ1BKLTMtMTAxLTAxNDE5NDELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjE3MDUGA1UEAwwuQVJDT1MgRE9SQURPUyBDT1NUQSBSSUNBIEFEQ1IgU09DSUVEQUQgQU5PTklNQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJt5qf1627I99R/qT9wAZxuY6XU9yBmOOVNxyWK/vKcY283d3MGIVsONQRrNq4hRQnV/V5kou63+fDpUi3YVBBvhhNtryIy5hYfDIjTQmtKNwLNkqGvDRbIYbOrA5wL/PO7WONt9Qa36me6myq6dc4Eo+U6sj3Dt+yzgwTs0jjQsScOACkAigCBL5pKplV83npRJofNT6vgyPWKIwVHRyiHPVddhHt3Rpe8XTdE/UYbrzbrETTmrTfiLnkDNuiurWl7EaJgjHP/ZKDskheyEHWL2vdKys970ZvrkDWaZxPpxqQHlVknWPxutbim7DpZZYU1XobsAHgjfzKpeJZ3n3D8CAwEAAaOByjCBxzAfBgNVHSMEGDAWgBQ7bVf11nzpnhACIEHjvRrMz7NOlTAdBgNVHQ4EFgQUC6q2W0ncNjCcfHrSkwRSWz1/73EwCwYDVR0PBAQDAgbAMBMGA1UdJQQMMAoGCCsGAQUFBwMEMGMGCCsGAQUFBwEBBFcwVTBTBggrBgEFBQcwAoZHaHR0cHM6Ly9wa2kuY29tcHJvYmFudGVzZWxlY3Ryb25pY29zLmdvLmNyL3Byb2QvaW50ZXJtZWRpYXRlLXBqLXBlbS5jcnQwDQYJKoZIhvcNAQELBQADggIBAED+s8U4fn6EIeFzDov7o23Pjs+0hAHob4mB+iMyocoOLVXmt1ILs8NhWUG08EGPM2KsHfS2G2vav1BV0aFFHQV6c9PA61qNPWEqt9MjO3RaXZqAMmL+J0yE+fiER3k/vR341/HmzMy/JWwJg7QJVzWAvXGWhEOkMAaPA4jYSkTPVGtmJqk/GX2vvcPA5mXXd3KwHsuEvQ+/+Ir61JjxLDQA5pU5bqzvCx+N40pltTMUGlnmHh6zCG1rk++9l864F4GnqJCPv7l4In+f+WAO2AJIAw3CuTKJ7CNUwRsHIBI1L4ax4d5a6xq47nk8OsDddGHovoyj+PS6x2PyvJjc++uqk7fAE7R/UJWrwUB4gf6BqgFSoe05TOs9pwDLQOHtr0tiKylwxrySGV9NLett0tgfm+ZFfyYkUkm83ragqAiykkW7xou87ZoaZbqNpeeDi4nShFrE8z22BbVMPx4UK9B2xP2MMbN3cWj7gFO3t+q9Q1SlXAgVSpc2PbQ0eNGNEiorq4NbZR5myMk+hZ6Ne6NJ/JGdF5U0tv/+y0RvHlA7Q3fko5BqMBQ4kpuPNGnxY9E/LAP/c+If0LtgNpBY6wlp9eLqfeFqNeh/vA3eBxXe/hXYKbhiwR2oCsu6aSogBZoOvroqTlNl+8q1YF7/tQEaLoeUeCNUtRmy1yepWidy</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>m3mp/Xrbsj31H+pP3ABnG5jpdT3IGY45U3HJYr+8pxjbzd3cwYhWw41BGs2riFFCdX9XmSi7rf58OlSLdhUEG+GE22vIjLmFh8MiNNCa0o3As2Soa8NFshhs6sDnAv887tY4231BrfqZ7qbKrp1zgSj5TqyPcO37LODBOzSONCxJw4AKQCKAIEvmkqmVXzeelEmh81Pq+DI9YojBUdHKIc9V12Ee3dGl7xdN0T9RhuvNusRNOatN+IueQM26K6taXsRomCMc/9koOySF7IQdYva90rKz3vRm+uQNZpnE+nGpAeVWSdY/G61uKbsOlllhTVehuwAeCN/Mql4lnefcPw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-ecdc1dc0-cc6f-4146-aa65-a8778526d14c"><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-38575ca0-0baa-4c52-8f04-6cad17ef0d99" Target="#Signature-05ee8407-4fa2-47be-bb32-dc2822146cb3"><xades:SignedProperties Id="SignedProperties-Signature-05ee8407-4fa2-47be-bb32-dc2822146cb3"><xades:SignedSignatureProperties><xades:SigningTime>2025-09-06T07:37:02-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>BDWzIxcIDVQFwxAMgWpTsEFsBNk+K7OLt1WWsdBlA/k=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1659989241104</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.1/Resolucion_Comprobantes_Electronicos_DGT-R-48-2016.pdf</xades:Identifier><xades:Description /></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>Ohixl6upD6av8N7pEvDABhEL6hM=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>emisor</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#Reference-c13cfd62-d6e1-4000-b08b-3f000804b4e5"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

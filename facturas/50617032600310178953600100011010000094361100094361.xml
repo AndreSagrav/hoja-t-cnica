@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica"><Clave>50617032600310178953600100011010000094361100094361</Clave><ProveedorSistemas>3101789536</ProveedorSistemas><CodigoActividadEmisor>5610.0</CodigoActividadEmisor><NumeroConsecutivo>00100011010000094361</NumeroConsecutivo><FechaEmision>2026-03-17T19:21:15+00:00</FechaEmision><Emisor><Nombre>JARDIN DE LOS OLIVOS SOCIEDAD ANONIMA</Nombre><Identificacion><Tipo>02</Tipo><Numero>3101789536</Numero></Identificacion><Ubicacion><Provincia>1</Provincia><Canton>02</Canton><Distrito>01</Distrito><OtrasSenas>600 m oeste Peaje escazú ruta 27 Centro Comercial Avenida Escazú Torre 204 locales 102 y 103</OtrasSenas></Ubicacion><Telefono><CodigoPais>506</CodigoPais><NumTelefono>44043809</NumTelefono></Telefono><CorreoElectronico>facturacion@ar-holdings.com</CorreoElectronico></Emisor><Receptor><Nombre>Cesar andres  Batista  Vargas</Nombre><Identificacion><Tipo>01</Tipo><Numero>205390118</Numero></Identificacion><CorreoElectronico>factura.e@outlook.es</CorreoElectronico></Receptor><CondicionVenta>01</CondicionVenta><DetalleServicio><LineaDetalle><NumeroLinea>1</NumeroLinea><CodigoCABYS>6331000000000</CodigoCABYS><CodigoComercial><Tipo>04</Tipo><Codigo>3153</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>CHICKEN &amp; SHRIMP (9) CARBONARA</Detalle><PrecioUnitario>12520.33</PrecioUnitario><MontoTotal>12520.3300</MontoTotal><SubTotal>12520.3300</SubTotal><BaseImponible>12520.3300</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>08</CodigoTarifaIVA><Tarifa>13.00</Tarifa><Monto>1627.64</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>1627.64</ImpuestoNeto><MontoTotalLinea>14147.97</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>2</NumeroLinea><CodigoCABYS>6331000000000</CodigoCABYS><CodigoComercial><Tipo>04</Tipo><Codigo>3153</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>CHICKEN &amp; SHRIMP (9) CARBONARA</Detalle><PrecioUnitario>12520.33</PrecioUnitario><MontoTotal>12520.3300</MontoTotal><SubTotal>12520.3300</SubTotal><BaseImponible>12520.3300</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>08</CodigoTarifaIVA><Tarifa>13.00</Tarifa><Monto>1627.64</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>1627.64</ImpuestoNeto><MontoTotalLinea>14147.97</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>3</NumeroLinea><CodigoCABYS>2449003000100</CodigoCABYS><CodigoComercial><Tipo>04</Tipo><Codigo>3186</Codigo></CodigoComercial><Cantidad>2.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>GINGER ALE</Detalle><PrecioUnitario>1829.27</PrecioUnitario><MontoTotal>3658.5400</MontoTotal><SubTotal>3658.5400</SubTotal><BaseImponible>3658.5400</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>08</CodigoTarifaIVA><Tarifa>13.00</Tarifa><Monto>475.61</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>475.61</ImpuestoNeto><MontoTotalLinea>4134.15</MontoTotalLinea></LineaDetalle></DetalleServicio><OtrosCargos><TipoDocumentoOC>06</TipoDocumentoOC><Detalle>Serivicio Restaurante</Detalle><PorcentajeOC>10.00000</PorcentajeOC><MontoCargo>2869.91000</MontoCargo></OtrosCargos><ResumenFactura><CodigoTipoMoneda><CodigoMoneda>CRC</CodigoMoneda><TipoCambio>1.00000</TipoCambio></CodigoTipoMoneda><TotalServGravados>25040.66</TotalServGravados><TotalMercanciasGravadas>3658.54</TotalMercanciasGravadas><TotalGravado>28699.20</TotalGravado><TotalExento>0</TotalExento><TotalVenta>28699.20</TotalVenta><TotalVentaNeta>28699.20</TotalVentaNeta><TotalDesgloseImpuesto><Codigo>01</Codigo><CodigoTarifaIVA>08</CodigoTarifaIVA><TotalMontoImpuesto>3730.89</TotalMontoImpuesto></TotalDesgloseImpuesto><TotalImpuesto>3730.89</TotalImpuesto><TotalOtrosCargos>2869.91000</TotalOtrosCargos><MedioPago><TipoMedioPago>02</TipoMedioPago><TotalMedioPago>35300.02000</TotalMedioPago></MedioPago><TotalComprobante>35300.00</TotalComprobante></ResumenFactura><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference Id="xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-ref0" URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>9Ecd+VXVxoBoxTWNODkKgTnYg7d+i6wMTPRRZ7TXwYw=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-keyinfo">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>2nE7Izt488GlYpmyY2Hf12XREm1kbvl0mtZ6U4G+S70=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-signedprops" Type="http://uri.etsi.org/01903#SignedProperties">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>oijFYjBTsvHoH2794s9lbF8SLey7WIRXlpwI9S2xrNc=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-sigvalue">bOtnsFySQd6+bdTjvTaqvDU7JRHaMRApCrB9NtTI1QdBU4dPA3cU+EKmHOE0ezgM
+7e/vMAySEwq0lWpHPvrkGkdk+VwglMhcoHjN3JV4xAh8POpLXFPuUH/cYK2cZG8N
+gKd9Hqs/8S/H7jcUC8RlXYpxtrW7ESeiV3unjwGRraJoapGcoHyF4wfTVdFitY/o
+AQ6lTHK7OfiBc0BG93dcWyfO9GTa1wt+zYNNfNdNb9P8JJGaB00KMCoV9MTnavEI
+bz0qrpMQYeoYdaaMvCJuKkPAeqjavvLC8lJFDgEtsMYUxcun/oCdExCEEhsByIx5
+++qV9nzKjZRJMwehLMPdAw==</ds:SignatureValue>
+<ds:KeyInfo Id="xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-keyinfo">
+<ds:X509Data>
+<ds:X509Certificate>MIIFLDCCAxSgAwIBAgIGAZtGKaZjMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYT
+AkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANE
+R1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjUxMjIyMTMwNDUz
+WhcNMjkxMjIxMTMwNDUzWjCBhjEZMBcGA1UEBRMQQ1BKLTMtMTAxLTc4OTUzNjEL
+MAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsM
+A0NQSjEzMDEGA1UEAwwqSkFSRElOIERFIExPUyBPTElWT1MgU09DSUVEQUQgQU5P
+TklNQSBudWxsMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu17doH8s
+fe0MwJOz66QYcWDUZdaUbhGDTuBq07GcUVEMsMQ6hK1XgqFrmmw1s3hAhzQrShg4
+im/Z4RpzGQ7USOlojncOz00VIK97Mwhw2c6A6uuUsHZakP0R5L1k1Ac6JMtEN6B0
+awg3kysR0TW6nUqDEHfh6xI7gAWVPZKhSZ0YGZ9fOh83r8f0uTijshk0iziUGKfr
+9oWVnKzK+ucm9oPkBDHtHPZjtjYTlem0RF3XpdsBYVD/xTWVuzXF5pThgMrEnIfs
+FHreSbzkk4qS+EPWxMWYboadbJpm3OkDWR0pzSsv4WIJHwU2En6xGi/3VcX8EBCc
+7pOOrkpat2fCrQIDAQABo4HKMIHHMB8GA1UdIwQYMBaAFDttV/XWfOmeEAIgQeO9
+GszPs06VMB0GA1UdDgQWBBSJ3oD7hb666LvkPWphGTJ2UZXfDTALBgNVHQ8EBAMC
+BsAwEwYDVR0lBAwwCgYIKwYBBQUHAwQwYwYIKwYBBQUHAQEEVzBVMFMGCCsGAQUF
+BzAChkdodHRwczovL3BraS5jb21wcm9iYW50ZXNlbGVjdHJvbmljb3MuZ28uY3Iv
+cHJvZC9pbnRlcm1lZGlhdGUtcGotcGVtLmNydDANBgkqhkiG9w0BAQsFAAOCAgEA
+OF2MV//fceqgIhNGLPygy+GjBdeI5+jsVDnsPBltUD6FLxYrD89+ef6zKuMHPtGK
+PQiJ1wPA813klnfP6M0QA3bHOkyhsqrCjWFs3j01P1eL1ImzR3fFJr5Bd8//aKfd
+pkYNUe125V97eqrMaUopw9Ts8tjf+PQ/8jHGMV0V382W1R43Szpou6ONOKDeCV1m
+Ts8hY/VM9VR3xYofJdFoUZeSBmpWoF7fKysvBK65HU2pG7OC8awZY5WCKxG9QDXL
+nsSltCGPn7jnetpZSNCiUmw5EpF04JsG2lgL7HTQDGrPqNGld9J8whWr+yvGLkrY
+kGNVoe4/OxwH6v38ZJJudCQ4Irbxsvhs3YT+3Diw8MR2AIxzgryxah4hEJRNfmnt
+VDfAnKM9CYKilwWMK30EHlPqvTGv1iksurMWOChARWhdrD71nz3wf6+26br8TZK7
+hi9N75zlGm9WjtS5DZvPK7YUJuOa20/DPepNG22BYMVjaE/trrPzOHyENhkZPMfC
+Qqb/T2PDfhp2GE+VFX1ZnaifJCDa2m8yX+1o2xPhnxFr0oyMLun4kYtutQj6QLgs
+1fPJPKyoEJb0escVKG+fpIJxWHSuphYTk32yqDNrUKWnG+SYJeErVlO/ZxHWLfoh
+BQHPrfizIp3SjqZFr9Wiph8dgFC5nnv4OHANCm/rytg=</ds:X509Certificate>
+<ds:X509IssuerSerial>
+<ds:X509IssuerName>C=CR,O=MINISTERIO DE HACIENDA,OU=DGT,CN=CA PERSONA JURIDICA</ds:X509IssuerName>
+<ds:X509SerialNumber>1766408693347</ds:X509SerialNumber>
+</ds:X509IssuerSerial>
+</ds:X509Data>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>u17doH8sfe0MwJOz66QYcWDUZdaUbhGDTuBq07GcUVEMsMQ6hK1XgqFrmmw1s3hA
+hzQrShg4im/Z4RpzGQ7USOlojncOz00VIK97Mwhw2c6A6uuUsHZakP0R5L1k1Ac6
+JMtEN6B0awg3kysR0TW6nUqDEHfh6xI7gAWVPZKhSZ0YGZ9fOh83r8f0uTijshk0
+iziUGKfr9oWVnKzK+ucm9oPkBDHtHPZjtjYTlem0RF3XpdsBYVD/xTWVuzXF5pTh
+gMrEnIfsFHreSbzkk4qS+EPWxMWYboadbJpm3OkDWR0pzSsv4WIJHwU2En6xGi/3
+VcX8EBCc7pOOrkpat2fCrQ==</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="#xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8"><xades:SignedProperties Id="xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-signedprops"><xades:SignedSignatureProperties><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>FBa6g1eUFZCBi48WFPvtMHsl/mu7md4g80XLH0+RRZM=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>C=CR,O=MINISTERIO DE HACIENDA,OU=DGT,CN=CA PERSONA JURIDICA</ds:X509IssuerName><ds:X509SerialNumber>1766408693347</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.2/ResolucionComprobantesElectronicosDGT-R-48-2016_4.2.pdf</xades:Identifier><xades:Description/></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>eUGBLxo7SaqxaR+CGU5DCjUc514GOiOU9S0Smy5W7HE=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>ObligadoTributario</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#xmldsig-6fb6eb4f-e944-4395-a02e-d6247f4a37c8-ref0"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

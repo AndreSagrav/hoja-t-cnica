@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FacturaElectronica xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica.xsd" xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica">
+  <Clave>50629092500310109983700100001010000151602134288884</Clave>
+  <ProveedorSistemas>3101198049</ProveedorSistemas>
+  <CodigoActividadEmisor>515201</CodigoActividadEmisor>
+  <CodigoActividadReceptor>725002</CodigoActividadReceptor>
+  <NumeroConsecutivo>00100001010000151602</NumeroConsecutivo>
+  <FechaEmision>2025-09-29T14:41:00.827</FechaEmision>
+  <Emisor>
+    <Nombre>CDC INTERNACIONAL, S.A.</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3101099837</Numero>
+    </Identificacion>
+    <NombreComercial>CDC INTERNACIONAL, S.A.</NombreComercial>
+    <Ubicacion>
+      <Provincia>1</Provincia>
+      <Canton>01</Canton>
+      <Distrito>04</Distrito>
+      <Barrio>LUJÁN</Barrio>
+      <OtrasSenas>Barrio Luján, San José. Av. 10 Frente a sucursal del BANCO NACIONAL</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>22583444</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>facturav@cdcinternacional.com</CorreoElectronico>
+  </Emisor>
+  <Receptor>
+    <Nombre>BATISTA VARGAS CESAR ANDRES</Nombre>
+    <Identificacion>
+      <Tipo>01</Tipo>
+      <Numero>205390118</Numero>
+    </Identificacion>
+    <NombreComercial>BATISTA VARGAS CESAR ANDRES</NombreComercial>
+    <Ubicacion>
+      <Provincia>3</Provincia>
+      <Canton>03</Canton>
+      <Distrito>01</Distrito>
+      <Barrio>ANTIGUA</Barrio>
+      <OtrasSenas>CARTAGO, LA UNION, TRES RIOS  RESIDENCIAL VEREDAS DEL ESTE CASA 121 F</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>72940377</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>batisvar@yahoo.com</CorreoElectronico>
+  </Receptor>
+  <CondicionVenta>01</CondicionVenta>
+  <PlazoCredito>0</PlazoCredito>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <CodigoCABYS>4526100000100</CodigoCABYS>
+      <CodigoComercial>
+        <Tipo>01</Tipo>
+        <Codigo>TECLA100</Codigo>
+      </CodigoComercial>
+      <Cantidad>1.00000</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <TipoTransaccion>01</TipoTransaccion>
+      <Detalle>TECLADO LOGITECH (K120) ESPAOL USB</Detalle>
+      <PrecioUnitario>4106.01000</PrecioUnitario>
+      <MontoTotal>4106.01000</MontoTotal>
+      <SubTotal>4106.01000</SubTotal>
+      <BaseImponible>4106.01000</BaseImponible>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifaIVA>08</CodigoTarifaIVA>
+        <Tarifa>13.00000</Tarifa>
+        <Monto>533.78130</Monto>
+      </Impuesto>
+      <ImpuestoAsumidoEmisorFabrica>0</ImpuestoAsumidoEmisorFabrica>
+      <ImpuestoNeto>533.78130</ImpuestoNeto>
+      <MontoTotalLinea>4639.79130</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1.00000</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalServGravados>0.00000</TotalServGravados>
+    <TotalServExentos>0.00000</TotalServExentos>
+    <TotalServExonerado>0.00000</TotalServExonerado>
+    <TotalServNoSujeto>0.00000</TotalServNoSujeto>
+    <TotalMercanciasGravadas>4106.01000</TotalMercanciasGravadas>
+    <TotalMercanciasExentas>0.00000</TotalMercanciasExentas>
+    <TotalMercExonerada>0.00000</TotalMercExonerada>
+    <TotalMercNoSujeta>0.00000</TotalMercNoSujeta>
+    <TotalGravado>4106.01000</TotalGravado>
+    <TotalExento>0.00000</TotalExento>
+    <TotalExonerado>0.00000</TotalExonerado>
+    <TotalNoSujeto>0.00000</TotalNoSujeto>
+    <TotalVenta>4106.01000</TotalVenta>
+    <TotalDescuentos>0.00000</TotalDescuentos>
+    <TotalVentaNeta>4106.01000</TotalVentaNeta>
+    <TotalDesgloseImpuesto>
+      <Codigo>01</Codigo>
+      <CodigoTarifaIVA>08</CodigoTarifaIVA>
+      <TotalMontoImpuesto>533.78130</TotalMontoImpuesto>
+    </TotalDesgloseImpuesto>
+    <TotalImpuesto>533.78130</TotalImpuesto>
+    <TotalImpAsumEmisorFabrica>0.00000</TotalImpAsumEmisorFabrica>
+    <TotalIVADevuelto>0.00000</TotalIVADevuelto>
+    <TotalOtrosCargos>0.00000</TotalOtrosCargos>
+    <MedioPago>
+      <TipoMedioPago>02</TipoMedioPago>
+      <TotalMedioPago>4639.79130</TotalMedioPago>
+    </MedioPago>
+    <TotalComprobante>4639.79130</TotalComprobante>
+  </ResumenFactura>
+  <Otros>
+    <OtroTexto>FACTURA DE VENTA </OtroTexto>
+  </Otros>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-18300b7c-35f2-477e-9541-82888836fd25"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="Reference-4124242e-d36e-47d5-aa12-bc8a9692cfa8" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>mX5AZzn4oufm/wRkqn5ehGoTN99SUNgbUditFezBaU0=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-18300b7c-35f2-477e-9541-82888836fd25"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>m3WcGXWOyMeFN8XjhBxXKFgOsP7SH6mWDNcftwUIQvc=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-18300b7c-35f2-477e-9541-82888836fd25"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>xwL2J8xEWdG8/JPuBq1SA5OnKg4I5bdK/PcVkd96Gtk=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-18300b7c-35f2-477e-9541-82888836fd25">jjCcNmBw159gyn2eg9wnQ80AqMc64RLbGL+FCllh8AZEiHg0iDl0rjoAtkHwQabUoNK/zGDqSPw2lBv6hl2u7IFUna84UcwMwmVFXzcjP8j/j9maOCOQHnPxLhiB6yJNY9uDnh7108zW2MX64LrL/pW2Or0tdspuDA6hMoxqj4n78B+SseXOZ4sgKJFPHK6u1/4Hi+hLXsgWG/vf/aqspwA22PRUiHMb2SjbkiIkyltGQ5QgCsMAYa048vEhgPC01hO/0hW4auA1dJwi8t0WVwm1STzrgrUDkendJPpY32nMOSUpZICn2YqUyWSAh1Rdb740VnDZRUEIJDnuRM9mdA==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-Signature-18300b7c-35f2-477e-9541-82888836fd25"><ds:X509Data><ds:X509Certificate>MIIFJjCCAw6gAwIBAgIGAYLGVmbjMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjIwODIyMTYxNTI3WhcNMjYwODIxMTYxNTI3WjCBgDEZMBcGA1UEBRMQQ1BKLTMtMTAxLTA5OTgzNzELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjEtMCsGA1UEAwwkQyBEIEMgSU5URVJOQUNJT05BTCBTT0NJRURBRCBBTk9OSU1BMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwbSDb54P1US0MjESUkpIFcppg+HKKNHRD8OTgmuMP+4fyevGkGc7ioZ0TjwpBC6l1INkrXt1T4iqpZKygJwdWz25cjvoA5Pqlvmok9FcjMe0DbHExai9zHx96tDC7UIEEbRwcT+6zmpbAGF+3vValSrfsN5K/yK3X1iEdvak6at5oXrj6ph33JLN6fz91AzP4s6oxNBkdD5gbr9v7Cf9gpGFDMFu7MuYoyzL2VSCR5Hi0cwDlUU0xTsitGUPWX7nNPvRE4TCHV3q1sovUNk9UvsdbFpa5RfnbU8ZbzId7qG0p7W6M4rg+Gs/IiC2WJw14lGAcBD2wOsfsZTL+uXDewIDAQABo4HKMIHHMB8GA1UdIwQYMBaAFDttV/XWfOmeEAIgQeO9GszPs06VMB0GA1UdDgQWBBQtfn8qOXPDUMqE/aGG3A8oHPUgUjALBgNVHQ8EBAMCBsAwEwYDVR0lBAwwCgYIKwYBBQUHAwQwYwYIKwYBBQUHAQEEVzBVMFMGCCsGAQUFBzAChkdodHRwczovL3BraS5jb21wcm9iYW50ZXNlbGVjdHJvbmljb3MuZ28uY3IvcHJvZC9pbnRlcm1lZGlhdGUtcGotcGVtLmNydDANBgkqhkiG9w0BAQsFAAOCAgEAjPZldas7XKCIIdnZb5qoFbwR4uXOAplVLZkSJPMd7f0wrmsP/+yQ6WvTLqge2PquS4f8K3fKGTogEvVI50oEvYdTy/05WP1rksK+zdH7629CWMAh6xpGEsoBztpO+Ab50yyag96krSpIEYjt/g2dWsfxsP2Y28hTsnI2tF2AYpm8rMkzTBrU9E1qc1mehVQvmrCNDbAi2yBa4mqOBSfrcUYLE0nMVKDVM1AClOF3LOtgfVeh3/Q6EpNC0banB6MLsXO8ly+iUlrANEY01SZCSPycHsgBeSlO2QWJF5euQDQcAVXygwm5qbQl+zQMLPiJ+PYpo7IO+qTTyYYhwMyFlzTCIGXodr3FAzXW6VdSYYgiAgqO7rKV+YcE6VR4g1kssfq+U5+ZR1ESq8ChJSq1iuumv0t2NaYPlJWtKBzBDJL8oi/PLZFbOwBga9/pXfuL7A6mi95vjmgt1CAMcJ21QllcEB/MzHjsMpSau/tdZK+eqUVvR7SvSTA6N11s3gGehO+bYdII9hozRmQ/VKLyzQ3Dt5HTroFVl8C8kdAt8JMxOWb1myFD9HL6IBLYuDauxQNd7jOju1/Y7G4OvBl50pIxZfz4p7x/MWPLB6dLgSK5oCYcPYwVtyAjf2yrkI3XPlPm6XSynGIdbtbbpI6dzxWM0/5k/dX6973R1VyvxdQ=</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>wbSDb54P1US0MjESUkpIFcppg+HKKNHRD8OTgmuMP+4fyevGkGc7ioZ0TjwpBC6l1INkrXt1T4iqpZKygJwdWz25cjvoA5Pqlvmok9FcjMe0DbHExai9zHx96tDC7UIEEbRwcT+6zmpbAGF+3vValSrfsN5K/yK3X1iEdvak6at5oXrj6ph33JLN6fz91AzP4s6oxNBkdD5gbr9v7Cf9gpGFDMFu7MuYoyzL2VSCR5Hi0cwDlUU0xTsitGUPWX7nNPvRE4TCHV3q1sovUNk9UvsdbFpa5RfnbU8ZbzId7qG0p7W6M4rg+Gs/IiC2WJw14lGAcBD2wOsfsZTL+uXDew==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-e5df8f71-59ac-4d26-acfe-9d1fffe022dd"><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-b8fa79c7-9bfb-408b-a86b-a70014b4fea0" Target="#Signature-18300b7c-35f2-477e-9541-82888836fd25"><xades:SignedProperties Id="SignedProperties-Signature-18300b7c-35f2-477e-9541-82888836fd25"><xades:SignedSignatureProperties><xades:SigningTime>2025-09-29T14:41:01-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>1vnkHijr2E4k/p/igRwJ8AlJaS2hwx9Vn2zhVctIDU0=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1661184927459</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica</xades:Identifier><xades:Description /></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>Ohixl6upD6av8N7pEvDABhEL6hM=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>ObligadoTributario</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#Reference-4124242e-d36e-47d5-aa12-bc8a9692cfa8"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

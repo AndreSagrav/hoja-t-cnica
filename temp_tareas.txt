@@ -1,0 +1,158 @@
+﻿import { ensureShell } from '../components/shell.js';
+import { esc } from '../lib/utils.js';
+
+const TAREAS_DATA = {
+  empresarial: [
+    { id: 'emp-equipos', icon: 'ðŸ¢', title: 'GestiÃ³n de Equipos', children: ['Levantamiento de inventario','Etiquetado de equipos','Registro en sistema','GeneraciÃ³n de reportes'] },
+    { id: 'emp-despliegue', icon: 'ðŸš€', title: 'Despliegue de Equipos', children: ['PreparaciÃ³n de imagen de S.O.','InstalaciÃ³n masiva','ConfiguraciÃ³n de dominio','VerificaciÃ³n de funcionamiento'] },
+    { id: 'emp-reemplazo', icon: 'ðŸ”„', title: 'Reemplazo de Equipos', children: ['Backup de datos','MigraciÃ³n a nuevo equipo','ConfiguraciÃ³n de perfiles','Retiro de equipo antiguo'] },
+    { id: 'emp-antivirus', icon: 'ðŸ”', title: 'ConfiguraciÃ³n de Antivirus', children: ['InstalaciÃ³n de agente','ConfiguraciÃ³n de polÃ­ticas','ProgramaciÃ³n de escaneos','Monitoreo de amenazas'] },
+    { id: 'emp-usuarios', icon: 'ðŸ‘¤', title: 'GestiÃ³n de Usuarios', children: ['CreaciÃ³n de cuentas','AsignaciÃ³n de permisos','ConfiguraciÃ³n de MFA','RevisiÃ³n de accesos'] },
+    { id: 'emp-firewall', icon: 'ðŸ›¡ï¸', title: 'ConfiguraciÃ³n de Firewall', children: ['DefiniciÃ³n de reglas','Bloqueo de puertos','ConfiguraciÃ³n de VPN','Monitoreo de logs'] },
+    { id: 'emp-servidor', icon: 'ðŸŒ', title: 'ConfiguraciÃ³n de Servidor', children: ['InstalaciÃ³n de S.O.','ConfiguraciÃ³n de roles','Active Directory','ConfiguraciÃ³n de backups'] },
+    { id: 'emp-red-mantenimiento', icon: 'ðŸ”§', title: 'Mantenimiento de Red', children: ['Monitoreo de switches','Cableado estructurado','AnÃ¡lisis de trÃ¡fico','OptimizaciÃ³n de ancho'] },
+    { id: 'emp-vpn', icon: 'ðŸ”—', title: 'ConfiguraciÃ³n de VPN', children: ['Servidor VPN','Usuarios remotos','Prueba de conectividad','DocumentaciÃ³n'] },
+    { id: 'emp-backups-config', icon: 'ðŸ’¾', title: 'ConfiguraciÃ³n de Backups', children: ['SelecciÃ³n de datos','Schedule','PolÃ­tica de retenciÃ³n','Prueba de restauraciÃ³n'] },
+    { id: 'emp-backups-monitoreo', icon: 'ðŸ“Š', title: 'Monitoreo de Backups', children: ['VerificaciÃ³n de logs','Alertas de fallos','Pruebas periÃ³dicas','OptimizaciÃ³n'] },
+    { id: 'emp-erp', icon: 'ðŸ“Š', title: 'InstalaciÃ³n de ERP/CRM', children: ['PreparaciÃ³n servidor','Base de datos','ConfiguraciÃ³n app','MigraciÃ³n de datos'] },
+    { id: 'emp-software-mantenimiento', icon: 'ðŸ”§', title: 'Mantenimiento de Software', children: ['Actualizaciones','Monitoreo rendimiento','ResoluciÃ³n incidencias','OptimizaciÃ³n BD'] },
+    { id: 'emp-print-server', icon: 'ðŸ–¨ï¸', title: 'Servidor de ImpresiÃ³n', children: ['InstalaciÃ³n Print Server','Impresoras compartidas','GestiÃ³n de drivers','ConfiguraciÃ³n cuotas'] },
+    { id: 'emp-impresoras', icon: 'ðŸ–¨ï¸', title: 'Mantenimiento de Impresoras', children: ['Monitoreo de niveles','ConfiguraciÃ³n alertas','Mantenimiento preventivo','GestiÃ³n consumibles'] }
+  ],
+  residencial: [
+    { id: 'res-hardware-diag', icon: 'ðŸ”', title: 'DiagnÃ³stico de Hardware', children: ['RevisiÃ³n fÃ­sica','Prueba perifÃ©ricos','VerificaciÃ³n conexiones','Test RAM','DiagnÃ³stico disco'] },
+    { id: 'res-hardware-limpieza', icon: 'ðŸ§¹', title: 'Limpieza de Equipo', children: ['Limpieza interna','Limpieza ventiladores','Pasta tÃ©rmica','Limpieza puertos'] },
+    { id: 'res-hardware-reemplazo', icon: 'ðŸ”§', title: 'Reemplazo de Componentes', children: ['Identificar defecto','AdquisiciÃ³n repuesto','InstalaciÃ³n fÃ­sica','VerificaciÃ³n'] },
+    { id: 'res-hardware-preventivo', icon: 'âš™ï¸', title: 'Mantenimiento Preventivo', children: ['BIOS/Firmware','VerificaciÃ³n temperatura','OptimizaciÃ³n arranque','Limpieza archivos'] },
+    { id: 'res-so-instalacion', icon: 'ðŸ’»', title: 'InstalaciÃ³n de S.O.', children: ['Backup datos','Formateo disco','InstalaciÃ³n S.O.','Drivers','ConfiguraciÃ³n'] },
+    { id: 'res-so-software', icon: 'ðŸ“¦', title: 'InstalaciÃ³n de Software', children: ['Antivirus','Office/Suite ofimÃ¡tica','Navegadores','Software esencial'] },
+    { id: 'res-so-virus', icon: 'ðŸ¦ ', title: 'EliminaciÃ³n de Virus', children: ['Escaneo completo','EliminaciÃ³n amenazas','Limpieza registro','RestauraciÃ³n sistema'] },
+    { id: 'res-so-optimizacion', icon: 'âš¡', title: 'OptimizaciÃ³n de Sistema', children: ['DesinstalaciÃ³n programas','Limpieza disco','OptimizaciÃ³n inicio','DesfragmentaciÃ³n'] },
+    { id: 'res-red-config', icon: 'ðŸŒ', title: 'ConfiguraciÃ³n de Red', children: ['Wi-Fi','IP estÃ¡tica','DNS','VerificaciÃ³n conectividad'] },
+    { id: 'res-red-router', icon: 'ðŸ“¡', title: 'Router/Modem', children: ['Acceso configuraciÃ³n','ContraseÃ±a Wi-Fi','Puertos','Firmware'] },
+    { id: 'res-red-problemas', icon: 'ðŸ”§', title: 'ResoluciÃ³n de Problemas', children: ['DiagnÃ³stico conexiÃ³n','Reinicio equipos','Cableado','Firewall'] },
+    { id: 'res-movil-config', icon: 'ðŸ“±', title: 'ConfiguraciÃ³n MÃ³vil', children: ['ConfiguraciÃ³n inicial','SincronizaciÃ³n cuentas','Apps esenciales','Seguridad'] },
+    { id: 'res-movil-transferencia', icon: 'ðŸ“¤', title: 'Transferencia de Datos', children: ['Backup datos','Nuevo dispositivo','Integridad datos','EliminaciÃ³n segura'] },
+    { id: 'res-impresora-instalacion', icon: 'ðŸ–¨ï¸', title: 'InstalaciÃ³n de Impresora', children: ['Drivers','ConfiguraciÃ³n red','Prueba impresiÃ³n','CalibraciÃ³n'] },
+    { id: 'res-impresora-mantenimiento', icon: 'ðŸ”§', title: 'Mantenimiento Impresora', children: ['Limpieza cabezales','AlineaciÃ³n cartuchos','Niveles tinta','Limpieza rodillos'] }
+  ]
+};
+
+const ICON_BG = {
+  'ðŸ¢':'bg-emp','ðŸš€':'bg-emp','ðŸ”„':'bg-emp','ðŸ”':'bg-sec','ðŸ‘¤':'bg-emp','ðŸ›¡ï¸':'bg-sec','ðŸŒ':'bg-net','ðŸ”§':'bg-hw',
+  'ðŸ”—':'bg-net','ðŸ’¾':'bg-bak','ðŸ“Š':'bg-sw','ðŸ–¨ï¸':'bg-prt','ðŸ”':'bg-hw','ðŸ§¹':'bg-hw','âš™ï¸':'bg-hw','ðŸ’»':'bg-sw',
+  'ðŸ“¦':'bg-sw','ðŸ¦ ':'bg-sec','âš¡':'bg-sw','ðŸ“¡':'bg-net','ðŸ“±':'bg-mob','ðŸ“¤':'bg-mob'
+};
+
+export async function tareasView() {
+  const shell = ensureShell('/tareas');
+  shell.setTitle(''); shell.setActions('');
+  const c = shell.content();
+
+  c.innerHTML = `
+<div class="tasks-panel">
+  <div class="tasks-header">
+    <div class="tasks-header-title">âœ… Lista de Tareas</div>
+    <div class="tasks-header-badge">Trabajo Realizado</div>
+  </div>
+
+  <div class="tasks-category">
+    <div class="tasks-category-header">
+      <div class="tasks-category-icon">ðŸ¢</div>
+      <div class="tasks-category-title">Empresarial</div>
+      <div class="tasks-category-count">${TAREAS_DATA.empresarial.length} tareas</div>
+    </div>
+    <div class="tasks-grid" id="grid-emp">
+      ${TAREAS_DATA.empresarial.map(card => renderCard(card, 'emp')).join('')}
+    </div>
+  </div>
+
+  <div class="tasks-category">
+    <div class="tasks-category-header">
+      <div class="tasks-category-icon">ðŸ </div>
+      <div class="tasks-category-title">Residencial</div>
+      <div class="tasks-category-count">${TAREAS_DATA.residencial.length} tareas</div>
+    </div>
+    <div class="tasks-grid" id="grid-res">
+      ${TAREAS_DATA.residencial.map(card => renderCard(card, 'res')).join('')}
+    </div>
+  </div>
+
+  <div class="tasks-footer">
+    <button class="task-add-custom" id="btn-add-custom">
+      <span>ï¼‹</span> <span>Agregar tarea personalizada</span>
+    </button>
+  </div>
+</div>`;
+
+  initCardInteractions();
+  document.getElementById('btn-add-custom').addEventListener('click', () => {
+    alert('Agregar tarea personalizada (funcionalidad prÃ³ximamente)');
+  });
+}
+
+function renderCard(card, prefix) {
+  const bgClass = ICON_BG[card.icon] || 'bg-emp';
+  const itemCount = card.children.length;
+  return `
+<div class="task-card" data-id="${card.id}">
+  <div class="task-card-header">
+    <div class="task-card-icon ${bgClass}">${card.icon}</div>
+    <div class="task-card-title">${esc(card.title)}</div>
+    <div class="task-card-toggle" data-toggle="${card.id}">â–¼</div>
+  </div>
+  <div class="task-card-items" id="items-${card.id}">
+    ${card.children.map((item, idx) => `
+      <div class="task-item" data-item="${card.id}-${idx}">
+        <div class="task-item-checkbox" data-check="${card.id}-${idx}"></div>
+        <div class="task-item-text" data-text="${card.id}-${idx}">${esc(item)}</div>
+      </div>
+    `).join('')}
+  </div>
+  <div class="task-card-footer">
+    <button class="task-add-action" data-add="${card.id}">+ Agregar acciÃ³n</button>
+  </div>
+</div>`;
+}
+
+function initCardInteractions() {
+  document.querySelectorAll('.task-card-toggle').forEach(toggle => {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = toggle.dataset.toggle;
+      const items = document.getElementById(`items-${id}`);
+      const isExp = items.classList.contains('expanded');
+      if (isExp) {
+        items.classList.remove('expanded');
+        toggle.classList.remove('expanded');
+      } else {
+        items.classList.add('expanded');
+        toggle.classList.add('expanded');
+      }
+    });
+  });
+
+  document.querySelectorAll('.task-item-checkbox').forEach(box => {
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+      box.classList.toggle('checked');
+      const id = box.dataset.check;
+      const text = document.querySelector(`.task-item-text[data-text="${id}"]`);
+      if (box.classList.contains('checked')) {
+        text.classList.add('checked');
+        box.textContent = 'âœ“';
+      } else {
+        text.classList.remove('checked');
+        box.textContent = '';
+      }
+    });
+  });
+
+  document.querySelectorAll('.task-add-action').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      alert('Agregar acciÃ³n (funcionalidad prÃ³ximamente)');
+    });
+  });
+}
+

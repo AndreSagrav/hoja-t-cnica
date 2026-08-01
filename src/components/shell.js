@@ -3,6 +3,9 @@
 import { signOut, getUser } from '../lib/auth.js';
 import { initials, toast } from '../lib/utils.js';
 import { LOGO_DATA_URL } from '../assets/logo.js';
+import { createBottomNav, updateBottomNavActive } from './bottom-nav.js';
+import { initTheme, toggleTheme, getThemeIcon } from '../lib/theme.js';
+import { initConnectivityBar } from './connectivity-bar.js';
 
 const NAV_ITEMS = [
   { section: 'Gestión Principal', items: [
@@ -59,7 +62,12 @@ export function ensureShell(activePath) {
               </button>
               <h1 class="topbar-title" id="view-title">—</h1>
             </div>
-            <div class="topbar-actions" id="view-actions"></div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="topbar-theme-toggle" id="topbar-theme-toggle" title="Cambiar Tema (Claro / Oscuro)">
+                ${getThemeIcon()}
+              </button>
+              <div class="topbar-actions" id="view-actions"></div>
+            </div>
           </header>
           <section class="content" id="view-content"></section>
         </main>
@@ -96,6 +104,17 @@ export function ensureShell(activePath) {
           transition: all 0.15s;
         }
         .topbar-toggle:hover { background: var(--surface); color: var(--navy); border-color: var(--text-soft); }
+        .topbar-theme-toggle {
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px;
+          border-radius: 8px;
+          border: 1.5px solid var(--border);
+          background: var(--surface-2);
+          color: var(--text-mid);
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .topbar-theme-toggle:hover { background: var(--surface); color: var(--navy); border-color: var(--text-soft); }
         @media (max-width: 768px) {
           .topbar-toggle { display: flex; }
         }
@@ -113,6 +132,15 @@ export function ensureShell(activePath) {
     document.getElementById('sidebar-overlay').addEventListener('click', () => {
       document.getElementById('app-sidebar').classList.remove('open');
       document.getElementById('sidebar-overlay').classList.remove('active');
+    });
+
+    // Topbar theme toggle
+    document.getElementById('topbar-theme-toggle').addEventListener('click', () => {
+      toggleTheme();
+      const newIcon = getThemeIcon();
+      document.getElementById('topbar-theme-toggle').innerHTML = newIcon;
+      const footerThemeBtn = document.getElementById('btn-theme');
+      if (footerThemeBtn) footerThemeBtn.innerHTML = newIcon;
     });
 
     // CTA Nuevo Documento
@@ -239,11 +267,18 @@ export function ensureShell(activePath) {
           <div class="user-name">${name}</div>
           <div class="user-mail">${user.email || ''}</div>
         </div>
+        <button class="btn-logout" id="btn-theme" title="Cambiar tema" style="margin-right:4px;">
+          ${getThemeIcon()}
+        </button>
         <button class="btn-logout" id="btn-logout" title="Cerrar sesión">
           <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         </button>
       </div>
     `;
+    document.getElementById('btn-theme').addEventListener('click', () => {
+      toggleTheme();
+      document.getElementById('btn-theme').innerHTML = getThemeIcon();
+    });
     document.getElementById('btn-logout').addEventListener('click', async () => {
       await signOut();
       window.location.hash = '/login';
@@ -252,10 +287,20 @@ export function ensureShell(activePath) {
     footer.innerHTML = '';
   }
 
+  // Create/update bottom navigation bar (mobile only)
+  createBottomNav(activePath);
+
+  // Initialize theme system (dark mode auto-detection + persistence)
+  initTheme();
+
+  // Initialize connectivity bar (offline/online status)
+  initConnectivityBar();
+
   return {
     setTitle(t)   { document.getElementById('view-title').textContent = t; },
     setActions(html) { document.getElementById('view-actions').innerHTML = html || ''; },
-    content:      () => document.getElementById('view-content')
+    content:      () => document.getElementById('view-content'),
+    updateNav(path) { updateBottomNavActive(path); }
   };
 }
  

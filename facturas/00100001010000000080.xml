@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica"><Clave>50626082400020539011800100001010000000080119007328</Clave><CodigoActividad>725002</CodigoActividad><NumeroConsecutivo>00100001010000000080</NumeroConsecutivo><FechaEmision>2024-08-26T17:25:09-06:00</FechaEmision><Emisor><Nombre>Cesar Andres Batista Vargas</Nombre><Identificacion><Tipo>01</Tipo><Numero>205390118</Numero></Identificacion><NombreComercial>INNOVIO CR</NombreComercial><Ubicacion><Provincia>3</Provincia><Canton>03</Canton><Distrito>01</Distrito><OtrasSenas>No especifica</OtrasSenas></Ubicacion><Telefono><CodigoPais>0</CodigoPais><NumTelefono>62777500</NumTelefono></Telefono><CorreoElectronico>cesar.batista@outlook.es</CorreoElectronico></Emisor><Receptor><Nombre>Jose Joaquin Ugarte</Nombre><Identificacion><Tipo>02</Tipo><Numero>3101329918</Numero></Identificacion><NombreComercial>SUMINISTROS Y SERVICIOS INTEGRALES SSI, S.A.</NombreComercial><Ubicacion><Provincia>1</Provincia><Canton>01</Canton><Distrito>01</Distrito><OtrasSenas>No especifica</OtrasSenas></Ubicacion><Telefono><CodigoPais>0</CodigoPais><NumTelefono>83917567</NumTelefono></Telefono><CorreoElectronico>facturaelectronicassi@gmail.com</CorreoElectronico></Receptor><CondicionVenta>01</CondicionVenta><MedioPago>04</MedioPago><DetalleServicio><LineaDetalle><NumeroLinea>1</NumeroLinea><Codigo>8713000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>001</Codigo></CodigoComercial><Cantidad>6.000</Cantidad><UnidadMedida>Sp</UnidadMedida><Detalle>Hora Tecnica Facturable</Detalle><PrecioUnitario>15000.00000</PrecioUnitario><MontoTotal>90000.00000</MontoTotal><Descuento><MontoDescuento>22500.00000</MontoDescuento><NaturalezaDescuento>Otros</NaturalezaDescuento></Descuento><SubTotal>67500.00000</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13</Tarifa><Monto>8775.00000</Monto></Impuesto><ImpuestoNeto>8775</ImpuestoNeto><MontoTotalLinea>76275.00000</MontoTotalLinea></LineaDetalle></DetalleServicio><ResumenFactura><CodigoTipoMoneda><CodigoMoneda>CRC</CodigoMoneda><TipoCambio>1</TipoCambio></CodigoTipoMoneda><TotalServGravados>90000</TotalServGravados><TotalServExentos>0</TotalServExentos><TotalMercanciasGravadas>0</TotalMercanciasGravadas><TotalMercanciasExentas>0</TotalMercanciasExentas><TotalGravado>90000</TotalGravado><TotalExento>0</TotalExento><TotalVenta>90000</TotalVenta><TotalDescuentos>22500</TotalDescuentos><TotalVentaNeta>67500</TotalVentaNeta><TotalImpuesto>8775.00000</TotalImpuesto><TotalComprobante>76275.00000</TotalComprobante></ResumenFactura><Otros><OtroTexto>Descripcion del Problema:&#13;
+&#13;
+*Habilitar credenciales y espacio de trabajo fisico para la senora&#13;
+Ana Cano. &#13;
+* Configuracion completa de dispositivo</OtroTexto></Otros><ds:Signature Id="xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference Id="xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc-ref0" URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>2WFAWUOJhv46LGkgb8J0/F4pq/geFDLK7Lqi6sNXfnw=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc-signedprops">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>Y/sNgKgmnnZaHT5arJnz9Q2T5/w3p/nubafK3MVIkTs=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc-sigvalue">
+bmO0zOpmBIbJ662agM3M6gfQzb/gw5SP6EXUXCGBTEWjD2VOZp5yI7JAZCe+tiI+mGOErtuarbbK&#13;
+m6EMUs64IyAYt29XbRl90ii05ohkmZc4W46NoiwlYC8pmV2miWhM9e25SwSH4eWXxMycyWIdjhoL&#13;
+MoH61grZhlOWLsZXOiMH8FdRwCpM5zxxyM2I2nc+msl3wedwxUwZbMiePaZzXDUi3VnUW2QV5xjQ&#13;
+y0CMrufVj5Bui9WbjIpZdao8ki+HZqoWfAxUZsIX5l5l3I8FxhMd9Kd5WOErorOKwkLVbQz6oHS5&#13;
+XguCFEfJVGbqlcU3PNteK9iYW6MEsGIDsM2bOQ==
+</ds:SignatureValue>
+<ds:KeyInfo>
+<ds:X509Data>
+<ds:X509Certificate>
+MIIFSTCCAzGgAwIBAgIGAX4CoPT/MA0GCSqGSIb3DQEBCwUAMFgxCzAJBgNVBAYTAkNSMR8wHQYD&#13;
+VQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxGjAYBgNVBAMMEUNBIFBF&#13;
+UlNPTkEgRklTSUNBMB4XDTIxMTIyODIwMDAwOVoXDTI1MTIyNzIwMDAwOVowgaUxGTAXBgNVBAUT&#13;
+EENQRi0wMi0wNTM5LTAxMTgxFzAVBgNVBAQMDkJBVElTVEEgVkFSR0FTMRUwEwYDVQQqDAxDRVNB&#13;
+UiBBTkRSRVMxCzAJBgNVBAYTAkNSMRcwFQYDVQQKDA5QRVJTT05BIEZJU0lDQTEMMAoGA1UECwwD&#13;
+Q1BGMSQwIgYDVQQDDBtDRVNBUiBBTkRSRVMgQkFUSVNUQSBWQVJHQVMwggEiMA0GCSqGSIb3DQEB&#13;
+AQUAA4IBDwAwggEKAoIBAQC2BZIW1dV8WGDCdyFO0M3AfuozeQ6sCDsUfGUogw3xZEaRoNIqVSxA&#13;
+Zlq9VB7/rAA17umjDpIQdlgBW5v2y6CHMbOaz7RmvRpmb4st0erUKs6Ony4A5jEGq3dw9i5wFbb6&#13;
+/fczPizcVi7Wpg8C+UqLhvdIEWM+41i2roCKj+Lj2pGcMgiEfnwce8zHCsKP6ZcQSwSpw5s6RQ5l&#13;
+j/NcfYEWx9ibBpk0YAU8R5wbSS7DzKVOI+Ob7Oznw/DcrlOJlQuo2vgIRwHPgPkNxRWWEypHEJjB&#13;
+YuA7i+TI5OZaIB8yQGOlEciSS5rTSMGYzKTtHKgIwjFrKRS0v1boMfKgjYpjAgMBAAGjgcowgccw&#13;
+HwYDVR0jBBgwFoAUE/ZqQQ3toiRF0ciUqEGDfGIla1kwHQYDVR0OBBYEFBvgL5ASaw+iW0xQ3uLJ&#13;
+/jFhnYU5MAsGA1UdDwQEAwIGwDATBgNVHSUEDDAKBggrBgEFBQcDBDBjBggrBgEFBQcBAQRXMFUw&#13;
+UwYIKwYBBQUHMAKGR2h0dHBzOi8vcGtpLmNvbXByb2JhbnRlc2VsZWN0cm9uaWNvcy5nby5jci9w&#13;
+cm9kL2ludGVybWVkaWF0ZS1wZi1wZW0uY3J0MA0GCSqGSIb3DQEBCwUAA4ICAQCXh3BT/bBiDBz3&#13;
+c4r3ftdof0RSAKV7DUEZK4YjprljS3ppVlNQRRQ/TDX8QakuIoNjs6js7Xu0CyXDl5BPnpIupgeO&#13;
+GgIZI/Nk2mTGg6Z1ZJ6M+DXkce/SIyKqpsgUZKuNiT2O6k25H5g2reakcYZfw2Y8pBnG+zAUo9kB&#13;
+oIMKAet4aDrB3qSLf8x3OVKRCovy0m2InlxQLr/b1RXfV8J147UxozFA6nykp+8ubnQuMBUedTzs&#13;
+NAmMh5+Q7JVdMRDn+5WjrevyCUdo8UKxDAnDFqi7GdKCGEk0mmBZyDXLaA2AOT+X+WtDwO15NPdJ&#13;
+A4/qdnrtJx/q29yM8HYc2GHQ4/bGf8qNmgxf4TmBxoaaQ3jgzppCXxOdYR1WMMPJQYjll0Fx5dUp&#13;
+yUlXArbxBpE5k1+ZM0D61j5+umuQTBFk10F3OMZoUR7NWsXsHDkKbm7Xtcnflb9la5o9RSbUZrIB&#13;
+P9ISSgb+Cs/P5LzkXYKPWE/hsDqHB28uDtkHYe1hhibekCLrbYJCvyDLRzmBS7xDCNgDQuR+sNXo&#13;
+JKGytKn5CT9yhLnJ6OLIaF/7+yqY2gJVscvy9I2Po/WIlOSOkwKCPg5qUSyZV2Qo6u4qFKW6O1kI&#13;
+0oBzlJE2+07arzrlJMtvoimghAkKlp/lIo0V+Y/vFNQCF/UyG8NTj1oAfkgsIw==
+</ds:X509Certificate>
+<ds:X509IssuerSerial>
+<ds:X509IssuerName>cn=CA PERSONA FISICA,ou=DGT,o=MINISTERIO DE HACIENDA,c=CR</ds:X509IssuerName>
+<ds:X509SerialNumber>1640721609983</ds:X509SerialNumber>
+</ds:X509IssuerSerial>
+<ds:X509SubjectName>cn=CESAR ANDRES BATISTA VARGAS,ou=CPF,o=PERSONA FISICA,c=CR,givenName=CESAR ANDRES,sn=BATISTA VARGAS,serialNumber=CPF-02-0539-0118</ds:X509SubjectName>
+</ds:X509Data>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#" Target="#xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc"><xades:SignedProperties Id="xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc-signedprops"><xades:SignedSignatureProperties><xades:SigningTime>2024-08-26T17:26:46.711-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>gbBxsaK9AwC5lR+WSFV9yvBPIUW6/1OZVOOFXIR634I=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>cn=CA PERSONA FISICA,ou=DGT,o=MINISTERIO DE HACIENDA,c=CR</ds:X509IssuerName><ds:X509SerialNumber>1640721609983</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://www.hacienda.go.cr/ATV/ComprobanteElectronico/docs/esquemas/2016/v4.3/ResolucionComprobantesElectronicosDGT-R-033-2019_4.3.pdf</xades:Identifier></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>pRDbKdXyDf9HARh/viMrkv+qSLG00Cmi/UYJ4U+JbSQ=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#xmldsig-5aeea299-c443-446f-9e60-985d9d0ed3fc-ref0"><xades:MimeType>application/octet-stream</xades:MimeType></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object>
+</ds:Signature></FacturaElectronica>

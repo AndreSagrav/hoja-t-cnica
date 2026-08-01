@@ -233,6 +233,9 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
     observaciones: formData.observations || ''
   };
   if (formData.tiempoEstimado) docData.tiempo_estimado = formData.tiempoEstimado;
+  if (formData.docKind === 'orden' && Array.isArray(formData.equipos) && formData.equipos.length > 0) {
+    docData.equipos = formData.equipos;
+  }
 
   let docId = currentDocumentoId;
   let docRetry = 5;
@@ -268,8 +271,8 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
     linea_num: i + 1,
     descripcion: line.descripcion,
     cantidad: line.cantidad,
-    precio: line.precio,
-    total: line.precio * line.cantidad
+    precio_unitario: line.precio,
+    total_linea: line.precio * line.cantidad
   }));
 
   // Siempre borrar líneas existentes antes (incluso si ahora no hay líneas)
@@ -303,7 +306,9 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
   if (formData.docKind === 'orden') {
     const hojaData = {
       documento_id: docId,
-      diagnostico: formData.diagnosis || formData.problem || '',
+      problema_reportado: formData.problem || '',
+      diagnostico: formData.diagnosis || '',
+      observaciones: formData.observations || '',
       hora_entrada: formData.timeIn || null,
       hora_salida: formData.timeOut || null
     };
@@ -357,13 +362,13 @@ export function dbToFormData(completo) {
     clientEmail: cliente?.email || '',
     clientAddress: cliente?.direccion || '',
     clientCedula: cliente?.cedula || '',
-    lines: lineas.map(l => ({ descripcion: l.descripcion, cantidad: l.cantidad, precio: l.precio })),
+    lines: lineas.map(l => ({ descripcion: l.descripcion, cantidad: l.cantidad, precio: l.precio_unitario || l.precio })),
     discount: { enabled: (doc.descuento || 0) > 0, value: doc.descuento || 0 },
     iva:      { enabled: (doc.iva || 0) > 0, value: doc.iva || 0 },
     currency: { code: doc.moneda || 'CRC', symbol: doc.moneda === 'CRC' ? '₡' : '$' },
-    problem: completo.diagnostico || '',
-    diagnosis: completo.diagnostico || '',
-    observations: doc.observaciones || '',
+    problem: hoja?.problema_reportado || '',
+    diagnosis: hoja?.diagnostico || '',
+    observations: hoja?.observaciones || doc.observaciones || '',
     tiempoEstimado: doc.tiempo_estimado || '',
     timeIn: hoja?.hora_entrada || '',
     timeOut: hoja?.hora_salida || '',

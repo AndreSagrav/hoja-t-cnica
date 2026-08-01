@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FacturaElectronica xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <Clave>50618122500310168443800100001010000516806103810603</Clave>
+  <ProveedorSistemas>3101912274</ProveedorSistemas>
+  <CodigoActividadEmisor>4730.0</CodigoActividadEmisor>
+  <CodigoActividadReceptor>9511.0</CodigoActividadReceptor>
+  <NumeroConsecutivo>00100001010000516806</NumeroConsecutivo>
+  <FechaEmision>2025-12-18T23:13:50-06:00</FechaEmision>
+  <Emisor>
+    <Nombre>SERVICENTRO G VEINTICUATRO SOCIEDAD ANONIMA</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3101684438</Numero>
+    </Identificacion>
+    <NombreComercial>G24 - COYOL</NombreComercial>
+    <Ubicacion>
+      <Provincia>2</Provincia>
+      <Canton>01</Canton>
+      <Distrito>04</Distrito>
+      <OtrasSenas>Coyol de Alajuela</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>22154815</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>facturacoyol@g24.cr</CorreoElectronico>
+  </Emisor>
+  <Receptor>
+    <Nombre>CESAR ANDRES BATISTA VARGAS</Nombre>
+    <Identificacion>
+      <Tipo>01</Tipo>
+      <Numero>205390118</Numero>
+    </Identificacion>
+    <NombreComercial>CESAR ANDRES BATISTA VARGAS</NombreComercial>
+    <Ubicacion>
+      <Provincia>1</Provincia>
+      <Canton>01</Canton>
+      <Distrito>01</Distrito>
+      <OtrasSenas>_____</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>72940377</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>factura.e@outlook.es</CorreoElectronico>
+  </Receptor>
+  <CondicionVenta>01</CondicionVenta>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <CodigoCABYS>3331100010000</CodigoCABYS>
+      <CodigoComercial>
+        <Tipo>01</Tipo>
+        <Codigo>1</Codigo>
+      </CodigoComercial>
+      <Cantidad>31.104</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <TipoTransaccion>01</TipoTransaccion>
+      <Detalle>Super - 1466474</Detalle>
+      <PrecioUnitario>643.00</PrecioUnitario>
+      <MontoTotal>20000.00</MontoTotal>
+      <SubTotal>20000.00</SubTotal>
+      <BaseImponible>20000.00</BaseImponible>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifaIVA>01</CodigoTarifaIVA>
+        <Tarifa>0.00</Tarifa>
+        <Monto>0.00</Monto>
+      </Impuesto>
+      <ImpuestoAsumidoEmisorFabrica>0.00</ImpuestoAsumidoEmisorFabrica>
+      <ImpuestoNeto>0.00</ImpuestoNeto>
+      <MontoTotalLinea>20000.00</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1.00</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalServGravados>0.00</TotalServGravados>
+    <TotalServExentos>0.00</TotalServExentos>
+    <TotalServExonerado>0.00</TotalServExonerado>
+    <TotalServNoSujeto>0.00</TotalServNoSujeto>
+    <TotalMercanciasGravadas>0.00</TotalMercanciasGravadas>
+    <TotalMercanciasExentas>0.00</TotalMercanciasExentas>
+    <TotalMercExonerada>0.00</TotalMercExonerada>
+    <TotalMercNoSujeta>20000.00</TotalMercNoSujeta>
+    <TotalGravado>0.00</TotalGravado>
+    <TotalExento>0.00</TotalExento>
+    <TotalExonerado>0.00</TotalExonerado>
+    <TotalNoSujeto>20000.00</TotalNoSujeto>
+    <TotalVenta>20000.00</TotalVenta>
+    <TotalDescuentos>0.00</TotalDescuentos>
+    <TotalVentaNeta>20000.00</TotalVentaNeta>
+    <TotalDesgloseImpuesto>
+      <Codigo>01</Codigo>
+      <CodigoTarifaIVA>01</CodigoTarifaIVA>
+      <TotalMontoImpuesto>0.00</TotalMontoImpuesto>
+    </TotalDesgloseImpuesto>
+    <TotalImpuesto>0.00</TotalImpuesto>
+    <TotalImpAsumEmisorFabrica>0.00</TotalImpAsumEmisorFabrica>
+    <MedioPago>
+      <TipoMedioPago>01</TipoMedioPago>
+      <TotalMedioPago>20000.00</TotalMedioPago>
+    </MedioPago>
+    <TotalComprobante>20000.00</TotalComprobante>
+  </ResumenFactura>
+  <InformacionReferencia>
+    <TipoDocIR>08</TipoDocIR>
+    <Numero>_</Numero>
+    <FechaEmisionIR>2025-12-19T05:15:36-06:00</FechaEmisionIR>
+    <Codigo>05</Codigo>
+    <Razon>Número Pedido Compra</Razon>
+  </InformacionReferencia>
+  <Otros>
+    <OtroTexto>Actividad Economica: 9511.0
+
+
+Factura Contado:1298968
+
+ID Despacho:1466474
+Posicion:4
+Pistero: Joshua Flores Potoy 
+
+Cliente: 
+Placa: 205390118
+Kilometraje:0
+Orden de Compra:
+KM/L:0
+
+Detalles:
+
+Combustible:Super
+Monto:¢20,000
+Volumen:31.104L
+Precio por Litro:¢643
+</OtroTexto>
+  </Otros>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-dd8975b7-4455-43fc-9338-54e34bc764ac"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="Reference-40f54ff0-d7e9-4098-bd9c-411b913664eb" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>oGsKgcWM4RkDzjLO40xCFSvmOgiNyugNKKKQEfKpKIM=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-dd8975b7-4455-43fc-9338-54e34bc764ac"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>aAKf3QYuqQGtdzYfEwbNN5MSacvfMlVZWAeh4yOf+kk=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-dd8975b7-4455-43fc-9338-54e34bc764ac"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>edFuVJk7Zb3DqP9F8CdKm1sl43ckTE0RgoRxOWCdLqs=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-dd8975b7-4455-43fc-9338-54e34bc764ac">HVB9hPd3QBv5Dz8jw9KCzwAjPZOUN+A20IkwH077PIqSdAl5sL6VxYuVXKrlFMqjlm/j8EQpyCMRckd8gqLkgdXrPO4om5iy9tgR61S5c83azk++qt/1ecnY0CdissILEnaGvWnPrUkZ1xGXWzBH/U/Ce0yEVYfq/ZRVmyu6aANre6XqcvmEbw3dX8eEjIiP0a6LNKB2kWsKBALJaV+N4Kz/Hk+AYF2jVNtRleVqLAd6prbozMsvwdBsUAZStSsvANHPsrzhqryPfsQc1X62nb295C62SuDdj+hHEtWW3HXcF7WqPdOX3KMv2Hl0uwz+xO/zF1AzXYyS9jR6J44bXA==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-Signature-dd8975b7-4455-43fc-9338-54e34bc764ac"><ds:X509Data><ds:X509Certificate>MIIFLTCCAxWgAwIBAgIGAYcu9zRPMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjMwMzI5MjAwMjQ1WhcNMjcwMzI4MjAwMjQ1WjCBhzEZMBcGA1UEBRMQQ1BKLTMtMTAxLTY4NDQzODELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjE0MDIGA1UEAwwrU0VSVklDRU5UUk8gRyBWRUlOVElDVUFUUk8gU09DSUVEQUQgQU5PTklNQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAISILe2WUxLnxDDDkpSu7shcoxrdDQoY4Wt/NRGWPgDGoDMNrqCjT3EQK4dvsK3itahleizrMpAYkRRnu9O8QZKoitZn0qwln11r4em0KqbkiOLhKYaPJW+JY6pNHbcywP4jjGFJg1TitajxMmcr7jq8rkJvzqzEbecWUbRTkKfTFh3ON5eR7YEqaZEnDCTxsIkL21xAkN8FHuvFkJZovUoWuGg+6pUuVN7jamDIzYViyB+MHngX3P2D4FCeqGEs0wx7rwPlmgE5Hl06CyBqSHPNYBwDWn0gtt4Yrt8Uxr8q5hPqhCcAXHB1A3afoJz2Ey0Lx0/frurYjhAnii0KaTsCAwEAAaOByjCBxzAfBgNVHSMEGDAWgBQ7bVf11nzpnhACIEHjvRrMz7NOlTAdBgNVHQ4EFgQU/y4ZGJW2L0zJuShKRAZ5JOBP8f0wCwYDVR0PBAQDAgbAMBMGA1UdJQQMMAoGCCsGAQUFBwMEMGMGCCsGAQUFBwEBBFcwVTBTBggrBgEFBQcwAoZHaHR0cHM6Ly9wa2kuY29tcHJvYmFudGVzZWxlY3Ryb25pY29zLmdvLmNyL3Byb2QvaW50ZXJtZWRpYXRlLXBqLXBlbS5jcnQwDQYJKoZIhvcNAQELBQADggIBAK5xNQRDoUoyzQ5RuZunE6UELCvoQV3RUa9IlIlZUfLlO11ZNSt9SAtg1aucQOjaUakQMBdutrKVs5ZsA6RfYS97EQ8Gk/YKIoQPLFtukscPau1AkiwQpgkgdK9Oe1yQoFEb73Qf3iAjNBmHDDau3hTeyOrsyLckLb7De/edLBuOpHM3V3Ty/d4n7ttBhY9R3mvUWBqrCgRyYOI7JVE9bVuomI2nqwYU4A1kDJ6odsgoJtRC83P5fj5q1rvYsz+QCzo2lUZ4R14aCSTbqEUw9YwLgJMOiEwPl2rVoFwDaqNZCqknC4CSqJJCjPuoFAOGpPmbIdjibRYDOTdG29aryby5j97Ug3KgpQKPvn94MdJmM4W2EW3zl4GftgQJwelAuFczLJACq9wyw0wEwGiHU4byELY9NIhkQaT3eP6wBEOrGBdliKeKWPSDRezvYQ0U4bpQEABnw4ZeZva3hHrgqqv4nrTHUmjVwWreU8+OruBldE6Eppq0wynyOVDGfai83PhZpmW+yjHkmP2alcUjnFz/nb8/VL5GDJvQULSB+ijzfRVLRGawSj0wEwXYZ9DbI2smbwnGvL8bJbTfrvfhkoJk7B5oaPxv1J6aDPcNPny+onIqTs0+606ZzuD3g2v6S26b4HGABSHrOaBe73gUACmPy/hBIeZXJJJ/+JUfFoIm</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>hIgt7ZZTEufEMMOSlK7uyFyjGt0NChjha381EZY+AMagMw2uoKNPcRArh2+wreK1qGV6LOsykBiRFGe707xBkqiK1mfSrCWfXWvh6bQqpuSI4uEpho8lb4ljqk0dtzLA/iOMYUmDVOK1qPEyZyvuOryuQm/OrMRt5xZRtFOQp9MWHc43l5HtgSppkScMJPGwiQvbXECQ3wUe68WQlmi9Sha4aD7qlS5U3uNqYMjNhWLIH4weeBfc/YPgUJ6oYSzTDHuvA+WaATkeXToLIGpIc81gHANafSC23hiu3xTGvyrmE+qEJwBccHUDdp+gnPYTLQvHT9+u6tiOECeKLQppOw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-439949ad-716e-48c0-9b29-a8af1c95c0f8"><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-db5fe520-052c-44e8-98bc-baba8d9d0af5" Target="#Signature-dd8975b7-4455-43fc-9338-54e34bc764ac"><xades:SignedProperties Id="SignedProperties-Signature-dd8975b7-4455-43fc-9338-54e34bc764ac"><xades:SignedSignatureProperties><xades:SigningTime>2025-12-19T05:15:36+00:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>xYAoPOE9auOHUw+jUmwOM6cVwMFYH/vfshgkYgiy/4Y=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1680120165455</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.1/Resolucion_Comprobantes_Electronicos_DGT-R-48-2016.pdf</xades:Identifier><xades:Description /></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>Ohixl6upD6av8N7pEvDABhEL6hM=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>Obligado Tributario</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#Reference-40f54ff0-d7e9-4098-bd9c-411b913664eb"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

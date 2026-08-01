@@ -128,3 +128,35 @@
   --z-toast:     9000;
   --z-boot:      9999;
 }
+
+/* ── Dark Mode Tokens ── */
+[data-theme="dark"] {
+  --bg:          #0c1222;
+  --bg-subtle:   #111827;
+  --surface:     #1a2236;
+  --surface-2:   #1f2a3f;
+  --surface-3:   #253049;
+  --border:      #2d3a52;
+  --border-light:#232e44;
+
+  --text:        #e8ecf4;
+  --text-mid:    #94a3b8;
+  --text-soft:   #64748b;
+  --text-inverse:#0f172a;
+
+  --shadow-xs:   0 1px 2px rgba(0,0,0,0.2);
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.15);
+  --shadow-lg:   0 12px 32px rgba(0,0,0,0.35), 0 4px 8px rgba(0,0,0,0.15);
+  --shadow-xl:   0 20px 48px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.2);
+  --focus:       0 0 0 3px rgba(0,194,168,0.35);
+  --focus-blue:  0 0 0 3px rgba(26,79,160,0.35);
+
+  --glass:       rgba(26,34,54,0.85);
+  --glass-border:rgba(45,58,82,0.3);
+
+  --grad-surface:linear-gradient(135deg, #1a2236 0%, #1f2a3f 100%);
+
+  --red-soft:    rgba(192,57,43,0.15);
+  --green-light: rgba(27,94,32,0.15);
+}

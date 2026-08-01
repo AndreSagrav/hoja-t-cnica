@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?><FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <Clave>50621072500310101647000800001010000035620124728440</Clave>
+  <CodigoActividad>552004</CodigoActividad>
+  <NumeroConsecutivo>00800001010000035620</NumeroConsecutivo>
+  <FechaEmision>2025-07-21T13:56:21-06:00</FechaEmision>
+  <Emisor>
+    <Nombre>Comidas Centroamericanas S.A</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3101016470</Numero>
+    </Identificacion>
+    <NombreComercial>Pizza Hut</NombreComercial>
+    <Ubicacion>
+      <Provincia>1</Provincia>
+      <Canton>01</Canton>
+      <Distrito>09</Distrito>
+      <OtrasSenas>Zona Industrial de Pavas,300 metros Sur y 300 Metros Sureste de la Embajada de Los Estados Unidos, Oficinas Centrales de Pizza Hut</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>22202959</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>emisionfacturas@pizzahutcr.com</CorreoElectronico>
+  </Emisor>
+  <Receptor>
+    <Nombre>CESAR ANDRES BATISTA VARGAS</Nombre>
+    <Identificacion>
+      <Tipo>01</Tipo>
+      <Numero>205390118</Numero>
+    </Identificacion>
+    <CorreoElectronico>factura.e@outlook.es</CorreoElectronico>
+  </Receptor>
+  <CondicionVenta>01</CondicionVenta>
+  <PlazoCredito>0</PlazoCredito>
+  <MedioPago>02</MedioPago>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <Codigo>6339900000000</Codigo>
+      <CodigoComercial>
+        <Tipo>01</Tipo>
+        <Codigo>94648</Codigo>
+      </CodigoComercial>
+      <Cantidad>1.000</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <Detalle>Slice 500</Detalle>
+      <PrecioUnitario>0.00000</PrecioUnitario>
+      <MontoTotal>0.00</MontoTotal>
+      <SubTotal>0.00</SubTotal>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifa>08</CodigoTarifa>
+        <Tarifa>13.00</Tarifa>
+        <Monto>0.00</Monto>
+      </Impuesto>
+      <MontoTotalLinea>0.00</MontoTotalLinea>
+    </LineaDetalle>
+    <LineaDetalle>
+      <NumeroLinea>2</NumeroLinea>
+      <Codigo>6339900000000</Codigo>
+      <CodigoComercial>
+        <Tipo>01</Tipo>
+        <Codigo>25002</Codigo>
+      </CodigoComercial>
+      <Cantidad>8.000</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <Detalle>  Slice Jamon</Detalle>
+      <PrecioUnitario>442.48000</PrecioUnitario>
+      <MontoTotal>3539.84</MontoTotal>
+      <SubTotal>3539.84</SubTotal>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifa>08</CodigoTarifa>
+        <Tarifa>13.00</Tarifa>
+        <Monto>460.18</Monto>
+      </Impuesto>
+      <MontoTotalLinea>4000.02</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1.00</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalServGravados>0.00</TotalServGravados>
+    <TotalServExentos>0.00</TotalServExentos>
+    <TotalServExonerado>0.00</TotalServExonerado>
+    <TotalMercanciasGravadas>3539.84</TotalMercanciasGravadas>
+    <TotalMercanciasExentas>0.00</TotalMercanciasExentas>
+    <TotalMercExonerada>0.00</TotalMercExonerada>
+    <TotalGravado>3539.84</TotalGravado>
+    <TotalExento>0.00</TotalExento>
+    <TotalExonerado>0.00</TotalExonerado>
+    <TotalVenta>3539.84</TotalVenta>
+    <TotalDescuentos>0.00</TotalDescuentos>
+    <TotalVentaNeta>3539.84</TotalVentaNeta>
+    <TotalImpuesto>460.18</TotalImpuesto>
+    <TotalIVADevuelto>0.00</TotalIVADevuelto>
+    <TotalOtrosCargos>0.00</TotalOtrosCargos>
+    <TotalComprobante>4000.00</TotalComprobante>
+  </ResumenFactura>
+  <Otros>
+    <OtroTexto codigo="GeneradoPor">www.facturaclick.cr</OtroTexto>
+  </Otros>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-dcb3241d-fd55-4dc1-8163-c3fc48054980"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512" /><ds:Reference Id="Reference-6491e248-3252-4b66-84e4-b76f402ad9e5" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" /><ds:DigestValue>ay4GyyMVvBj104D+XSfbWgaCL2kd46WlMv0fb7veb3T3XkVaIzoo+brsTmbyxIX7XifGzxYBkuMuHcEILqbrjQ==</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-dcb3241d-fd55-4dc1-8163-c3fc48054980"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" /><ds:DigestValue>O1rxRBXMMcYon09AZogiRDXWpiKdDjj5VbCPAsoLdopzuceh2pGvDEbuY5VPNkUvCqI+PE4jEC5h+q2D8Nx/Jw==</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-dcb3241d-fd55-4dc1-8163-c3fc48054980"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" /><ds:DigestValue>ohR09HPkO1bmS1nQw889flovLd58Ar7CTzBawkkRSdEOOWv4/aKfc3+wjggW4ZRoAWPaqr1PcYQ5SWhiM7/gmw==</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-dcb3241d-fd55-4dc1-8163-c3fc48054980">jHM0uKGlNc+Rl7tgSpqOLPbIigCq7sRp7zKJ0y3bOqcJAsvvpn7ayzDoAeIUVU7fzWjw6RrWGqZLCqZeUd1ymqCYFZ/iN7bD2JCrQcHLGzDP/X99ALAskzUQu5dPgygsx+xTQtt+KSxTY7R7Co8GBVnIr6NEYM2U+saFJmAc7PI2flc9hI7xqebsfX/1+RU+DmKZ+cWxPi5lpwr3Pv4fK084mz5NZ7xs5ht6UDyhsPC5nn8UQntWteGl3h4QcqzI2IdSnQ5kI7/gSlWDjtD4HGr10QUljVVXH+/YYfXX9Kz9rpwGmxUEMOmr28MGDqO62RJmDoRpgoETx8w4xeAe2w==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-Signature-dcb3241d-fd55-4dc1-8163-c3fc48054980"><ds:X509Data><ds:X509Certificate>MIIFKzCCAxOgAwIBAgIGAYOtrNcZMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjIxMDA2MTQyMjA5WhcNMjYxMDA1MTQyMjA5WjCBhTEZMBcGA1UEBRMQQ1BKLTMtMTAxLTAxNjQ3MDELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjEyMDAGA1UEAwwpQ09NSURBUyBDRU5UUk9BTUVSSUNBTkFTIFNPQ0lFREFEIEFOT05JTUEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCPswCo+1R3Gg4Uf7GViuSaNfYm9xmYVrXbuIg2SaMcsy8RznSm4w2TMIW2dcWBPCTKvPgDweAgL81Pd2c1n7yWe0b4X3FG2sDyZMRxA7w1yRSa78MGlv9eOZ9+pwH8ehT+aHyigrzfGWCVIwadBG0o+NWxZdfeD7dGk30fqKpnYYuNGvC+IMl5HrE5G98jjjrbS7hKuassV7fHviiM459VbcKDM9PO3JlXZQQnYcXRN6MPwxLemBdtTgULClEd/tXH1EQSXIGCOvPeAUz/uhi4yWCRGIod12ifbmmi8HSgfJVh49e3e4A5g+4uTH0VU2bkdxg2mgtn7zu5aRcOV/cxAgMBAAGjgcowgccwHwYDVR0jBBgwFoAUO21X9dZ86Z4QAiBB470azM+zTpUwHQYDVR0OBBYEFKp3ROXIBVpVr5gg3IupE9vmqVKeMAsGA1UdDwQEAwIGwDATBgNVHSUEDDAKBggrBgEFBQcDBDBjBggrBgEFBQcBAQRXMFUwUwYIKwYBBQUHMAKGR2h0dHBzOi8vcGtpLmNvbXByb2JhbnRlc2VsZWN0cm9uaWNvcy5nby5jci9wcm9kL2ludGVybWVkaWF0ZS1wai1wZW0uY3J0MA0GCSqGSIb3DQEBCwUAA4ICAQCRtff0xQQrDoVuAnlUNDxZgCKBSwYGKNkeuHzaK3m+GTyQofiht8uuRZV1WqV3GzYYqQVw7KiYff50jBktOPd+4wgD42DGFddAhAfbG+Xb4gIfOpwk5vqnFbpbOA1perijFwyJ6DRIXGczOdXbmYuT5XDaTO2X1PM/DeGarH5G4yIKjhn5qkEWmku9mTzgd4uxkT50yOW4qfAgQFeBqzZ/TYThsymfFy6XBpjPQSf7aMX1gKx+pGcsMvBTUUwnqp9+A8OdEgKm/HSiM94gQMgX0NW/WgR0Z3cx0Loztxw3bczb4RwBXh0UfYpiHmCnjuZfYaTZGUKBPl6E83sY3b8ZnpmMfuGQSyvn7F8DMZOmmLIr5erzwJqzPeHWpbKHuEyMRFVlNshG9BwNJAvVqATcn/PLeVbRAd0cENpqUy6THDzVNoTxCcJUwgtSnZF7PcvoSzWBz7x4kLIqbjm9Uw5YejO3oscProHuOaVj6oTiFquncMahbamD8txoYgbmlnugk8gOYwzqtM6zg8l+ZpTe5WptLXJ3RzF90KhK1qIEW4GjCs2gR1G/XDAAXWzAghIa8L7gA71RS030NdVb01u3DAZo3EZrsOKdxJVrjWkA0jjwuNI7RN6/Oynn132sYuJozN3U1F3TLKqKGAl9GC/zvUwAL9+9zP5LtsPfv3EruQ==</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>j7MAqPtUdxoOFH+xlYrkmjX2JvcZmFa127iINkmjHLMvEc50puMNkzCFtnXFgTwkyrz4A8HgIC/NT3dnNZ+8lntG+F9xRtrA8mTEcQO8NckUmu/DBpb/XjmffqcB/HoU/mh8ooK83xlglSMGnQRtKPjVsWXX3g+3RpN9H6iqZ2GLjRrwviDJeR6xORvfI44620u4SrmrLFe3x74ojOOfVW3CgzPTztyZV2UEJ2HF0TejD8MS3pgXbU4FCwpRHf7Vx9REElyBgjrz3gFM/7oYuMlgkRiKHddon25povB0oHyVYePXt3uAOYPuLkx9FVNm5HcYNpoLZ+87uWkXDlf3MQ==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-2950957f-befe-49fc-9c7b-5ef632069a5b"><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-c5a84892-0f5f-458e-8db2-03230bc387b8" Target="#Signature-dcb3241d-fd55-4dc1-8163-c3fc48054980"><xades:SignedProperties Id="SignedProperties-Signature-dcb3241d-fd55-4dc1-8163-c3fc48054980"><xades:SignedSignatureProperties><xades:SigningTime>2025-07-21T13:56:22-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha512" /><ds:DigestValue>ZmKqk0To5Yq9NXFW7OET/8s4BlWx/EvHuJgXINZxcIV7b8TEzVYg751SIraUCtZZgxNCorQ1yWzqwVStJKeWJg==</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1665066129177</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><SignaturePolicyIdentifier xmlns="http://uri.etsi.org/01903/v1.3.2#"><SignaturePolicyId><SigPolicyId><xades:Identifier>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.1/Resolucion_Comprobantes_Electronicos_DGT-R-48-2016.pdf</xades:Identifier><Description /></SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>NmI5Njk1ZThkNzI0MmIzMGJmZDAyNDc4YjUwNzkzODM2NTBiOWUxNTBkMmI2YjgzYzZjM2I5NTZlNDQ4OWQzMQ==</ds:DigestValue></xades:SigPolicyHash><SigPolicyQualifiers><SigPolicyQualifier><SPURI>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.1/Resolucion_Comprobantes_Electronicos_DGT-R-48-2016.pdf</SPURI></SigPolicyQualifier></SigPolicyQualifiers></SignaturePolicyId></SignaturePolicyIdentifier></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

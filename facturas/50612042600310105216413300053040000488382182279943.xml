@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?><TiqueteElectronico xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/tiqueteElectronico">
+  <Clave>50612042600310105216413300053040000488382182279943</Clave>
+  <ProveedorSistemas>3101052164</ProveedorSistemas>
+  <CodigoActividadEmisor>4711.1</CodigoActividadEmisor>
+  <NumeroConsecutivo>13300053040000488382</NumeroConsecutivo>
+  <FechaEmision>2026-04-12T19:13:53-06:00</FechaEmision>
+  <Emisor>
+    <Nombre>CORPORACIÓN MEGASUPER, S.A.</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3101052164</Numero>
+    </Identificacion>
+    <Registrofiscal8707>8915</Registrofiscal8707>
+    <NombreComercial>Megasuper Tres Rios</NombreComercial>
+    <Ubicacion>
+      <Provincia>3</Provincia>
+      <Canton>02</Canton>
+      <Distrito>05</Distrito>
+      <Barrio>Ayala</Barrio>
+      <OtrasSenas>INTERIOR PLAZA PARAÍSO</OtrasSenas>
+    </Ubicacion>
+    <Telefono>
+      <CodigoPais>506</CodigoPais>
+      <NumTelefono>22460430</NumTelefono>
+    </Telefono>
+    <CorreoElectronico>Facturaelectronica@megasuper.com</CorreoElectronico>
+  </Emisor>
+  <CondicionVenta>01</CondicionVenta>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <CodigoCABYS>2111300030300</CodigoCABYS>
+      <CodigoComercial>
+        <Tipo>01</Tipo>
+        <Codigo>04385</Codigo>
+      </CodigoComercial>
+      <Cantidad>0.67</Cantidad>
+      <UnidadMedida>Unid</UnidadMedida>
+      <Detalle>CHULETA ESPECIAL CERDO BBQ TEN DER 12%</Detalle>
+      <RegistroMedicamento />
+      <FormaFarmaceutica />
+      <PrecioUnitario>6150.44248</PrecioUnitario>
+      <MontoTotal>4120.79646</MontoTotal>
+      <Descuento>
+        <MontoDescuento>2347.96471</MontoDescuento>
+        <CodigoDescuento>06</CodigoDescuento>
+        <NaturalezaDescuento>Descuento</NaturalezaDescuento>
+      </Descuento>
+      <SubTotal>1772.83175</SubTotal>
+      <BaseImponible>1772.83175</BaseImponible>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifaIVA>08</CodigoTarifaIVA>
+        <Tarifa>13</Tarifa>
+        <FactorCalculoIVA>0</FactorCalculoIVA>
+        <Monto>230.46813</Monto>
+      </Impuesto>
+      <ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica>
+      <ImpuestoNeto>230.46813</ImpuestoNeto>
+      <MontoTotalLinea>2003.29988</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalServGravados>0</TotalServGravados>
+    <TotalServExentos>0</TotalServExentos>
+    <TotalServExonerado>0</TotalServExonerado>
+    <TotalMercanciasGravadas>4120.79646</TotalMercanciasGravadas>
+    <TotalMercanciasExentas>0</TotalMercanciasExentas>
+    <TotalMercExonerada>0</TotalMercExonerada>
+    <TotalGravado>4120.79646</TotalGravado>
+    <TotalExento>0</TotalExento>
+    <TotalExonerado>0</TotalExonerado>
+    <TotalVenta>4120.79646</TotalVenta>
+    <TotalDescuentos>2347.96471</TotalDescuentos>
+    <TotalVentaNeta>1772.83175</TotalVentaNeta>
+    <TotalDesgloseImpuesto>
+      <Codigo>01</Codigo>
+      <CodigoTarifaIVA>08</CodigoTarifaIVA>
+      <TotalMontoImpuesto>230.46813</TotalMontoImpuesto>
+    </TotalDesgloseImpuesto>
+    <TotalImpuesto>230.46813</TotalImpuesto>
+    <TotalIVADevuelto>0</TotalIVADevuelto>
+    <MedioPago>
+      <TipoMedioPago>02</TipoMedioPago>
+      <TotalMedioPago>2003.29988</TotalMedioPago>
+    </MedioPago>
+    <TotalComprobante>2003.29988</TotalComprobante>
+  </ResumenFactura>
+  <Otros>
+    <OtroTexto codigo="00">023145320260412VE000000095</OtroTexto>
+  </Otros>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="id-ba1e0042-e809-4411-8750-b721acbf8698"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="id-086297e8-a23d-4002-ae11-b5b1ee275fe6" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>oPUyluYATTnaabA7WermwcvzkKQGpiE2ua3i6JGVBD8=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-id-ba1e0042-e809-4411-8750-b721acbf8698"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>S9YbhdbIMRJHEwrnzhXOZyagDvO8BpKK5A0ofywhjRw=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-id-ba1e0042-e809-4411-8750-b721acbf8698"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>Qir/UUJP7kG6UKiLHHQE+1uFWHtqAzevp70hhUDaVNE=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-ba1e0042-e809-4411-8750-b721acbf8698">NT77bWHigRCFN8PTylRqdaTjpcvAltWLTJay8xQ1Ha6LeRR0GSkTCkp49DbL5rGoYWzvlu0uZ/YlweJsKuv9wgyJAVMeBwviArZvTzQ9yo6y7kB2Sll5vIOuhX3HW0TorvX2a/nxXiMd3UIUX2eEnGgQOjAsrNOiOPhkzDhonjefzQc/3rqIfo6gNxNH2yWNqiQdtSMIhetmS9UQCtddrzVq4hkbvQl+VeIpyHqpzj0+6khDJdacJRR92STJ2aVMIreJQ1hVdB16ScxkIqi3aZMP7X9/mgFvrBszdd2HRnNd7mrtjsu/YuKx9cysuOVqb676r5a0jFw+OPnbMM7kMA==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-id-ba1e0042-e809-4411-8750-b721acbf8698"><ds:X509Data><ds:X509Certificate>MIIFKDCCAxCgAwIBAgIGAYNZn4viMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjIwOTIwMDYzOTMxWhcNMjYwOTE5MDYzOTMxWjCBgjEZMBcGA1UEBRMQQ1BKLTMtMTAxLTA1MjE2NDELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjEvMC0GA1UEAwwmQ09SUE9SQUNJT04gTUVHQVNVUEVSIFNPQ0lFREFEIEFOT05JTUEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQChwFA2f3lg7CMguD8+gTHYXSdtJJugkCcr0hOOmNkAUzrNEyldnWrAGHRTprk1dcX1bEemLtYLnwUbPuDKNceIGBc0MfsVeQsyBm+cLwgy00R+K6MWFnZElzztAESoFIYJGmh8ehcoRmoJZatEv8K8FOfW9Yb9xUEZe3OIvEPLOophYSr/IIlWx218CJftmKAEeKu4gwzhcYUT9SY98ecQ+5uFnms7eW9iX6DC4IHFyCpiNpU9Vrc+C6+LPkydFCpt+CtXYuh+IGwdYBT3M7iSpWzlx11fjq7yC3jyuTHcS1XbQg+ij8VoEmLID9N4QxC5Kv7E+XIp6tUzXosr4OyDAgMBAAGjgcowgccwHwYDVR0jBBgwFoAUO21X9dZ86Z4QAiBB470azM+zTpUwHQYDVR0OBBYEFKtucFUjM5wuwE28/ZoA6Qhk2XGjMAsGA1UdDwQEAwIGwDATBgNVHSUEDDAKBggrBgEFBQcDBDBjBggrBgEFBQcBAQRXMFUwUwYIKwYBBQUHMAKGR2h0dHBzOi8vcGtpLmNvbXByb2JhbnRlc2VsZWN0cm9uaWNvcy5nby5jci9wcm9kL2ludGVybWVkaWF0ZS1wai1wZW0uY3J0MA0GCSqGSIb3DQEBCwUAA4ICAQAkHLjyiqSY7C2xAXWlTjQsB/tx6D5ET0YeWeYK7oA5TguHepy610M2QuZUV2bE1xjMU1sg+URfuqwVuddxGkpTVU4EqVrE7rUUlcbr8lqAsQOQiD44QVXAtbXSao2V3V0xYBlj5Aso7zBcAncrZwoKe9mntt0vAygdSPYSi3B7QKDsAlmdRVaM5/oo5yzaU42piQxJ0ay4V6WGc5P7PFvefdV2Iat3nNsh2vcLstQ1LHPfUYYSnOgHvfWNl/P0ykd/NQYGoL3+JgfSnBK/0yTpMugcGS3xEdn47ZoLasqlfW8m4adpjOctlWGw+3erQbLxcCSYnOga9n0Fr3a4zNdLHBVHQAQS5GNu1Y8nJ70PkDsu1zQG00w0MN3jI6K/2z0kFiEQqAwA4qBGIpKM2UKH+Gs6edCWDRmEWGz4DWWhdeTDQi8cCyYR09J3juNDdbZ51BPaj0b9Kda5TePXSNe9jTtHBdaHRUajLC5izj+pp2iQe6Rv2vNIr2TJiETfB25lnbH4YzA1XEhGs3hpCTKOK9fu+7RL4S4CGn/QEFZDdYnAG5bSuF6n0cxXjL6KGJQFDbO+1n4RD4fm+D947ZSzz0egncai+no0uJN97Xu6Oy7lIUVyU+dVrl0oxlQY4YWcxoV1BxUBk0fgtBxwPBQQSZnllJ17AgwHAUGRIxgelA==</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ocBQNn95YOwjILg/PoEx2F0nbSSboJAnK9ITjpjZAFM6zRMpXZ1qwBh0U6a5NXXF9WxHpi7WC58FGz7gyjXHiBgXNDH7FXkLMgZvnC8IMtNEfiujFhZ2RJc87QBEqBSGCRpofHoXKEZqCWWrRL/CvBTn1vWG/cVBGXtziLxDyzqKYWEq/yCJVsdtfAiX7ZigBHiruIMM4XGFE/UmPfHnEPubhZ5rO3lvYl+gwuCBxcgqYjaVPVa3Pguviz5MnRQqbfgrV2LofiBsHWAU9zO4kqVs5cddX46u8gt48rkx3EtV20IPoo/FaBJiyA/TeEMQuSr+xPlyKerVM16LK+Dsgw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object Id="XadesObjectId-8be0ae2c-8795-4ad5-9f42-7be324f93757"><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="QualifyingProperties-94dfcbe8-f143-425a-a9b5-251266351962" Target="#id-ba1e0042-e809-4411-8750-b721acbf8698"><xades:SignedProperties Id="SignedProperties-id-ba1e0042-e809-4411-8750-b721acbf8698"><xades:SignedSignatureProperties><xades:SigningTime>2026-04-12T19:13:53-06:00</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>vcbJMhKGwjBvV+8U67HDTcWnrcvAClX7ZKkzVxyi8vM=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1663655971810</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.2/ResolucionComprobantesElectronicosDGT-R-48-2016_4.2.pdf</xades:Identifier><xades:Description /></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>Nzk0MTgxMmYxYTNiNDlhYWIxNjkxZjgyMTk0ZTQzMGEzNTFjZTc1ZTA2M2EyMzk0ZjUyZDEyOWIyZTU2ZWM3MQ==</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>emisor</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#id-086297e8-a23d-4002-ae11-b5b1ee275fe6"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></TiqueteElectronico>

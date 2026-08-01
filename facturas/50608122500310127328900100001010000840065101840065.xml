@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica_V.4.4.xsd">
+   <Clave>50608122500310127328900100001010000840065101840065</Clave>
+   <ProveedorSistemas>3101595167</ProveedorSistemas>
+   <CodigoActividadEmisor>4651.0</CodigoActividadEmisor>
+   <NumeroConsecutivo>00100001010000840065</NumeroConsecutivo>
+   <FechaEmision>2025-12-08T13:53:15</FechaEmision>
+   <Emisor>
+      <Nombre>Intcomex Costa Rica Mayorista en Equipo de Computo S.A.</Nombre>
+      <Identificacion>
+         <Tipo>02</Tipo>
+         <Numero>3101273289</Numero>
+      </Identificacion>
+      <NombreComercial>Intcomex Costa Rica</NombreComercial>
+      <Ubicacion>
+         <Provincia>1</Provincia>
+         <Canton>07</Canton>
+         <Distrito>01</Distrito>
+         <Barrio>Jardines de Autopista</Barrio>
+         <OtrasSenas>Frente al Hotel Irazu. La Uruca.</OtrasSenas>
+      </Ubicacion>
+      <Telefono>
+         <CodigoPais>506</CodigoPais>
+         <NumTelefono>41007200</NumTelefono>
+      </Telefono>
+      <CorreoElectronico>info.cr@intcomex.com</CorreoElectronico>
+   </Emisor>
+   <Receptor>
+      <Nombre>CESAR BATISTA</Nombre>
+      <Identificacion>
+         <Tipo>01</Tipo>
+         <Numero>205390118</Numero>
+      </Identificacion>
+      <NombreComercial>CESAR BATISTA</NombreComercial>
+   </Receptor>
+   <CondicionVenta>01</CondicionVenta>
+   <DetalleServicio>
+      <LineaDetalle>
+         <NumeroLinea>1</NumeroLinea>
+         <CodigoCABYS>4529000000000</CodigoCABYS>
+         <CodigoComercial>
+            <Tipo>01</Tipo>
+            <Codigo>ID220LOG01</Codigo>
+         </CodigoComercial>
+         <Cantidad>1.00</Cantidad>
+         <UnidadMedida>Unid</UnidadMedida>
+         <Detalle>Logitech Cordless Kybd&amp;Mse MK220 Spn USB</Detalle>
+         <PrecioUnitario>14.90</PrecioUnitario>
+         <MontoTotal>14.90</MontoTotal>
+         <SubTotal>14.90</SubTotal>
+         <BaseImponible>14.9</BaseImponible>
+         <Impuesto>
+            <Codigo>01</Codigo>
+            <CodigoTarifaIVA>08</CodigoTarifaIVA>
+            <Tarifa>13.00</Tarifa>
+            <Monto>1.94</Monto>
+         </Impuesto>
+         <ImpuestoAsumidoEmisorFabrica>0.00</ImpuestoAsumidoEmisorFabrica>
+         <ImpuestoNeto>1.94</ImpuestoNeto>
+         <MontoTotalLinea>16.84</MontoTotalLinea>
+      </LineaDetalle>
+   </DetalleServicio>
+   <ResumenFactura>
+      <CodigoTipoMoneda>
+         <CodigoMoneda>USD</CodigoMoneda>
+         <TipoCambio>494.54000</TipoCambio>
+      </CodigoTipoMoneda>
+      <TotalServGravados>0.00</TotalServGravados>
+      <TotalServExentos>0.00</TotalServExentos>
+      <TotalServExonerado>0.00</TotalServExonerado>
+      <TotalServNoSujeto>0.00</TotalServNoSujeto>
+      <TotalMercanciasGravadas>14.90</TotalMercanciasGravadas>
+      <TotalMercanciasExentas>0.00</TotalMercanciasExentas>
+      <TotalMercExonerada>0.00</TotalMercExonerada>
+      <TotalMercNoSujeta>0.00</TotalMercNoSujeta>
+      <TotalGravado>14.90</TotalGravado>
+      <TotalExento>0.00</TotalExento>
+      <TotalExonerado>0.00</TotalExonerado>
+      <TotalVenta>14.90</TotalVenta>
+      <TotalDescuentos>0.00</TotalDescuentos>
+      <TotalVentaNeta>14.90</TotalVentaNeta>
+      <TotalDesgloseImpuesto>
+         <Codigo>01</Codigo>
+         <CodigoTarifaIVA>08</CodigoTarifaIVA>
+         <TotalMontoImpuesto>1.94</TotalMontoImpuesto>
+      </TotalDesgloseImpuesto>
+      <TotalDesgloseImpuesto>
+         <Codigo>01</Codigo>
+         <CodigoTarifaIVA>10</CodigoTarifaIVA>
+         <TotalMontoImpuesto>0</TotalMontoImpuesto>
+      </TotalDesgloseImpuesto>
+      <TotalImpuesto>1.94</TotalImpuesto>
+      <MedioPago>
+         <TipoMedioPago>01</TipoMedioPago>
+         <TotalMedioPago>16.84</TotalMedioPago>
+      </MedioPago>
+      <TotalComprobante>16.84</TotalComprobante>
+   </ResumenFactura><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Signature-0f26c501-7a00-4337-89b3-1e33672ceb41"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="Reference-70bf2a0f-1689-4b43-acf3-f66edd93e73b" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>4NdD/7VceNahZ4c51mz+RryjZ5ccSoDYncJ17SV0jJg=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-Signature-0f26c501-7a00-4337-89b3-1e33672ceb41"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>JEq8SKtnz03NappNUdo2MvrRcmDU3qWcH1dJXfq5b6Q=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-Signature-0f26c501-7a00-4337-89b3-1e33672ceb41"><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>UoPCG+yJb6XH4sgj9fE25OnJJz8=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="SignatureValue-0f26c501-7a00-4337-89b3-1e33672ceb41">HQQJ88fQGTCmLgXkVkwlWamaMMDZP52z3oo9aa6O39wnp20RE5idu8UKInAAwabYvV8TuPheSii7ykHyGt7XSGkIzbjCcFvSWCh0MCopX1YQFjIhIhBV3nxHTR2qw9zgqrFvCOpj1R42PO/86fMn/qm7Lp1TV2eKoUNdnGmKcq6gZnHt1d19oV4tQxYfB0MSsUq0vpmO6dcJFHCHMsU76CAxCQpDoMiM+UbscI2GmPfCrwGZx9hiMoyaz+eEIoLIcHt3QK53KvdFT0+BaBKgaDnC4Oe0S6KAitbcpnuKL9GMy2NbKMZ76/Xnq8uvQe9WuoPh92Vsc5iDW3j6TmYzIw==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-Signature-0f26c501-7a00-4337-89b3-1e33672ceb41"><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>k8qFo/iBBQ+lgGI7x7Xp4xMrTYV1MU4IKFfzIYUhlT4BsQsGgoL9Nm6DCM3R3snlS5bjXt7LV1pP0YPWUMG4lp9inxxC0n1ZNn/dHsMnnClconP2aF8xOtvSajVjpKp4d7voSduFgLmZJtkXG3bE2tMwnq+VUFkdFMTJ4Z2zWGfb16pdFF0UT4EPtVIAIn383vhwmxBo8iZI+9DVP5ojAfn94h+dEoSbWHxCBqkNQagMjVR4Zfm5nJzwJRSKUYfJR2N25vIEquo3eiaTWPSeeFHWJTQeBL9ifq0/A/8wJ3eLGzUXpfw9ZgMAt1ualj43xq/IoLCoB+lI+sKZBSXKRQ==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue><ds:X509Data><ds:X509Certificate>MIIFRTCCAy2gAwIBAgIGAX+QY3fYMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjIwMzE2MDE0MTUyWhcNMjYwMzE1MDE0MTUyWjCBnzEZMBcGA1UEBRMQQ1BKLTMtMTAxLTI3MzI4OTELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjFMMEoGA1UEAwxDSU5UQ09NRVggQ09TVEEgUklDQSBNQVlPUklTVEEgRU4gRVFVSVBPIERFIENPTVBVVE8gU09DSUVEQUQgQU5PTklNQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJPKhaP4gQUPpYBiO8e16eMTK02FdTFOCChX8yGFIZU+AbELBoKC/TZugwjN0d7J5UuW417ey1daT9GD1lDBuJafYp8cQtJ9WTZ/3R7DJ5wpXKJz9mhfMTrb0mo1Y6SqeHe76EnbhYC5mSbZFxt2xNrTMJ6vlVBZHRTEyeGds1hn29eqXRRdFE+BD7VSACJ9/N74cJsQaPImSPvQ1T+aIwH5/eIfnRKEm1h8QgapDUGoDI1UeGX5uZyc8CUUilGHyUdjdubyBKrqN3omk1j0nnhR1iU0HgS/Yn6tPwP/MCd3ixs1F6X8PWYDALdbmpY+N8avyKCwqAfpSPrCmQUlykUCAwEAAaOByjCBxzAfBgNVHSMEGDAWgBQ7bVf11nzpnhACIEHjvRrMz7NOlTAdBgNVHQ4EFgQUoXXGH99U6/C9oVF/5nBBc5J5mH4wCwYDVR0PBAQDAgbAMBMGA1UdJQQMMAoGCCsGAQUFBwMEMGMGCCsGAQUFBwEBBFcwVTBTBggrBgEFBQcwAoZHaHR0cHM6Ly9wa2kuY29tcHJvYmFudGVzZWxlY3Ryb25pY29zLmdvLmNyL3Byb2QvaW50ZXJtZWRpYXRlLXBqLXBlbS5jcnQwDQYJKoZIhvcNAQELBQADggIBAAe0m8n6fbjcF7yv9R1gZeqxfLvqcvwl5/RFouBU4ecec7NngIHscldNoBRsYGsdl/o4bmyPceAMKTE3Ine5OOEzIO0ZKPvMg8TLbVLDYrDAQgqverWCD3oXASxdb56HG1RAbxCeIGObPAMNtwW0oc0/HSVDCDLqWAgmdg7Ovaf8Ew0253AeWjvf7iuR7WNb4kmzJGaFW5auPB2R7iuxnUJty1e+Zg/eWf0vxKnMmvlQ+nbI63KbHmZ39ANTYZqc+4UHmHxzCLQUlmRL5S7Me2gzMO80TTmX1BQNK5VRUAHYV0UqDImy1lz6NHaHwiFiqBI8jqADtwjwotK8gMh1GDj8rgBrgKU4vpWbz8LTzQVWsL6lBY+Z/3I3Yv9rzuPBFMe+iVTZm6aY/hwHjQ7KPHIhNMz+YFA4IAXX19erN5LknMMLkwEqNzqXG9uop/dM3NfzAw/SQ+lnd5k/RlqlZcD+Gg4r31Sj4cFtWYMNh4dv7inZ9XIKe6MH8TcBsW/BxFG2WPya3S7bjT4pFMs4yYzk49UluXs95emJXsoy9/STM/3gmAvskKSkgkrTX78dhAhc0Q5DUPHFTgrh5N/j79jV87sTXKFNVBSCn6u2krf7iLBjCuuGp1W3WgZ9abyC/NW6UYWYC1oXdcnj+fABRpJ6aHWGhFpbcz/YSRHfBs4h</ds:X509Certificate></ds:X509Data></ds:KeyInfo><ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="#Signature-0f26c501-7a00-4337-89b3-1e33672ceb41"><xades:SignedProperties Id="SignedProperties-Signature-0f26c501-7a00-4337-89b3-1e33672ceb41"><xades:SignedSignatureProperties><xades:SigningTime>2025-12-08T14:53:15.770Z</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>0DZPV1+MCj1ADt+AOqR3UlvmJE8=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1647394912216</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://cdn.comprobanteselectronicos.go.cr/xml-schemas/Resoluci%C3%B3n_General_sobre_disposiciones_t%C3%A9cnicas_comprobantes_electr%C3%B3nicos_para_efectos_tributarios.pdf</xades:Identifier></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>Ohixl6upD6av8N7pEvDABhEL6hM=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>emisor</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature>
+   
+<Personalizados>
+      <campoString name="Version">4.4</campoString>
+      <campoString name="IntegracionGS">API REST</campoString>
+      <campoString name="ProvinciaEmisor">SAN JOSÉ</campoString>
+      <campoString name="CantonEmisor">MORA</campoString>
+      <campoString name="DistritoEmisor">COLÓN</campoString>
+      <campoString name="TipoCE">01</campoString>
+      <campoString name="NumeroInterno">SOIN0002529115</campoString>
+      <campoString name="CorreosReceptor">batisvar@yahoo.com</campoString>
+      <campoString name="Orden">2806681</campoString>
+      <campoString name="Fuente">Webstore</campoString>
+      <campoString name="OCCliente" />
+      <campoString name="Transportista">* Pick Up *</campoString>
+      <campoString name="Vendedor">Breadth XCR</campoString>
+      <campoString name="Localidad">xcr1</campoString>
+      <campoString name="FacturadoA">XCR017876</campoString>
+      <campoString name="TelefonoFA">+50687043603</campoString>
+      <campoString name="Direccion1FA">VEREDAS DEL ESTE CAS 121F  TRES RIOS</campoString>
+      <campoString name="Direccion2FA" />
+      <campoString name="Direccion3FA" />
+      <campoString name="Direccion4FA" />
+      <campoString name="Direccion5FA" />
+      <campoString name="TelefonoEA">+50687043603</campoString>
+      <campoString name="Direccion1EA">VEREDAS DEL ESTE CAS 121F  TRES RIOS</campoString>
+      <campoString name="Direccion2EA" />
+      <campoString name="Direccion3EA" />
+      <campoString name="Direccion4EA" />
+      <campoString name="Direccion5EA" />
+      <campoString name="Version">4.3</campoString>
+      <campoString name="Incoterm">ORG</campoString>
+      <campoString name="IncotermDesc">Origin</campoString>
+      <CustDetalle>
+         <CustDetNroLin>1</CustDetNroLin>
+         <CustDetAFN_01>920-004430</CustDetAFN_01>
+         <CustDetAFN_02>1</CustDetAFN_02>
+      </CustDetalle>
+   </Personalizados></FacturaElectronica>

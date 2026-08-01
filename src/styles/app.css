@@ -1334,8 +1334,8 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
   }
   .sidebar.open { left: 0; }
   .main { margin-left: 0; width: 100%; }
-  .topbar { padding: 0 var(--sp-4); }
-  .content { padding: var(--sp-4) var(--sp-4) var(--sp-8); padding-bottom: env(safe-area-inset-bottom); }
+  .topbar { padding: 0 var(--sp-4); padding-top: env(safe-area-inset-top, 0px); }
+  .content { padding: var(--sp-4) var(--sp-4) calc(72px + env(safe-area-inset-bottom, 0px)); }
 
   /* CRM: split-pane → stack con navegación lista/detalle */
   .crm-panel { height: calc(100vh - var(--topbar-h)); }

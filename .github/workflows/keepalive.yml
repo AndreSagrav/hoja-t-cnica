@@ -1,0 +1,17 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Corre todos los días a la medianoche UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        # Hace una petición simple para mantener activo el proyecto
+        run: |
+          curl -s -X GET 'https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/' || true
+          echo "Ping enviado a Supabase para evitar pausa por inactividad."

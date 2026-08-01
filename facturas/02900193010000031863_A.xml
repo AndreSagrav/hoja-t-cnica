@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica" xsi:schemaLocation="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica https://tribunet.hacienda.go.cr/docs/esquemas/2017/v4.4/facturaElectronica.xsd" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Clave>50615032600310102878202900193010000031863300192008</Clave>
+  <ProveedorSistemas>3101746795</ProveedorSistemas>
+  <CodigoActividadEmisor>4730.0</CodigoActividadEmisor>
+  <NumeroConsecutivo>02900193010000031863</NumeroConsecutivo>
+  <FechaEmision>2026-03-15T09:13:32</FechaEmision>
+  <Emisor>
+    <Nombre>PETRÓLEOS DELTA COSTA RICA, S.A.</Nombre>
+    <Identificacion>
+      <Tipo>02</Tipo>
+      <Numero>3101028782</Numero>
+    </Identificacion>
+    <NombreComercial>PETRÓLEOS DELTA COSTA RICA, S.A.</NombreComercial>
+    <Ubicacion>
+      <Provincia>3</Provincia>
+      <Canton>03</Canton>
+      <Distrito>02</Distrito>
+      <Barrio>Tres Rios</Barrio>
+      <OtrasSenas>Cartago, La Unión, San Diego, Florencio del Castillo.Terracampus Corporativo Edificio 1 Piso 1.</OtrasSenas>
+    </Ubicacion>
+    <CorreoElectronico>csccr@petrodelta.com</CorreoElectronico>
+  </Emisor>
+  <Receptor>
+    <Nombre>CESAR BATISTA VARGAS</Nombre>
+    <Identificacion>
+      <Tipo>01</Tipo>
+      <Numero>205390118</Numero>
+    </Identificacion>
+    <NombreComercial>CESAR BATISTA VARGAS</NombreComercial>
+    <Ubicacion>
+      <Provincia>3</Provincia>
+      <Canton>03</Canton>
+      <Distrito>02</Distrito>
+      <OtrasSenas>_____</OtrasSenas>
+    </Ubicacion>
+    <CorreoElectronico>batisvar@yahoo.com; factura.e@outlook.es</CorreoElectronico>
+  </Receptor>
+  <CondicionVenta>01</CondicionVenta>
+  <DetalleServicio>
+    <LineaDetalle>
+      <NumeroLinea>1</NumeroLinea>
+      <CodigoCABYS>3331100010000</CodigoCABYS>
+      <Cantidad>32.152</Cantidad>
+      <UnidadMedida>L</UnidadMedida>
+      <TipoTransaccion>01</TipoTransaccion>
+      <Detalle>Super</Detalle>
+      <PrecioUnitario>633.00000</PrecioUnitario>
+      <MontoTotal>20352.00000</MontoTotal>
+      <SubTotal>20352.00000</SubTotal>
+      <BaseImponible>20352.00000</BaseImponible>
+      <Impuesto>
+        <Codigo>01</Codigo>
+        <CodigoTarifaIVA>10</CodigoTarifaIVA>
+        <Tarifa>0.00</Tarifa>
+        <Monto>0.00000</Monto>
+      </Impuesto>
+      <ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica>
+      <ImpuestoNeto>0.00000</ImpuestoNeto>
+      <MontoTotalLinea>20352.00000</MontoTotalLinea>
+    </LineaDetalle>
+  </DetalleServicio>
+  <ResumenFactura>
+    <CodigoTipoMoneda>
+      <CodigoMoneda>CRC</CodigoMoneda>
+      <TipoCambio>1.00000</TipoCambio>
+    </CodigoTipoMoneda>
+    <TotalMercanciasExentas>20352.00000</TotalMercanciasExentas>
+    <TotalExento>20352.00000</TotalExento>
+    <TotalVenta>20352.00000</TotalVenta>
+    <TotalVentaNeta>20352.00000</TotalVentaNeta>
+    <TotalDesgloseImpuesto>
+      <Codigo>01</Codigo>
+      <CodigoTarifaIVA>10</CodigoTarifaIVA>
+      <TotalMontoImpuesto>0.00000</TotalMontoImpuesto>
+    </TotalDesgloseImpuesto>
+    <MedioPago>
+      <TipoMedioPago>01</TipoMedioPago>
+      <TotalMedioPago>20352.00000</TotalMedioPago>
+    </MedioPago>
+    <TotalComprobante>20352.00000</TotalComprobante>
+  </ResumenFactura>
+  <Otros>
+    <OtroTexto codigo="Estación "> Santo Domingo</OtroTexto>
+  </Otros>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="xades-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><ds:Reference Id="r-id-1" URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>ys07+h38HKVdPSyt8hlH1a1tM4IeTOqR2I3t4hvooQI=</ds:DigestValue></ds:Reference><ds:Reference Id="ReferenceKeyInfo" URI="#KeyInfoId-xades-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>ocJuwIU/WpV2DpwZ7MfguTPJRMPF9pToRa7voMyac+g=</ds:DigestValue></ds:Reference><ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-xades-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e"><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>yAn9ptIbn1sAxlycW/EvHWeUA5llfmR8d5AI4zNguIs=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue Id="value-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e">TRXSrvqrLVicmVcWfDDDZsFDpLNmNYYoQzUzn4JUo0zk4yTnf1EFPo1eprf5icagLVen0AKNWsR+Z6U+WruD5tQYSgr99HVH0lcgy8+YL9HHi5v7TUh8vOpVTAB9mmdbt5qEzcevUTCriPDceBxRbMjxzpcDcGPCRYYfckA71MmpkiSiZ3sZ+z+BXNgkvXq3MZM4TrY6fUg3rcq4ALx8nEOO5VjjCQ2gTmk8ksXMOaFzsawdlt2K4jBGcLtx3QEoCwHaPq12wkg+0qaV2KUmLDbUMSoVgjNKZ4eFHdcQJgXUG0affxNc7MFI38NaumxRx0a9kk7/SwoiZvyOndz77g==</ds:SignatureValue><ds:KeyInfo Id="KeyInfoId-xades-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e"><ds:X509Data><ds:X509Certificate>MIIFLjCCAxagAwIBAgIGAZNkFF00MA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYTAkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANER1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjQxMTI1MTYwNzU2WhcNMjgxMTI0MTYwNzU2WjCBiDEZMBcGA1UEBRMQQ1BKLTMtMTAxLTAyODc4MjELMAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsMA0NQSjE1MDMGA1UEAwwsUEVUUk9MRU9TIERFTFRBIENPU1RBIFJJQ0EgIFNPQ0lFREFEIEFOT05JTUEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDI1fHs/vpFcaa7+2RjE9SkaVPBoLJd6Mmtna30jonpR7ay8tD1R4cbd3o9vgnNEDDzVTDwOMz9noeUubmIeXIQw47ipZ07h3RH046lP31O4DIWHBoey8ROikOXtO7MgcjDWPGfqQn/776yyfdKi8IkRc9EIuGewIRMSCsZ0hHyn2bJae72xOicp0ByixGRQlRPdshYxatPdioLU6F81yWmYT4HQehOTg4H8ROy5j3r87MEw6VVnA7oq6jdCZ1a8ZQF3cEZyU62swsROynI67KGcQRe0ebaaW35Yyi9ytqXE5ZsgERxhz2URuzmcDTLvA2uAysI0mO/ytUGuZvQnpchAgMBAAGjgcowgccwHwYDVR0jBBgwFoAUO21X9dZ86Z4QAiBB470azM+zTpUwHQYDVR0OBBYEFMdIy/6OzSN10VadlJAdTYBGuefNMAsGA1UdDwQEAwIGwDATBgNVHSUEDDAKBggrBgEFBQcDBDBjBggrBgEFBQcBAQRXMFUwUwYIKwYBBQUHMAKGR2h0dHBzOi8vcGtpLmNvbXByb2JhbnRlc2VsZWN0cm9uaWNvcy5nby5jci9wcm9kL2ludGVybWVkaWF0ZS1wai1wZW0uY3J0MA0GCSqGSIb3DQEBCwUAA4ICAQCb643Ts57C1h+0u4nV9U6KAIyvZseO1c19I6a2efgAmPlsyBfEk9g7Qtft26BLoI9lmAzKGTFvCCxuwausuZgHnPqlFlakHK2YOe104QSKk0/XGZyFn363neZDnw/uucQU4FmSyKb/HjAs6eMUpG+7HwogKRK7MesWuB2RGpAuReEGHBxnUoT7iRFQOrYuVTal5NE3uvEZ9IV2bOQii4YemcgaCBpXza6fG6FeBUURSX5IZ8vkJj1cjtmIYZsM8sAlAGfpQcC9P8mq7sFWoY6lM+87zxZ5UgbaIQLqssm9KjJ1ICtfDPTOPIlwGfQ2SkjiATb2c4+Ngymd764TqrdIwjBPY08j56pIaSQNSgIGhBCA1WA9QnL0ER4qpFua1dC/mKhhWtit7y83sKwRm5mwVgFG/sus5/feAadadxbc1BOfan3PDi809hscx4b+7Vmo8xqB+GQ4fnw5owzJn1pI86ljsaG5p22e+rmw3/WMQN81ELFATIUGpAyfgZrC2X+TnFSeK9/C0VeA/e8XOHdlP+xR3SxZ3OYKtLMPd85yQAoRIJyggZSfV9sIWLUENQAr5lHGLP5J+CxMa+4xQn+FNEqoBGCYUSPYe22XrdjEwCySuBBoHedZ+pSEhOXQsuLWciuIzcXqNZg08JVGaWnyh4udymls7wH+Le0zB2U5SQ==</ds:X509Certificate></ds:X509Data><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>yNXx7P76RXGmu/tkYxPUpGlTwaCyXejJrZ2t9I6J6Ue2svLQ9UeHG3d6Pb4JzRAw81Uw8DjM/Z6HlLm5iHlyEMOO4qWdO4d0R9OOpT99TuAyFhwaHsvETopDl7TuzIHIw1jxn6kJ/+++ssn3SovCJEXPRCLhnsCETEgrGdIR8p9myWnu9sTonKdAcosRkUJUT3bIWMWrT3YqC1OhfNclpmE+B0HoTk4OB/ETsuY96/OzBMOlVZwO6Kuo3QmdWvGUBd3BGclOtrMLETspyOuyhnEEXtHm2mlt+WMovcralxOWbIBEcYc9lEbs5nA0y7wNrgMrCNJjv8rVBrmb0J6XIQ==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo><ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="id-eb273256-c768-4a51-96ec-373bc8cff57c" Target="#xades-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e"><xades:SignedProperties Id="SignedProperties-xades-id-a5804832-0b60-4e2c-a815-d819b7ba5b7e"><xades:SignedSignatureProperties><xades:SigningTime>2026-03-15T09:17:15.000Z</xades:SigningTime><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>Fmgc1KuV6D9UBdkPJvMcBeC3gXc=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1732550876468</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><SignaturePolicyIdentifier xmlns="http://uri.etsi.org/01903/v1.3.2#"><SignaturePolicyId><SigPolicyId><xades:Identifier>https://atv.hacienda.go.cr/ATV/ComprobanteElectronico/docs/esquemas/2024/v4.4/Resoluci%C3%B3n_General_sobre_disposiciones_t%C3%A9cnicas_comprobantes_electr%C3%B3nicos_para_efectos_tributarios.pdf</xades:Identifier><Description /></SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><ds:DigestValue>DWxin1xWOeI8OuWQXazh4VjLWAaCLAA954em7DMh0h8=</ds:DigestValue></xades:SigPolicyHash></SignaturePolicyId></SignaturePolicyIdentifier></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#r-id-1"><xades:MimeType>application/octet-stream</xades:MimeType></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

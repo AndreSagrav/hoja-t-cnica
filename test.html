@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="module">
+  import { parseXMLFile, clasificarComprobante } from './src/lib/xml-parser.js';
+
+  async function test() {
+    try {
+      const res = await fetch('/api/facturas');
+      const data = await res.json();
+      const logs = [];
+      data.files.forEach(f => {
+        const parsed = parseXMLFile(new File([f.xml], f.name, {type: 'text/xml'}));
+        // Wait, parseXMLFile is async but I can use parseComprobanteXML directly
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+  
+  import { parseComprobanteXML } from './src/lib/xml-parser.js';
+  fetch('/api/facturas').then(r=>r.json()).then(data => {
+    data.files.forEach(f => {
+      const parsed = parseComprobanteXML(f.xml);
+      const tipo = clasificarComprobante(parsed, '205390118');
+      console.log(f.name, 'emisor:', parsed.emisor?.cedula, 'receptor:', parsed.receptor?.cedula, 'tipo:', tipo);
+      document.body.innerHTML += `<p>${f.name}: emisor=${parsed.emisor?.cedula} receptor=${parsed.receptor?.cedula} tipo=${tipo}</p>`;
+    });
+  });
+</script>
+</body>
+</html>

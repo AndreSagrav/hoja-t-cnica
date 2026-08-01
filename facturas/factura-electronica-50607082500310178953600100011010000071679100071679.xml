@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FacturaElectronica xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.3/facturaElectronica"><Clave>50607082500310178953600100011010000071679100071679</Clave><CodigoActividad>552004</CodigoActividad><NumeroConsecutivo>00100011010000071679</NumeroConsecutivo><FechaEmision>2025-08-07T18:42:35+00:00</FechaEmision><Emisor><Nombre>JARDIN DE LOS OLIVOS SOCIEDAD ANONIMA</Nombre><Identificacion><Tipo>02</Tipo><Numero>3101789536</Numero></Identificacion><Ubicacion><Provincia>1</Provincia><Canton>02</Canton><Distrito>01</Distrito><OtrasSenas>600 m oeste Peaje escazú ruta 27 Centro Comercial Avenida Escazú Torre 204 locales 102 y 103</OtrasSenas></Ubicacion><Telefono><CodigoPais>506</CodigoPais><NumTelefono>44043809</NumTelefono></Telefono><CorreoElectronico>facturacion@ar-holdings.com</CorreoElectronico></Emisor><Receptor><Nombre>Cesar andres  Batista  Vargas</Nombre><Identificacion><Tipo>01</Tipo><Numero>205390118</Numero></Identificacion><CorreoElectronico>factura.e@outlook.es</CorreoElectronico></Receptor><CondicionVenta>01</CondicionVenta><MedioPago>02</MedioPago><DetalleServicio><LineaDetalle><NumeroLinea>1</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3143</Codigo></CodigoComercial><Cantidad>6.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>BREADSTICKS</Detalle><PrecioUnitario>0.00</PrecioUnitario><MontoTotal>0.0000</MontoTotal><SubTotal>0.0000</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>0.00</Monto></Impuesto><ImpuestoNeto>0.00</ImpuestoNeto><MontoTotalLinea>0.00</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>2</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3151</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>LASAGNA CLASSICO</Detalle><PrecioUnitario>9674.80</PrecioUnitario><MontoTotal>9674.8000</MontoTotal><SubTotal>9674.8000</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>1257.72</Monto></Impuesto><ImpuestoNeto>1257.72</ImpuestoNeto><MontoTotalLinea>10932.52</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>3</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3153</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>CHICKEN &amp; SHRIMP (9) CARBONARA</Detalle><PrecioUnitario>12520.33</PrecioUnitario><MontoTotal>12520.3300</MontoTotal><SubTotal>12520.3300</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>1627.64</Monto></Impuesto><ImpuestoNeto>1627.64</ImpuestoNeto><MontoTotalLinea>14147.97</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>4</NumeroLinea><Codigo>2449003000100</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3186</Codigo></CodigoComercial><Cantidad>2.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>GINGER ALE</Detalle><PrecioUnitario>1829.27</PrecioUnitario><MontoTotal>3658.5400</MontoTotal><SubTotal>3658.5400</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>475.61</Monto></Impuesto><ImpuestoNeto>475.61</ImpuestoNeto><MontoTotalLinea>4134.15</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>5</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3265</Codigo></CodigoComercial><Cantidad>2.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>REFILL</Detalle><PrecioUnitario>0.00</PrecioUnitario><MontoTotal>0.0000</MontoTotal><SubTotal>0.0000</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>0.00</Monto></Impuesto><ImpuestoNeto>0.00</ImpuestoNeto><MontoTotalLinea>0.00</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>6</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3268</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>REFILL SOPA &amp; ENSALADA</Detalle><PrecioUnitario>0.00</PrecioUnitario><MontoTotal>0.0000</MontoTotal><SubTotal>0.0000</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>0.00</Monto></Impuesto><ImpuestoNeto>0.00</ImpuestoNeto><MontoTotalLinea>0.00</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>7</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>3268</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>REFILL SOPA &amp; ENSALADA</Detalle><PrecioUnitario>0.00</PrecioUnitario><MontoTotal>0.0000</MontoTotal><SubTotal>0.0000</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>0.00</Monto></Impuesto><ImpuestoNeto>0.00</ImpuestoNeto><MontoTotalLinea>0.00</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>8</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>5002</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>UND EMPAQUE LLEVAR GDE SALON</Detalle><PrecioUnitario>203.25</PrecioUnitario><MontoTotal>203.2500</MontoTotal><SubTotal>203.2500</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>26.42</Monto></Impuesto><ImpuestoNeto>26.42</ImpuestoNeto><MontoTotalLinea>229.67</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>9</NumeroLinea><Codigo>6331000000000</Codigo><CodigoComercial><Tipo>04</Tipo><Codigo>5037</Codigo></CodigoComercial><Cantidad>1.00</Cantidad><UnidadMedida>Unid</UnidadMedida><Detalle>SAUTE HONGOS 6 OZ</Detalle><PrecioUnitario>1544.72</PrecioUnitario><MontoTotal>1544.7200</MontoTotal><SubTotal>1544.7200</SubTotal><Impuesto><Codigo>01</Codigo><CodigoTarifa>08</CodigoTarifa><Tarifa>13.00</Tarifa><Monto>200.81</Monto></Impuesto><ImpuestoNeto>200.81</ImpuestoNeto><MontoTotalLinea>1745.53</MontoTotalLinea></LineaDetalle></DetalleServicio><OtrosCargos><TipoDocumento>06</TipoDocumento><Detalle>Serivicio Restaurante</Detalle><Porcentaje>10.00000</Porcentaje><MontoCargo>2760.16000</MontoCargo></OtrosCargos><ResumenFactura><CodigoTipoMoneda><CodigoMoneda>CRC</CodigoMoneda><TipoCambio>1.00000</TipoCambio></CodigoTipoMoneda><TotalServGravados>0</TotalServGravados><TotalMercanciasGravadas>27601.64</TotalMercanciasGravadas><TotalGravado>27601.64</TotalGravado><TotalExento>0</TotalExento><TotalVenta>27601.64</TotalVenta><TotalVentaNeta>27601.64</TotalVentaNeta><TotalImpuesto>3588.20</TotalImpuesto><TotalOtrosCargos>2760.16000</TotalOtrosCargos><TotalComprobante>33950.00</TotalComprobante></ResumenFactura><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference Id="xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-ref0" URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>4Pn+mH6L4vPUZmkbGTrODheqAtt4LBqj3Ltm97nvydU=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-keyinfo">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>UseHHRnS2CDLIxWx3Q5yYu47mvzjpsWa7b53UcqhhIM=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-signedprops" Type="http://uri.etsi.org/01903#SignedProperties">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>FcX6xxSvpJ8S8vbIhGHFpdGmmlCtRKwN9Uc83tZbZ14=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-sigvalue">FczAO2E3orghdL+W0A+JbbkK+HqigVqvrL2Ch/nKrv6nknYYj3kdvBuIy9KIKeLH
+/YUehH61BlqYvnQAmusl5lCuVn7Yh6374sYMtn2RPAWlmGYbeXaiVhBRPOlF6u8J
+njL8OlQ/ZEIaQc3ssbltuQCrmdBFNAIycbv60uyRWpaaUv1AEFjCat/pVH+MZnwG
+LDVPnHOJy19ATrgeyr39oqVDqOkOnBwQLuPPKBQt5XGcY6EywxXV2n8R4eFFfmy4
+HE0RMPL1nBUQ7ckiZwS355aSwO6G5qHPBdEEkDw7jN+Pt4pR14G8MyrR0AsqakLx
+8xzqSOBPO/nhqZF8Z+LLrg==</ds:SignatureValue>
+<ds:KeyInfo Id="xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-keyinfo">
+<ds:X509Data>
+<ds:X509Certificate>MIIFJzCCAw+gAwIBAgIGAX4G01SbMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYT
+AkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANE
+R1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjExMjI5MTUzMzQw
+WhcNMjUxMjI4MTUzMzQwWjCBgTEZMBcGA1UEBRMQQ1BKLTMtMTAxLTc4OTUzNjEL
+MAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsM
+A0NQSjEuMCwGA1UEAwwlSkFSRElOIERFIExPUyBPTElWT1MgU09DSUVEQUQgQU5P
+TklNQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALsEAHxvmJd+ykVt
++LE4IjBrFQ/6hCjQItkUOhojAGFJF8bY+YUeuPEy+zmPaIy+NyHZwFa7JsJYCuue
+q9dRFoIX6qlhFF17AvR+Hv1x7j2JOl7Iyczk+nAtp9UpzSeg36wDhL6dzwmLjLM0
+uAiXHENbM77CN2IiF5okSy2zNxsGT+GK6/rmCh1I+vevlgumpMsGDPJ7gSRntd6J
+7qfyCPGCCJ3DR+UhOe/FrkLQeNCB4vTm6NmT1rRipMhYfcq9LehkGbNsxUK3U9/u
+iTmir4HjXkvRrzYUXR2+Yp9Nj9NCUf6NC2oxuwvn+JZUqylQ+y0J+fA4CqVR2JIZ
+HKu5eLECAwEAAaOByjCBxzAfBgNVHSMEGDAWgBQ7bVf11nzpnhACIEHjvRrMz7NO
+lTAdBgNVHQ4EFgQUxMqi6mz1kwtAq0Pl8IdMafYk/HIwCwYDVR0PBAQDAgbAMBMG
+A1UdJQQMMAoGCCsGAQUFBwMEMGMGCCsGAQUFBwEBBFcwVTBTBggrBgEFBQcwAoZH
+aHR0cHM6Ly9wa2kuY29tcHJvYmFudGVzZWxlY3Ryb25pY29zLmdvLmNyL3Byb2Qv
+aW50ZXJtZWRpYXRlLXBqLXBlbS5jcnQwDQYJKoZIhvcNAQELBQADggIBAGCshjPK
+fnQFXokn4XAFrGwPc9VF16ddfdMc4Q3bO4qXsneypNiNH1qRoZLF9u4gtX8+xH/5
+TIZb4MoMT22GnVqMdVo2RZSgixzjLJCOzkWg4Gl73FyemKci5LVe6RJQ0GBbnu8/
+XaaWCRNMB8TlHj0VJR3fAgpSOWJS0qi6QfwY5eTLMbYtL+DbyKCDRFQeiQ2hKLm8
+41mP3pVTsgFxxAj9lDJjTTIUYmwKRFIWGJXs38FgI4q9SrLpy8eJ5vn77C2pYZuA
+rLdOQ/WkUJ3pjYWBUotBsIxs/UQvOioTAs709lMaupVTxF41MPT3vRK9teu8fUbU
+AHjg6UATqOvYFmVAEqM6guWgUQQXKaBPOCcm9qABt83/u3o0XxHoegEyXsaY1ML+
+94TENEkX/u5csuvjPNsP7ak/LuAzvnfYMkOtMAbjf9Xdj3L+XkEDOPyUDKeDY7GK
+aSm4pRWcZPFIhF3RHcWlL650f5R3pLF0ElKkbJnJ4k4C6CPDAhD0ZzNeWdUANkT9
+G9GXxoIICQt85c7FgBXXZJgpBWVOS61Z0nuKwx7xBUuy6rqkhblOixMrzl1r0hVs
+LpulZ+HypBDDVEvYMVKmq5P6reZ3hsDD8w33kSduzeYm8VOmvp2KsYGbpl2Kz9+L
+gw54Z2zxW31JbBXZpKBSqco/qJyx//5HPyYz</ds:X509Certificate>
+<ds:X509IssuerSerial>
+<ds:X509IssuerName>C=CR,O=MINISTERIO DE HACIENDA,OU=DGT,CN=CA PERSONA JURIDICA</ds:X509IssuerName>
+<ds:X509SerialNumber>1640792020123</ds:X509SerialNumber>
+</ds:X509IssuerSerial>
+</ds:X509Data>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>uwQAfG+Yl37KRW34sTgiMGsVD/qEKNAi2RQ6GiMAYUkXxtj5hR648TL7OY9ojL43
+IdnAVrsmwlgK656r11EWghfqqWEUXXsC9H4e/XHuPYk6XsjJzOT6cC2n1SnNJ6Df
+rAOEvp3PCYuMszS4CJccQ1szvsI3YiIXmiRLLbM3GwZP4Yrr+uYKHUj696+WC6ak
+ywYM8nuBJGe13onup/II8YIIncNH5SE578WuQtB40IHi9Obo2ZPWtGKkyFh9yr0t
+6GQZs2zFQrdT3+6JOaKvgeNeS9GvNhRdHb5in02P00JR/o0LajG7C+f4llSrKVD7
+LQn58DgKpVHYkhkcq7l4sQ==</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="#xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d"><xades:SignedProperties Id="xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-signedprops"><xades:SignedSignatureProperties><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>vbV2h0SkVcjAc3VonnBfPXFSq1V8CS0Q+r8q+KiB8ls=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>C=CR,O=MINISTERIO DE HACIENDA,OU=DGT,CN=CA PERSONA JURIDICA</ds:X509IssuerName><ds:X509SerialNumber>1640792020123</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://tribunet.hacienda.go.cr/docs/esquemas/2016/v4.2/ResolucionComprobantesElectronicosDGT-R-48-2016_4.2.pdf</xades:Identifier><xades:Description/></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>eUGBLxo7SaqxaR+CGU5DCjUc514GOiOU9S0Smy5W7HE=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>ObligadoTributario</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#xmldsig-460fd0c5-7994-42bd-a924-fdc45c895c1d-ref0"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>

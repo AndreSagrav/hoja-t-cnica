@@ -228,7 +228,8 @@ async function save(id) {
     await loadData();
     selectedId = String(data.id);
   } catch (err) {
-    console.warn("Guardado local/demo en memoria:", err.message || err);
+    console.error("Error guardando servicio en Supabase:", err);
+    toast("Error al guardar en Supabase: " + (err.message || err), "error");
     if (id) {
       const idx = items.findIndex(x => String(x.id) === String(id));
       if (idx !== -1) items[idx] = { ...items[idx], ...payload };

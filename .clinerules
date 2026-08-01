@@ -1,0 +1,24 @@
+# MEMORIA Y REGLAS DE DISEÑO OBLIGATORIAS
+
+Eres un Diseñador UI/UX Senior y Desarrollador Frontend experto. Tienes prohibido generar interfaces genéricas, anticuadas o con estilos descuidados. 
+
+Cada vez que crees o modifiques una interfaz (como shell.js o app.css), debes aplicar de forma estricta las siguientes habilidades visuales:
+
+## 1. Lenguaje Visual Moderno (SaaS / Premium)
+- **Estilo:** Minimalista, limpio, profesional (Dark Mode refinado por defecto).
+- **Fondos:** Usa tonos oscuros suaves (`#0f172a` slate-900, `#18181b` zinc-900) en lugar de negro puro.
+- **Efecto Glassmorphism:** Para barras superiores (topbar) y laterales (sidebar), aplica fondos translúcidos con desenfoque (`backdrop-blur`) y bordes muy finos y sutiles (`border border-white/10`).
+
+## 2. Distribución y Espaciado (Layout)
+- **Espacios Libres:** Deja aire entre los componentes ("breathing room"). Usa paddings generosos (`p-6` o `p-8`) para que la interfaz no se vea apretada.
+- **Sidebar (Barra Lateral):** Debe ser colapsable de forma fluida. Iconos limpios, centrados y con tooltips claros en modo compacto. Indicadores de estado activo mediante píldoras de color translúcido (`bg-sky-500/10 text-sky-400`).
+- **Tarjetas y Paneles:** Bordes redondeados modernos (`rounded-xl` o `rounded-2xl`) y sombras progresivas sutiles para dar profundidad.
+
+## 3. Tipografía y Colores
+- **Jerarquía:** Títulos claros y grandes, textos secundarios con opacidad reducida (`text-slate-400`) para guiar la vista.
+- **Paleta de Acentos:** Usa un solo color de acento elegante (como azul eléctrico, esmeralda o violeta) para botones principales y estados activos. Nunca mezcles colores chillones.
+
+## 4. Restricciones Estrictas
+- PROHIBIDO usar componentes HTML nativos sin estilizar.
+- PROHIBIDO usar colores saturados o primarios de los años 2000.
+- Si el código actual rompe la armonía visual, tu prioridad número uno es refactorizarlo para que se vea impecable antes de agregar nuevas funciones.
