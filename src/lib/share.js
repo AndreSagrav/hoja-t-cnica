@@ -194,11 +194,33 @@ export function buildEmailSubject(data) {
 // ─── Compartir via WhatsApp ─────────────────────────────────
 export async function shareViaWhatsApp(pdfBlob, filename, data) {
   const message = buildMessage(data);
+  const pdfFile = blobToFile(pdfBlob, filename);
 
-  // Descargar PDF para que el usuario lo tenga en su teléfono y pueda adjuntarlo
+  // Copiar plantilla al portapapeles para que el usuario pueda pegarla en el chat
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(message);
+    }
+  } catch (e) {
+    console.warn("Error al copiar al portapapeles:", e);
+  }
+
+  // En móvil con Web Share API: compartir archivo directamente (como estaba antes)
+  if (canShareFiles()) {
+    try {
+      await navigator.share({
+        files: [pdfFile],
+        title: 'INNOVIO',
+        text: message
+      });
+      return { success: true, method: 'native' };
+    } catch (err) {
+      if (err.name === 'AbortError') return { success: false, cancelled: true };
+    }
+  }
+
+  // Fallback si falla compartir nativo
   downloadBlob(pdfBlob, filename);
-
-  // Abrir chat de WhatsApp con el mensaje de la plantilla predeterminado
   let num = (data.clientPhone || '').replace(/\D/g, '');
   if (num.startsWith('0')) num = num.substring(1);
   if (!num.startsWith('506') && num.length === 8) num = '506' + num;
