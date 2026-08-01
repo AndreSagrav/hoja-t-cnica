@@ -543,10 +543,38 @@ async function bindHaciendaConsulta() {
         }
       }
 
-      // Llenar campos directamente
-      document.getElementById('cli-fact-num-id').value = cedula.replace(/[^0-9]/g, '');
-      document.getElementById('cli-fact-nombre').value = data.nombre || '';
-      document.getElementById('cli-fact-act').value = data.actividadCodigo || '';
+      // Llenar campos de Cédula y Facturación
+      const cleanCedula = cedula.replace(/[^0-9]/g, '');
+      const numIdEl = document.getElementById('cli-fact-num-id');
+      const cedulaGenEl = document.getElementById('cli-cedula');
+      const factNombreEl = document.getElementById('cli-fact-nombre');
+      const factActEl = document.getElementById('cli-fact-act');
+      const cliTipoSelect = document.getElementById('cli-tipo');
+      const empresaInput = document.getElementById('cli-empresa');
+      const nombreInput = document.getElementById('cli-nombre');
+
+      if (numIdEl) numIdEl.value = cleanCedula;
+      if (cedulaGenEl) cedulaGenEl.value = cleanCedula;
+      if (factNombreEl) factNombreEl.value = data.nombre || '';
+      if (factActEl) factActEl.value = data.actividadCodigo || '';
+
+      // Si es Cédula Jurídica (10 dígitos o tipoIdNormalizado = 'juridica')
+      const isJuridica = data.tipoIdNormalizado === 'juridica' || cleanCedula.length === 10 || cleanCedula.startsWith('3101');
+      if (isJuridica) {
+        if (cliTipoSelect) {
+          cliTipoSelect.value = 'empresarial';
+          if (typeof window.toggleEmpresarialFields === 'function') {
+            window.toggleEmpresarialFields('empresarial');
+          }
+        }
+        if (empresaInput && data.nombre) {
+          empresaInput.value = data.nombre;
+        }
+      } else {
+        if (nombreInput && !nombreInput.value.trim() && data.nombre) {
+          nombreInput.value = data.nombre;
+        }
+      }
 
       // Email de facturación
       if (data.correo) {
@@ -569,12 +597,6 @@ async function bindHaciendaConsulta() {
             if (opt.value === regimenVal) { opt.selected = true; break; }
           }
         }
-      }
-
-      // También llenar el nombre del contacto si está vacío
-      const nombreInput = document.getElementById('cli-nombre');
-      if (!nombreInput.value.trim() && data.nombre) {
-        nombreInput.value = data.nombre;
       }
 
       const estadoMsg = data.estado === 'Inscrito' ? 'Estado: Inscrito ✓'
@@ -680,30 +702,30 @@ async function saveClient() {
     return;
   }
   
-  const codigoFiscalInput = document.getElementById("cli-codigo-fiscal").value;
+  const codigoFiscalInput = document.getElementById("cli-codigo-fiscal")?.value || "";
   const data = {
     nombre,
     tipo_cliente: tipo,
     codigo_fiscal: codigoFiscalInput ? parseInt(codigoFiscalInput) : null,
-    empresa: tipo === 'empresarial' ? (document.getElementById("cli-empresa").value || null) : null,
-    cargo: tipo === 'empresarial' ? (document.getElementById("cli-cargo").value || null) : null,
-    email: document.getElementById("cli-email").value || null, 
-    telefono: document.getElementById("cli-telefono").value || null, 
-    direccion: document.getElementById("cli-direccion").value || null,
-    cedula: document.getElementById("cli-cedula").value || null,
-    fact_tipo_id: document.getElementById("cli-fact-tipo").value || null,
-    fact_numero_id: document.getElementById("cli-fact-num-id").value || null,
-    fact_nombre: document.getElementById("cli-fact-nombre").value || null,
-    fact_email: document.getElementById("cli-fact-email").value || null,
-    fact_telefono: document.getElementById("cli-fact-tel").value || null,
-    fact_regimen: document.getElementById("cli-fact-regimen").value || null,
-    fact_provincia: document.getElementById("cli-fact-prov").value || null,
-    fact_canton: document.getElementById("cli-fact-can").value || null,
-    fact_distrito: document.getElementById("cli-fact-dis").value || null,
-    fact_barrio: document.getElementById("cli-fact-bar").value || null,
-    fact_otras_senas: document.getElementById("cli-fact-senas").value || null,
-    fact_actividad: document.getElementById("cli-fact-act").value || null,
-    notas: document.getElementById("cli-notas").value || null,
+    empresa: tipo === 'empresarial' ? (document.getElementById("cli-empresa")?.value || null) : null,
+    cargo: tipo === 'empresarial' ? (document.getElementById("cli-cargo")?.value || null) : null,
+    email: document.getElementById("cli-email")?.value || null, 
+    telefono: document.getElementById("cli-telefono")?.value || null, 
+    direccion: document.getElementById("cli-direccion")?.value || null,
+    cedula: document.getElementById("cli-cedula")?.value || document.getElementById("cli-fact-num-id")?.value || null,
+    fact_tipo_id: document.getElementById("cli-fact-tipo")?.value || null,
+    fact_numero_id: document.getElementById("cli-fact-num-id")?.value || null,
+    fact_nombre: document.getElementById("cli-fact-nombre")?.value || null,
+    fact_email: document.getElementById("cli-fact-email")?.value || null,
+    fact_telefono: document.getElementById("cli-fact-tel")?.value || null,
+    fact_regimen: document.getElementById("cli-fact-regimen")?.value || null,
+    fact_provincia: document.getElementById("cli-fact-prov")?.value || null,
+    fact_canton: document.getElementById("cli-fact-can")?.value || null,
+    fact_distrito: document.getElementById("cli-fact-dis")?.value || null,
+    fact_barrio: document.getElementById("cli-fact-bar")?.value || null,
+    fact_otras_senas: document.getElementById("cli-fact-senas")?.value || null,
+    fact_actividad: document.getElementById("cli-fact-act")?.value || null,
+    notas: document.getElementById("cli-notas")?.value || null,
     usuarios_autorizados: tipo === 'empresarial' ? tempAuthUsers : []
   };
   
