@@ -22,20 +22,22 @@ export async function inventarioView() {
   <div class="crm-kpi-row" id="inv-kpis"></div>
   <div class="crm-body">
     <div class="crm-list-pane">
-      <div class="crm-search-bar" style="padding:16px 24px; border-bottom:1px solid var(--border-light); background:var(--surface); display:flex; flex-direction:column; gap:16px;">
-        <input class="crm-search-input" id="inv-search" placeholder="🔍 Buscar por nombre, marca o código…" style="width:100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); font-size: 13px; font-family:inherit; outline:none;" />
-        <div style="display:flex; gap:12px; align-items:center;">
-          <label style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-weight:600;transition:all 0.2s;">
-            <input type="checkbox" id="inv-inactivos" style="width:14px;height:14px;accent-color:var(--primary);margin:0;cursor:pointer;" /> 
-            <span style="white-space:nowrap;">Ver inactivos</span>
+      <div class="crm-search-bar">
+        <div class="crm-search-wrap">
+          <svg class="crm-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input class="crm-search-input" id="inv-search" placeholder="Nombre, marca o código…" />
+        </div>
+        <div class="crm-search-row2">
+          <label class="crm-toggle-label">
+            <input type="checkbox" id="inv-inactivos" />
+            <span>Ver inactivos</span>
           </label>
-          <div id="inv-filters" style="display:flex;"></div>
+          <div class="crm-filter-tabs" id="inv-filters"></div>
         </div>
       </div>
       <div class="crm-list-scroll" id="inv-list">
         <div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg></div><div class="crm-empty-text">Cargando…</div></div>
       </div>
-
     </div>
     <div class="crm-detail-pane" id="inv-detail">
       <div class="crm-placeholder">
@@ -107,16 +109,11 @@ function renderKPIs() {
 
 function renderFilters() {
   const cats = [...new Set(items.map(s => s.categoria).filter(Boolean))];
-  const options = `<option value="todos" ${catFilter==="todos"?"selected":""}>Todas las categorías</option>` +
-    cats.map(c => `<option value="${esc(c)}" ${catFilter===c?"selected":""}>${esc(c)}</option>`).join("");
-  document.getElementById("inv-filters").innerHTML = `
-    <select id="select-cat" style="padding: 6px 28px 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface) url('data:image/svg+xml;utf8,<svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23475569\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 9l6 6 6-6\"/></svg>') no-repeat right 10px center; appearance: none; color: var(--text-mid); font-size: 12px; outline: none; cursor: pointer; font-weight: 600; font-family:inherit; transition:all 0.2s; white-space:nowrap;">
-      ${options}
-    </select>
-  `;
-  document.getElementById("select-cat").addEventListener("change", (e) => {
-    catFilter = e.target.value; renderFilters(); renderList();
-  });
+  document.getElementById("inv-filters").innerHTML =
+    `<button class="crm-filter-tab ${catFilter==="todos"?"active":""}" data-cat="todos">Todos</button>` +
+    cats.map(c => `<button class="crm-filter-tab ${catFilter===c?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  document.querySelectorAll("#inv-filters .crm-filter-tab").forEach(b =>
+    b.addEventListener("click", () => { catFilter = b.dataset.cat; renderFilters(); renderList(); }));
 }
 
 function renderList() {
@@ -136,13 +133,15 @@ function renderList() {
     const stock = s.stock ?? 0;
     const precio = s.precio_residencial || s.precio || 0;
     const inact = s.activo === false;
-    return `<div class="crm-item ${String(selectedId)===String(s.id)?"selected":""}" data-id="${s.id}" style="${inact?"opacity:0.55":""}; display: grid; grid-template-columns: 40px 1fr 90px; gap: 12px; align-items: center; padding: 10px 16px;">
-      <div style="font-size:20px; text-align:center;">${stockIcon(stock)}</div>
-      <div style="min-width:0;">
-        <div style="font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--navy);">${esc(s.nombre)}${inact?` <span style="font-size:9px;background:#fee2e2;color:#b91c1c;padding:2px 6px;border-radius:4px;margin-left:4px;">INACTIVO</span>`:""}</div>
-        <div style="font-size:11px; color:var(--text-soft); margin-top:2px;">${esc(s.categoria||"Sin categoría")}${s.codigo?" • "+esc(s.codigo):""}</div>
+    return `<div class="crm-item ${String(selectedId)===String(s.id)?"selected":""}${inact?" crm-item-inactive":""}" data-id="${s.id}">
+      <div class="crm-item-avatar av-prd">${stockIcon(stock)}</div>
+      <div class="crm-item-info">
+        <div class="crm-item-name">${esc(s.nombre)}${inact?` <span class="badge-inactivo">INACTIVO</span>`:""}</div>
+        <div class="crm-item-sub">${esc(s.categoria||"Sin categoría")}${s.codigo?" · "+esc(s.codigo):""}</div>
       </div>
-      <div style="text-align:right;">${stockTag(stock)}</div>
+      <div class="crm-item-meta">
+        ${stockTag(stock)}
+      </div>
     </div>`;
   }).join("");
   box.querySelectorAll(".crm-item").forEach(el =>
@@ -169,26 +168,22 @@ function showDetail(s) {
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       Volver a la lista
     </button>
-    <div style="background:var(--grad-navy); border-radius:12px; border:1px solid var(--navy-dark); padding:16px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; box-shadow: 0 4px 12px rgba(7,31,80,0.15); gap:24px;">
-      <div style="display:flex; align-items:center; gap:16px; flex:1; min-width:0;">
-        <div style="width:44px; height:44px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">${stockIcon(stock)}</div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:16px; font-weight:800; color:#fff; line-height:1.3; margin-right:12px;">${esc(s.nombre)}</div>
-          <div style="display:flex; gap:16px; font-size:11px; color:rgba(255,255,255,0.7);">
-            <span style="display:flex;align-items:center;gap:6px;white-space:nowrap;"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg> ${esc(s.categoria||"Sin categoría")}</span>
-            <span style="display:flex;align-items:center;gap:6px;white-space:nowrap;"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg> ${esc(s.codigo||"Sin SKU")}</span>
-          </div>
+    <div class="detail-hero">
+      <div class="detail-hero-avatar">${stockIcon(stock)}</div>
+      <div class="detail-hero-info">
+        <div class="detail-hero-name">${esc(s.nombre)}</div>
+        <div class="detail-hero-sub">
+          <span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg> ${esc(s.categoria||"Sin categoría")}</span>
+          <span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg> ${esc(s.codigo||"Sin SKU")}</span>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:24px; flex-shrink:0;">
-        <div style="text-align:right; flex-shrink:0;">
-          <div style="font-size:22px; font-weight:900; color:#fff; line-height:1; white-space:nowrap;">${precio?fmtMoney(precio):"₡0.00"}</div>
-          ${inact?`<div style="font-size:10px; font-weight:800; color:#fca5a5; text-transform:uppercase; margin-top:6px; letter-spacing:1px; white-space:nowrap;">Sin Stock</div>`:""}
+      <div class="detail-hero-actions">
+        <div style="text-align:right; margin-right: 8px;">
+          <div style="font-size:20px; font-weight:900; color:#fff; line-height:1; white-space:nowrap;">${precio?fmtMoney(precio):"₡0.00"}</div>
+          ${inact?`<div style="font-size:10px; font-weight:800; color:#fca5a5; text-transform:uppercase; margin-top:4px; letter-spacing:1px;">Sin Stock</div>`:""}
         </div>
-        <div style="display:flex; gap:12px; flex-shrink:0;">
-          <button class="btn" id="inv-edit-btn" style="padding:8px 16px; font-size:12px; height:auto; min-height:0; background:#fff; color:var(--navy); border:none; font-weight:700; flex-shrink:0; white-space:nowrap;">✏️ Editar</button>
-          <button class="btn" id="inv-del-btn" style="padding:8px 16px; font-size:12px; height:auto; min-height:0; color:#fff; border:1px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.05); font-weight:600; flex-shrink:0; white-space:nowrap;">🗑️ ${inact?"Activar":"Desactivar"}</button>
-        </div>
+        <button class="hero-btn hero-btn-edit" id="inv-edit-btn">✏️ Editar</button>
+        <button class="hero-btn hero-btn-del" id="inv-del-btn">🗑️ ${inact?"Activar":"Desactivar"}</button>
       </div>
     </div>
     

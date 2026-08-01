@@ -23,9 +23,12 @@ export async function serviciosView() {
   <div class="crm-body">
     <div class="crm-list-pane">
       <div class="crm-search-bar">
-        <input class="crm-search-input" id="srv-search" placeholder="🔍  Nombre, código o categoría…" />
+        <div class="crm-search-wrap">
+          <svg class="crm-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input class="crm-search-input" id="srv-search" placeholder="Nombre, código o categoría…" />
+        </div>
+        <div class="crm-filter-tabs" id="srv-filters"></div>
       </div>
-      <div class="crm-filters" id="srv-filters"></div>
       <div class="crm-list-scroll" id="srv-list">
         <div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div><div class="crm-empty-text">Cargando…</div></div>
       </div>
@@ -91,9 +94,9 @@ function renderKPIs() {
 function renderFilters() {
   const cats = [...new Set(items.map(s => s.categoria).filter(Boolean))];
   document.getElementById("srv-filters").innerHTML =
-    `<button class="crm-tab ${catFilter==="todos"?"active":""}" data-cat="todos">Todos</button>` +
-    cats.map(c => `<button class="crm-tab ${catFilter===c?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
-  document.querySelectorAll("#srv-filters .crm-tab").forEach(b =>
+    `<button class="crm-filter-tab ${catFilter==="todos"?"active":""}" data-cat="todos">Todos</button>` +
+    cats.map(c => `<button class="crm-filter-tab ${catFilter===c?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  document.querySelectorAll("#srv-filters .crm-filter-tab").forEach(b =>
     b.addEventListener("click", () => { catFilter = b.dataset.cat; renderFilters(); renderList(); }));
 }
 
@@ -113,15 +116,15 @@ function renderList() {
     const pRes = s.precio_residencial || s.precio || 0;
     const pEmp = s.precio_empresarial || 0;
     const inact = s.activo === false;
-    return `<div class="crm-item ${String(selectedId)===String(s.id)?"selected":""}" data-id="${s.id}" style="${inact?"opacity:0.55":""}">
+    return `<div class="crm-item ${String(selectedId)===String(s.id)?"selected":""}${inact?" crm-item-inactive":""}" data-id="${s.id}">
       <div class="crm-item-avatar av-svc"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
       <div class="crm-item-info">
-        <div class="crm-item-name">${esc(s.nombre)}${inact?` <span style="font-size:9px;background:#fee2e2;color:#b91c1c;padding:1px 6px;border-radius:20px;font-weight:700;margin-left:4px;">INACTIVO</span>`:""}</div>
+        <div class="crm-item-name">${esc(s.nombre)}${inact?` <span class="badge-inactivo">INACTIVO</span>`:""}</div>
         <div class="crm-item-sub">${esc(s.categoria||"Sin categoría")}${s.codigo?" · "+esc(s.codigo):""}</div>
       </div>
       <div class="crm-item-meta">
         <div class="crm-item-price">${fmtMoney(pRes)}</div>
-        ${pEmp?`<div class="crm-item-price emp">${fmtMoney(pEmp)} <span style="font-size:8px;opacity:0.7;">EMP</span></div>`:""}
+        ${pEmp?`<div class="crm-item-price emp">${fmtMoney(pEmp)} <span class="emp-label">EMP</span></div>`:""}
       </div>
     </div>`;
   }).join("");
@@ -145,27 +148,23 @@ function showDetail(s) {
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       Volver a la lista
     </button>
-    <div class="detail-hero" style="align-items: center; padding: 16px 24px; gap: 16px;">
-      <div style="display: flex; gap: 16px; flex: 1; min-width: 0; align-items: center;">
-        <div class="detail-hero-avatar" style="width: 46px; height: 46px; font-size: 18px;"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
-        <div class="detail-hero-info" style="display: flex; flex-direction: column; justify-content: center; min-width: 0;">
-          <div class="detail-hero-name" style="font-size: 20px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;">${esc(s.nombre)}</div>
-          <div class="detail-hero-sub" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
-            ${s.categoria?`<span style="border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); padding: 2px 8px; font-size: 11px; font-weight: 500;"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg> ${esc(s.categoria)}</span>`:""}
-            ${s.codigo?`<span style="border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); padding: 2px 8px; font-size: 11px; font-weight: 500;"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg> ${esc(s.codigo)}</span>`:""}
-            ${s.garantia?`<span style="border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); padding: 2px 8px; font-size: 11px; font-weight: 500;"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> ${esc(s.garantia)}</span>`:""}
-          </div>
+    <div class="detail-hero">
+      <div class="detail-hero-avatar"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
+      <div class="detail-hero-info">
+        <div class="detail-hero-name">${esc(s.nombre)}</div>
+        <div class="detail-hero-sub">
+          ${s.categoria?`<span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg> ${esc(s.categoria)}</span>`:""}
+          ${s.codigo?`<span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg> ${esc(s.codigo)}</span>`:""}
+          ${s.garantia?`<span><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg> ${esc(s.garantia)}</span>`:""}
         </div>
       </div>
-      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-        <div style="display: flex; gap: 16px; text-align: right; align-items: flex-end;">
+      <div class="detail-hero-actions">
+        <div style="display: flex; gap: 16px; text-align: right; align-items: flex-end; margin-right: 8px;">
           ${pRes?`<div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:text-bottom;margin-right:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg> Residencial</div><div style="font-size:18px;font-weight:900;color:#5eead4;line-height:1;">${fmtMoney(pRes)}</div></div>`:""}
           ${pEmp?`<div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:text-bottom;margin-right:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1v1H9V7zm5 0h1v1h-1V7zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1z"></path></svg> Empresarial</div><div style="font-size:18px;font-weight:900;color:#93c5fd;line-height:1;">${fmtMoney(pEmp)}</div></div>`:""}
         </div>
-        <div class="detail-hero-actions" style="margin-left: 0; gap: 8px;">
-          <button class="hero-btn hero-btn-edit" id="srv-edit-btn" style="padding: 6px 12px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar</button>
-          <button class="hero-btn hero-btn-del" id="srv-del-btn" style="padding: 6px 12px; font-size: 11px; font-weight: 600; background: transparent; border-color: rgba(239,68,68,0.2);"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> ${s.activo===false?"Activar":"Desactivar"}</button>
-        </div>
+        <button class="hero-btn hero-btn-edit" id="srv-edit-btn"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar</button>
+        <button class="hero-btn hero-btn-del" id="srv-del-btn"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> ${s.activo===false?"Activar":"Desactivar"}</button>
       </div>
     </div>
     ${s.descripcion?`<div class="detail-section"><div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Descripción</div><p style="font-size:13.5px;color:var(--text);line-height:1.7;">${esc(s.descripcion)}</p></div>`:""}
