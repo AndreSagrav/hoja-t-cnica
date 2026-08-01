@@ -445,12 +445,12 @@ table.data tbody tr:hover { background:rgba(0,194,168,0.02); }
 .crm-item-info { flex: 1; min-width: 0; }
 .crm-item-name {
   font-size: 13px; font-weight: var(--fw-bold); color: var(--navy);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  word-break: break-word; overflow-wrap: break-word; line-height: 1.35;
   letter-spacing: -0.01em;
 }
 .crm-item-sub {
   font-size: 11px; color: var(--text-soft); margin-top: 3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  word-break: break-word; overflow-wrap: break-word; line-height: 1.35;
 }
 .crm-item-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 .crm-item-price { font-size: var(--fs-xs); font-weight: var(--fw-extrabold); color: var(--navy); }

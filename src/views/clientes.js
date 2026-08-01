@@ -188,7 +188,7 @@ function showDetail(id) {
       <div style="display:flex; gap:16px; flex:1; min-width:0; align-items:center;">
         <div class="detail-hero-avatar" style="width:52px; height:52px; font-size:20px;">${initials}</div>
         <div class="detail-hero-info" style="display:flex; flex-direction:column; justify-content:center; min-width:0; gap:8px;">
-          <div class="detail-hero-name" style="font-size:22px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">${esc(displayName)}</div>
+          <div class="detail-hero-name" style="font-size:20px; font-weight:800; word-break:break-word; line-height:1.3; margin:0;">${esc(displayName)}</div>
           <div class="detail-hero-sub" style="margin:0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             ${subName ? `<span style="font-size:13px; opacity:0.7; font-weight:500;">Contacto: ${esc(subName)}</span>` : ''}
             <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:${tipoBg}; color:${tipoColor}; border:1px solid ${tipoColor}22;">
