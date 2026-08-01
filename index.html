@@ -37,16 +37,21 @@
     </div>
   </div>
   <div id="toast-container" aria-live="polite"></div>
-  <script type="module" src="./src/main.js?v=2.2"></script>
   <script>
+    // Purge stale Service Worker caches immediately to ensure users receive fresh bundle updates
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js').then(function(reg) {
-          reg.update();
-        }).catch(function() {});
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function(keys) {
+        for (var j = 0; j < keys.length; j++) { caches.delete(keys[j]); }
       });
     }
   </script>
+  <script type="module" src="./src/main.js?v=3.0"></script>
+
 
   <script>
     (function(){
