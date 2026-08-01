@@ -1,9 +1,10 @@
 import { ensureShell } from "../components/shell.js";
 import { getSupabase } from "../lib/supabase.js";
 import { esc, fmtMoney, debounce, toast } from "../lib/utils.js";
-import { generateSmartCode, PRESET_ACTIVITIES } from "../lib/code-generator.js";
+import { generateSmartCode, PRESET_ACTIVITIES, getCategoryName } from "../lib/code-generator.js";
 
 let items = [], selectedId = null, catFilter = "todos", search = "", showInactive = false;
+
 
 
 export async function serviciosView() {
@@ -81,11 +82,17 @@ async function loadData() {
   }
 
   items = items.map(s => {
-    if (!s.codigo || s.codigo.startsWith('SRV-177') || s.codigo === 'REPP') {
-      const auto = generateSmartCode(s.nombre);
-      return { ...s, codigo: auto || s.codigo || 'ST' };
+    let codigo = s.codigo;
+    if (!codigo || codigo.startsWith('SRV-177') || codigo === 'REPP') {
+      codigo = generateSmartCode(s.nombre) || 'ST';
     }
-    return s;
+    let categoria = s.categoria;
+    if (!categoria || categoria.toLowerCase() === 'general') {
+      categoria = getCategoryName(codigo);
+    } else {
+      categoria = getCategoryName(categoria);
+    }
+    return { ...s, codigo, categoria };
   });
 
   renderAll();
@@ -103,7 +110,7 @@ function renderAll() {
 function renderKPIs() {
   const active = items.filter(s => s.activo !== false);
   const inactive = items.filter(s => s.activo === false);
-  const cats = [...new Set(items.map(s => s.categoria).filter(Boolean))];
+  const cats = [...new Set(items.map(s => getCategoryName(s.categoria)).filter(Boolean))];
   const avgRes = active.length ? Math.round(active.reduce((a, s) => a + (s.precio_residencial || s.precio || 0), 0) / active.length) : 0;
   document.getElementById("srv-kpis").innerHTML = `
     <div class="crm-kpi"><div class="crm-kpi-icon blue"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg></div><div><div class="crm-kpi-label">Total</div><div class="crm-kpi-value">${items.length}</div></div></div>
@@ -113,7 +120,7 @@ function renderKPIs() {
 }
 
 function renderFilters() {
-  const cats = [...new Set(items.map(s => s.categoria).filter(Boolean))];
+  const cats = [...new Set(items.map(s => getCategoryName(s.categoria)).filter(Boolean))];
   document.getElementById("srv-filters").innerHTML =
     `<button class="crm-filter-tab ${catFilter==="todos"?"active":""}" data-cat="todos">Todos</button>` +
     cats.map(c => `<button class="crm-filter-tab ${catFilter===c?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
@@ -125,10 +132,11 @@ function renderList() {
   const box = document.getElementById("srv-list");
   let filtered = items.filter(s => {
     if (!showInactive && s.activo === false) return false;
-    if (catFilter !== "todos" && s.categoria !== catFilter) return false;
+    const catName = getCategoryName(s.categoria);
+    if (catFilter !== "todos" && catName !== catFilter && s.categoria !== catFilter) return false;
     if (!search) return true;
     return (s.nombre || "").toLowerCase().includes(search) ||
-      (s.categoria || "").toLowerCase().includes(search) ||
+      (catName || "").toLowerCase().includes(search) ||
       (s.codigo || "").toLowerCase().includes(search);
   });
   if (!filtered.length) {
@@ -139,11 +147,12 @@ function renderList() {
     const pRes = s.precio_residencial || s.precio || 0;
     const pEmp = s.precio_empresarial || 0;
     const inact = s.activo === false;
+    const catName = getCategoryName(s.categoria);
     return `<div class="crm-item ${String(selectedId)===String(s.id)?"selected":""}${inact?" crm-item-inactive":""}" data-id="${s.id}">
       <div class="crm-item-avatar av-svc"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
       <div class="crm-item-info">
         <div class="crm-item-name">${esc(s.nombre)}${inact?` <span class="badge-inactivo">INACTIVO</span>`:""}</div>
-        <div class="crm-item-sub">${esc(s.categoria||"general")}${s.codigo?" · "+esc(s.codigo):""} · <span style="color:var(--teal);font-weight:600;">${esc(s.unidad||"Hora")}</span></div>
+        <div class="crm-item-sub">${esc(catName)}${s.codigo?" · "+esc(s.codigo):""} · <span style="color:var(--teal);font-weight:600;">${esc(s.unidad||"Hora")}</span></div>
       </div>
       <div class="crm-item-meta">
         <div class="crm-item-price">${pRes?fmtMoney(pRes):"₡0"}</div>
@@ -151,6 +160,7 @@ function renderList() {
       </div>
     </div>`;
   }).join("");
+
   box.querySelectorAll(".crm-item").forEach(el =>
     el.addEventListener("click", () => {
       selectedId = el.dataset.id;
@@ -214,12 +224,12 @@ function showForm(srv) {
     if (crmBody) crmBody.classList.add('show-detail');
   }
 
-  const currentUnidad = srv?.unidad || 'Hora';
-  const currentCat = srv?.categoria || 'general';
+  const currentCat = getCategoryName(srv?.categoria || 'General');
   const catOptions = `
-    <option value="general" ${currentCat === 'general' ? 'selected' : ''}>general — General</option>
-    ${PRESET_ACTIVITIES.map(a => `<option value="${a.code}" ${currentCat === a.code || srv?.codigo === a.code ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
+    <option value="General" ${currentCat === 'General' ? 'selected' : ''}>General</option>
+    ${PRESET_ACTIVITIES.map(a => `<option value="${a.catName}" data-code="${a.code}" ${currentCat === a.catName || srv?.codigo === a.code ? 'selected' : ''}>${esc(a.label)}</option>`).join('')}
   `;
+
 
   detailEl.innerHTML = `
     <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
@@ -276,12 +286,14 @@ function showForm(srv) {
   });
 
   catSelect.addEventListener("change", (e) => {
-    const val = e.target.value;
-    if (val && val !== 'general') {
-      codigoInput.value = val;
+    const opt = e.target.options[e.target.selectedIndex];
+    const code = opt ? opt.dataset.code : null;
+    if (code) {
+      codigoInput.value = code;
       manualTouched = true;
     }
   });
+
 
 
   document.getElementById("sf-cancel").addEventListener("click", () => {
