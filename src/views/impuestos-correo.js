@@ -7,6 +7,7 @@ import { ensureShell } from '../components/shell.js';
 import { parseComprobanteXML, clasificarComprobante } from '../lib/xml-parser.js';
 import { calcularMontos, formatColones } from '../lib/tax-engine.js';
 import { toast } from '../lib/utils.js';
+import { fetchTaxData, saveSingleTaxRecord } from '../lib/tax-data.js';
 
 let facturas = [];
 let eventSource = null;
@@ -471,29 +472,50 @@ async function handleFiles(fileList) {
 
 async function loadFacturas() {
   try {
-    const res = await fetch('/api/facturas', { cache: 'no-store' });
-    const data = await res.json();
-    const seenClaves = new Set();
+    const taxData = await fetchTaxData(0, 0, true);
+    const all = [...(taxData.allIngresos || []), ...(taxData.allGastos || [])];
+
     const uniqueFacturas = [];
-    
-    data.files.forEach(f => {
-      const parsed = parseComprobanteXML(f.xml);
-      const tipo = clasificarComprobante(parsed, '205390118');
-      
-      // Ignorar mensajes de confirmación de Hacienda u otros XMLs desconocidos
-      if (tipo === 'desconocido') return;
-      
-      if (parsed.clave && seenClaves.has(parsed.clave)) return; // Skip duplicates
-      if (parsed.clave) seenClaves.add(parsed.clave);
-      
-      uniqueFacturas.push({ ...f, parsed, tipo });
+    const seenClaves = new Set();
+
+    all.forEach(rec => {
+      const clave = rec.xml_clave || rec.id;
+      if (clave && seenClaves.has(clave)) return;
+      if (clave) seenClaves.add(clave);
+
+      let parsed = null;
+      if (rec.raw_xml) {
+        try { parsed = parseComprobanteXML(rec.raw_xml); } catch (_) {}
+      }
+
+      if (!parsed) {
+        parsed = {
+          clave: rec.xml_clave || rec.id,
+          fecha: rec.fecha ? new Date(rec.fecha) : new Date(),
+          totalComprobante: rec.monto_bruto || 0,
+          totalImpuesto: rec.monto_iva || 0,
+          tarifaIVA: rec.tarifa_iva || 0,
+          emisor: { nombre: rec.proveedor || '' },
+          receptor: { nombre: rec.cliente || '' },
+          descripcion: rec.descripcion || ''
+        };
+      }
+
+      const tipo = rec.tipo || (rec.proveedor ? 'gasto' : 'ingreso');
+      uniqueFacturas.push({
+        name: rec.descripcion || rec.id,
+        xml: rec.raw_xml || '',
+        parsed,
+        tipo
+      });
     });
-    
+
     facturas = uniqueFacturas;
     renderFacturas();
     updateKPIs();
     updateStatus(true);
-  } catch {
+  } catch (err) {
+    console.warn('Error loading facturas:', err);
     updateStatus(false);
   }
 }
@@ -546,7 +568,7 @@ function updateStatus(connected) {
 
   if (connected) {
     dot.className = 'bf-pulse online';
-    text.textContent = `En línea · ${facturas.length} factura${facturas.length !== 1 ? 's' : ''}`;
+    text.textContent = `Sincronizado · ${facturas.length} factura${facturas.length !== 1 ? 's' : ''}`;
   } else {
     dot.className = 'bf-pulse offline';
     text.textContent = 'Sin conexión';
