@@ -205,9 +205,12 @@ export async function tareasView() {
   await initTareasData();
   const checks = await loadChecks();
 
-  const empSubtotal = TAREAS_DATA.empresarial.reduce((s, c) => s + c.children.length, 0);
-  const resSubtotal = TAREAS_DATA.residencial.reduce((s, c) => s + c.children.length, 0);
-  const totalCats = TAREAS_DATA.empresarial.length + TAREAS_DATA.residencial.length;
+  const empsSorted = [...TAREAS_DATA.empresarial].sort((a, b) => a.title.localeCompare(b.title));
+  const ressSorted = [...TAREAS_DATA.residencial].sort((a, b) => a.title.localeCompare(b.title));
+
+  const empSubtotal = empsSorted.reduce((s, c) => s + c.children.length, 0);
+  const resSubtotal = ressSorted.reduce((s, c) => s + c.children.length, 0);
+  const totalCats = empsSorted.length + ressSorted.length;
   const totalTasks = empSubtotal + resSubtotal;
 
   c.innerHTML = `
@@ -227,10 +230,10 @@ export async function tareasView() {
     <div class="tasks-category-header">
       <div class="tasks-category-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1v1H9V7zm5 0h1v1h-1V7zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1z"></path></svg></div>
       <div class="tasks-category-title">Empresarial</div>
-      <div class="tasks-category-count">${TAREAS_DATA.empresarial.length} categorías · ${empSubtotal} tareas</div>
+      <div class="tasks-category-count">${empsSorted.length} categorías · ${empSubtotal} tareas</div>
     </div>
     <div class="tasks-grid" id="grid-emp">
-      ${TAREAS_DATA.empresarial.map(card => renderCard(card, 'empresarial', checks)).join('')}
+      ${empsSorted.map(card => renderCard(card, 'empresarial', checks)).join('')}
     </div>
   </div>
 
@@ -238,10 +241,10 @@ export async function tareasView() {
     <div class="tasks-category-header">
       <div class="tasks-category-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></div>
       <div class="tasks-category-title">Residencial</div>
-      <div class="tasks-category-count">${TAREAS_DATA.residencial.length} categorías · ${resSubtotal} tareas</div>
+      <div class="tasks-category-count">${ressSorted.length} categorías · ${resSubtotal} tareas</div>
     </div>
     <div class="tasks-grid" id="grid-res">
-      ${TAREAS_DATA.residencial.map(card => renderCard(card, 'residencial', checks)).join('')}
+      ${ressSorted.map(card => renderCard(card, 'residencial', checks)).join('')}
     </div>
   </div>
 
