@@ -1,18 +1,17 @@
 // ============================================================
-// INNOVIO — Local Tax Data (reads from /api/facturas instead of Supabase)
-// Provides the same interface as tax-data.js but uses local XML files
+// INNOVIO — Cloud & Local Tax Data Sync
+// Reads/Writes from Supabase `fiscal_facturas` table with fallback to /api/facturas XMLs
 // ============================================================
 
+import { getSupabase } from './supabase.js';
 import { parseComprobanteXML, clasificarComprobante } from './xml-parser.js';
-import { calcularMontos } from './tax-engine.js';
 
 let cache = null;
 let cacheTime = 0;
-const CACHE_TTL = 5 * 1000; // 5 seconds — short cache so new XMLs appear quickly
+const CACHE_TTL = 5 * 1000;
 
 const CEDULA = '205390118';
-
-const EMPTY = { ingresosMes: [], gastosMes: [], ingresosAnio: [], gastosAnio: [], creditos: [], categorias: [] };
+const EMPTY = { ingresosMes: [], gastosMes: [], ingresosAnio: [], gastosAnio: [], allIngresos: [], allGastos: [], creditos: [], categorias: [] };
 
 function xmlToRecord(f, parsed, tipo) {
   const bruto = parsed.totalComprobante || 0;
@@ -38,7 +37,7 @@ function xmlToRecord(f, parsed, tipo) {
     deducible: true,
     periodo_mes: dateObj.getMonth() + 1,
     periodo_anio: dateObj.getFullYear(),
-    tax_categories: null,
+    categoria_nombre: null,
     notas: ''
   };
 }
@@ -48,82 +47,192 @@ export async function fetchTaxData(anio, mes, force = false) {
     return cache.data;
   }
 
+  let allIngresos = [];
+  let allGastos = [];
+  let loadedFromCloud = false;
+
+  // 1. Intentar cargar desde Supabase (fiscal_facturas)
   try {
-    const res = await fetch('/api/facturas', { cache: 'no-store' });
-    const data = await res.json();
-    const metadata = data.metadata || {};
-    
-    const seenClaves = new Set();
-    const allRecords = [];
-    
-    for (const f of data.files) {
-      const parsed = parseComprobanteXML(f.xml);
-      
-      const tipo = clasificarComprobante(parsed, CEDULA);
-      
-      // Ignorar mensajes de confirmación de Hacienda u otros XMLs desconocidos
-      // para que no bloqueen a la factura real en el filtro anti-duplicados.
-      if (tipo === 'desconocido') continue;
+    const supabase = await getSupabase();
+    const { data: cloudData, error } = await supabase.from('fiscal_facturas').select('*');
 
-      // Filtro Anti-Duplicados por Clave Oficial de Hacienda
-      if (parsed.clave && seenClaves.has(parsed.clave)) {
-        continue;
-      }
-      if (parsed.clave) {
-        seenClaves.add(parsed.clave);
-      }
+    if (!error && cloudData && cloudData.length > 0) {
+      loadedFromCloud = true;
+      cloudData.forEach(row => {
+        const rec = {
+          id: row.id,
+          fecha: row.fecha,
+          descripcion: row.descripcion || '',
+          cliente: row.cliente || '',
+          proveedor: row.proveedor || '',
+          monto_bruto: Number(row.monto_bruto || 0),
+          tarifa_iva: Number(row.tarifa_iva || 0),
+          monto_iva: Number(row.monto_iva || 0),
+          monto_neto: Number(row.monto_neto || 0),
+          desgloseIVA: row.desglose_iva || null,
+          fuente: row.raw_xml ? 'xml' : 'manual',
+          xml_clave: row.xml_clave || '',
+          deducible: row.deducible !== false,
+          periodo_mes: row.periodo_mes || (row.fecha ? new Date(row.fecha).getMonth() + 1 : 1),
+          periodo_anio: row.periodo_anio || (row.fecha ? new Date(row.fecha).getFullYear() : anio),
+          categoria_nombre: row.categoria_nombre || null,
+          notas: row.notas || ''
+        };
 
-      const record = xmlToRecord(f, parsed, tipo);
-      
-      // Apply metadata overrides
-      const meta = metadata[record.id];
-      if (meta) {
-        if (typeof meta.deducible !== 'undefined') record.deducible = meta.deducible;
-        if (meta.categoria_nombre) record.categoria_nombre = meta.categoria_nombre;
-      }
-      
-      allRecords.push({ record, tipo, parsed });
+        if (row.tipo === 'ingreso') {
+          allIngresos.push(rec);
+        } else if (row.tipo === 'gasto') {
+          allGastos.push(rec);
+        }
+      });
     }
+  } catch (e) {
+    console.warn('Supabase fiscal_facturas sync warning:', e);
+  }
 
-    const ingresos = allRecords.filter(r => r.tipo === 'ingreso').map(r => r.record);
-    const gastos = allRecords.filter(r => r.tipo === 'gasto').map(r => r.record);
+  // 2. Si Supabase está vacío o no disponible, intentar cargar desde /api/facturas (entorno local dev)
+  if (!loadedFromCloud) {
+    try {
+      const res = await fetch('/api/facturas', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        const metadata = data.metadata || {};
+        const seenClaves = new Set();
+        const allRecords = [];
 
-    // mes=0 means "all months"
-    const filterByPeriod = (arr) => {
-      if (mes === 0) return arr.filter(r => r.periodo_anio === anio);
-      return arr.filter(r => r.periodo_mes === mes && r.periodo_anio === anio);
-    };
+        for (const f of data.files) {
+          const parsed = parseComprobanteXML(f.xml);
+          const tipo = clasificarComprobante(parsed, CEDULA);
+          if (tipo === 'desconocido') continue;
 
-    const result = {
-      ingresosMes: filterByPeriod(ingresos),
-      gastosMes: filterByPeriod(gastos),
-      ingresosAnio: ingresos.filter(r => r.periodo_anio === anio),
-      gastosAnio: gastos.filter(r => r.periodo_anio === anio),
-      allIngresos: ingresos,
-      allGastos: gastos,
-      creditos: [],
-      categorias: []
-    };
+          if (parsed.clave && seenClaves.has(parsed.clave)) continue;
+          if (parsed.clave) seenClaves.add(parsed.clave);
 
-    cache = { anio, mes, data: result };
-    cacheTime = Date.now();
-    return result;
-  } catch {
-    return EMPTY;
+          const record = xmlToRecord(f, parsed, tipo);
+          const meta = metadata[record.id];
+          if (meta) {
+            if (typeof meta.deducible !== 'undefined') record.deducible = meta.deducible;
+            if (meta.categoria_nombre) record.categoria_nombre = meta.categoria_nombre;
+          }
+
+          allRecords.push({ record, tipo, xml: f.xml });
+        }
+
+        allIngresos = allRecords.filter(r => r.tipo === 'ingreso').map(r => r.record);
+        allGastos = allRecords.filter(r => r.tipo === 'gasto').map(r => r.record);
+
+        // Auto-sembrar datos en Supabase en segundo plano si la tabla existe
+        syncLocalRecordsToCloud(allRecords).catch(err => console.warn('Background fiscal cloud seed:', err));
+      }
+    } catch (_) {}
+  }
+
+  // 3. Filtrar por período
+  const filterByPeriod = (arr) => {
+    if (mes === 0) return arr.filter(r => r.periodo_anio === anio);
+    return arr.filter(r => r.periodo_mes === mes && r.periodo_anio === anio);
+  };
+
+  const result = {
+    ingresosMes: filterByPeriod(allIngresos),
+    gastosMes: filterByPeriod(allGastos),
+    ingresosAnio: allIngresos.filter(r => r.periodo_anio === anio),
+    gastosAnio: allGastos.filter(r => r.periodo_anio === anio),
+    allIngresos,
+    allGastos,
+    creditos: [],
+    categorias: []
+  };
+
+  cache = { anio, mes, data: result };
+  cacheTime = Date.now();
+  return result;
+}
+
+// Sincroniza registros locales XML a Supabase
+async function syncLocalRecordsToCloud(allRecords) {
+  try {
+    const supabase = await getSupabase();
+    const rows = allRecords.map(({ record, tipo, xml }) => ({
+      id: record.id,
+      tipo,
+      fecha: record.fecha,
+      descripcion: record.descripcion,
+      cliente: record.cliente,
+      proveedor: record.proveedor,
+      monto_bruto: record.monto_bruto,
+      tarifa_iva: record.tarifa_iva,
+      monto_iva: record.monto_iva,
+      monto_neto: record.monto_neto,
+      desglose_iva: record.desgloseIVA,
+      xml_clave: record.xml_clave,
+      deducible: record.deducible,
+      periodo_mes: record.periodo_mes,
+      periodo_anio: record.periodo_anio,
+      categoria_nombre: record.categoria_nombre,
+      notas: record.notas,
+      raw_xml: xml || null
+    }));
+
+    for (let i = 0; i < rows.length; i += 50) {
+      const chunk = rows.slice(i, i + 50);
+      await supabase.from('fiscal_facturas').upsert(chunk);
+    }
+  } catch (err) {
+    console.warn('Could not sync local records to Supabase:', err);
   }
 }
 
+export async function saveSingleTaxRecord(record, tipo, rawXml = null) {
+  try {
+    const supabase = await getSupabase();
+    const row = {
+      id: record.id,
+      tipo,
+      fecha: record.fecha,
+      descripcion: record.descripcion,
+      cliente: record.cliente,
+      proveedor: record.proveedor,
+      monto_bruto: record.monto_bruto,
+      tarifa_iva: record.tarifa_iva,
+      monto_iva: record.monto_iva,
+      monto_neto: record.monto_neto,
+      desglose_iva: record.desgloseIVA || null,
+      xml_clave: record.xml_clave || '',
+      deducible: record.deducible !== false,
+      periodo_mes: record.periodo_mes,
+      periodo_anio: record.periodo_anio,
+      categoria_nombre: record.categoria_nombre || null,
+      notas: record.notas || '',
+      raw_xml: rawXml
+    };
+    await supabase.from('fiscal_facturas').upsert([row]);
+  } catch (err) {
+    console.warn('Cloud save tax record error:', err);
+  }
+  invalidateTaxCache();
+}
+
 export async function updateTaxMetadata(id, updates) {
+  try {
+    const supabase = await getSupabase();
+    const payload = {};
+    if (typeof updates.deducible !== 'undefined') payload.deducible = updates.deducible;
+    if (updates.categoria_nombre) payload.categoria_nombre = updates.categoria_nombre;
+    if (typeof updates.notas !== 'undefined') payload.notas = updates.notas;
+
+    await supabase.from('fiscal_facturas').update(payload).eq('id', id);
+  } catch (_) {}
+
   try {
     await fetch('/api/facturas/metadata', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, updates })
     });
-    invalidateTaxCache();
-  } catch (err) {
-    console.error('Error updating metadata:', err);
-  }
+  } catch (_) {}
+
+  invalidateTaxCache();
 }
 
 export function invalidateTaxCache() {
