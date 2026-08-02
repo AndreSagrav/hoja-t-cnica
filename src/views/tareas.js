@@ -271,7 +271,8 @@ function renderCard(card, prefix, checks = {}) {
     </div>
     <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
       ${card.children.length > 0 ? `<span style="font-size:10px; font-weight:700; color:${progress === 100 ? 'var(--accent)' : 'var(--text-soft)'}; background:var(--surface-2); padding:2px 8px; border-radius:var(--r-full); flex-shrink:0;">${checkedCount}/${card.children.length}</span>` : ''}
-      ${isCustom ? `<button class="task-card-edit" data-edit-cat="${card.id}" title="Editar" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--text-soft);">✏️</button><button class="task-card-delete" data-del-cat="${card.id}" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--text-soft);">🗑️</button>` : ''}
+      <button class="task-card-edit" data-edit-cat="${card.id}" title="Editar" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--text-soft);">✏️</button>
+      <button class="task-card-delete" data-del-cat="${card.id}" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--text-soft);">🗑️</button>
       <div class="task-card-toggle" data-toggle="${card.id}">▼</div>
     </div>
   </div>
@@ -287,7 +288,8 @@ function renderCard(card, prefix, checks = {}) {
       <label class="task-item-compact" data-item="${card.id}-${idx}">
         <input type="checkbox" class="task-item-checkbox-input" data-check="${card.id}-${idx}" ${isChecked ? 'checked' : ''}>
         <span class="task-item-text ${isChecked ? 'checked' : ''}" data-text="${card.id}-${idx}" style="font-size:11px;">${esc(item)}</span>
-        <button class="task-item-delete" data-del="${card.id}-${idx}" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;color:var(--text-soft);opacity:0.5;margin-left:auto;">✕</button>
+        <button class="task-item-edit" data-edit="${card.id}-${idx}" title="Editar" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;color:var(--text-soft);opacity:0.5;margin-left:auto;">✏️</button>
+        <button class="task-item-delete" data-del="${card.id}-${idx}" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;color:var(--text-soft);opacity:0.5;">✕</button>
       </label>`;
     }).join('')}
     <button class="task-add-subtask" data-add="${card.id}">+ Agregar tarea</button>
@@ -386,6 +388,23 @@ function initCardInteractions() {
       Object.keys(checks).forEach(k => { if (k.startsWith(`${card.id}-`)) delete checks[k]; });
       await saveChecks(checks);
       await tareasView();
+    });
+  });
+
+  // Editar subtarea
+  document.querySelectorAll('.task-item-edit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const fullId = btn.dataset.edit;
+      const card = findCard(fullId.replace(/-\d+$/, ''));
+      if (!card) return;
+      const itemIdx = parseInt(fullId.split('-').pop());
+      const currentVal = card.children[itemIdx];
+      showTaskModal('Editar Subtarea', 'Ej: Describir tarea...', currentVal, async (val) => {
+        card.children[itemIdx] = val;
+        await saveData(TAREAS_DATA);
+        await tareasView();
+      });
     });
   });
 
