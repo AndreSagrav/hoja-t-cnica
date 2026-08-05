@@ -485,10 +485,22 @@ function renderStep3() {
             + IVA (13%)
           </label>
           <div class="wiz-disc-input">
+            <select id="wiz-cur" style="padding:2px 4px; font-size:11px; height:28px; width:70px; border-radius:var(--r-sm); border:1px solid var(--border-color); background:var(--surface);">
+              <option value="CRC" ${wState.currency.code === 'CRC' ? 'selected' : ''}>₡ CRC</option>
+              <option value="USD" ${wState.currency.code === 'USD' ? 'selected' : ''}>$ USD</option>
+            </select>
+          </div>
+          ${wState.currency.code === 'USD' ? `
+          <div class="wiz-disc-input" style="width:75px;">
+            <label style="font-size:9px; color:var(--text-soft); margin-bottom:2px;">T.C.</label>
+            <input class="wiz-input" id="wiz-rate" type="number" min="1" step="0.1" value="${wState.currency.rate || 520}" style="padding:2px 4px; font-size:11px; height:24px; text-align:center;" />
+          </div>
+          ` : ''}
+          <div class="wiz-disc-input">
             <label>Desc %</label>
             <input class="wiz-input" id="wiz-discount" type="number" value="${wState.discount.value}"/>
           </div>
-          <div class="wiz-live-total" id="wiz-live-total">${fmtMoney(calcWizardTotal())}</div>
+          <div class="wiz-live-total" id="wiz-live-total">${wState.currency.symbol}${calcWizardTotal().toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         </div>
       </div>
     `;
@@ -548,10 +560,22 @@ function renderStep3() {
           + IVA (13%)
         </label>
         <div class="wiz-disc-input">
+          <select id="wiz-cur" style="padding:2px 4px; font-size:11px; height:28px; width:70px; border-radius:var(--r-sm); border:1px solid var(--border-color); background:var(--surface);">
+            <option value="CRC" ${wState.currency.code === 'CRC' ? 'selected' : ''}>₡ CRC</option>
+            <option value="USD" ${wState.currency.code === 'USD' ? 'selected' : ''}>$ USD</option>
+          </select>
+        </div>
+        ${wState.currency.code === 'USD' ? `
+        <div class="wiz-disc-input" style="width:75px;">
+          <label style="font-size:9px; color:var(--text-soft); margin-bottom:2px;">T.C.</label>
+          <input class="wiz-input" id="wiz-rate" type="number" min="1" step="0.1" value="${wState.currency.rate || 520}" style="padding:2px 4px; font-size:11px; height:24px; text-align:center;" />
+        </div>
+        ` : ''}
+        <div class="wiz-disc-input">
           <label>Desc %</label>
           <input class="wiz-input" id="wiz-discount" type="number" value="${wState.discount.value}"/>
         </div>
-        <div class="wiz-live-total" id="wiz-live-total">${fmtMoney(calcWizardTotal())}</div>
+        <div class="wiz-live-total" id="wiz-live-total">${wState.currency.symbol}${calcWizardTotal().toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
       </div>
     </div>
   `;
@@ -787,6 +811,15 @@ function saveCurrentStepData() {
     const discInput = document.getElementById('wiz-discount');
     if (discInput) {
       wState.discount.value = parseFloat(discInput.value) || 0;
+    }
+    const curSelect = document.getElementById('wiz-cur');
+    if (curSelect) {
+      wState.currency.code = curSelect.value;
+      wState.currency.symbol = curSelect.value === 'CRC' ? '₡' : '$';
+    }
+    const rateInput = document.getElementById('wiz-rate');
+    if (rateInput) {
+      wState.currency.rate = parseFloat(rateInput.value) || 1;
     }
   }
   else if ((wState.docKind === 'orden' && wState.step === 6) || (wState.docKind !== 'orden' && wState.step === 4)) {
@@ -1103,6 +1136,31 @@ function bindStep3Events() {
   document.getElementById('wiz-add-line')?.addEventListener('click', () => {
     wState.lines.push({ descripcion: '', cantidad: 1, precio: 0, codigo: '' });
     renderWizard(); 
+  });
+
+  document.getElementById('wiz-cur')?.addEventListener('change', async (e) => {
+    const val = e.target.value;
+    wState.currency.code = val;
+    wState.currency.symbol = val === 'CRC' ? '₡' : '$';
+    if (val === 'USD') {
+      try {
+        const res = await fetch('https://api.hacienda.go.cr/indicadores/tc');
+        if (res.ok) {
+          const data = await res.json();
+          wState.currency.rate = Number(data.venta?.valor || 520);
+        }
+      } catch (_) {
+        wState.currency.rate = 520;
+      }
+    } else {
+      wState.currency.rate = 1;
+    }
+    renderWizard();
+  });
+
+  document.getElementById('wiz-rate')?.addEventListener('input', (e) => {
+    wState.currency.rate = parseFloat(e.target.value) || 1;
+    updateLiveTotal();
   });
 
   document.getElementById('wiz-discount')?.addEventListener('input', (e) => {
@@ -1845,7 +1903,10 @@ async function showVistaPreviaModal() {
 
 function updateLiveTotal() {
   const totalEl = document.getElementById('wiz-live-total');
-  if (totalEl) totalEl.innerHTML = fmtMoney(calcWizardTotal());
+  if (totalEl) {
+    const symbol = wState.currency.code === 'CRC' ? '₡' : '$';
+    totalEl.innerHTML = symbol + calcWizardTotal().toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 }
 
 function bindStep4Events() {
