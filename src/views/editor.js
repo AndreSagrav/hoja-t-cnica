@@ -11,6 +11,19 @@ import { calcTotals } from '../lib/comprobante.js';
 // Estado interno del editor
 let state = null;
 
+async function fetchExchangeRate() {
+  try {
+    const res = await fetch('https://api.hacienda.go.cr/indicadores/tc');
+    if (res.ok) {
+      const data = await res.json();
+      return Number(data.venta?.valor || 520);
+    }
+  } catch (err) {
+    console.warn('Exchange rate fetch error:', err);
+  }
+  return 520;
+}
+
 function estadoVacio(kind = 'orden') {
   return {
     docId: null,
@@ -136,6 +149,12 @@ function cardTipo() {
             <option value="USD" ${state.currency.code==='USD'?'selected':''}>$ USD</option>
           </select>
         </div>
+        ${state.currency.code === 'USD' ? `
+        <div class="field" style="max-width:120px;">
+          <label class="field-label">T.C. Dólar</label>
+          <input class="input" id="f-rate" type="number" min="1" step="0.1" value="${state.currency.rate || 520}" />
+        </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -346,10 +365,24 @@ function bindEvents() {
     state.estado = e.target.value;
   });
 
-  document.getElementById('f-cur').addEventListener('change', (e) => {
-    state.currency.code = e.target.value;
-    state.currency.symbol = e.target.value === 'CRC' ? '₡' : '$';
+  document.getElementById('f-cur').addEventListener('change', async (e) => {
+    const val = e.target.value;
+    state.currency.code = val;
+    state.currency.symbol = val === 'CRC' ? '₡' : '$';
+    if (val === 'USD') {
+      state.currency.rate = await fetchExchangeRate();
+    } else {
+      state.currency.rate = 1;
+    }
+    renderEditor();
   });
+
+  const rateInput = document.getElementById('f-rate');
+  if (rateInput) {
+    rateInput.addEventListener('input', (e) => {
+      state.currency.rate = parseFloat(e.target.value) || 1;
+    });
+  }
 
   // Eventos para cliente
   const cliSearch = document.getElementById('cli-search');

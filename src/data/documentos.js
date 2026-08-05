@@ -365,7 +365,7 @@ export function dbToFormData(completo) {
     lines: lineas.map(l => ({ descripcion: l.descripcion, cantidad: l.cantidad, precio: l.precio_unitario || l.precio })),
     discount: { enabled: (doc.descuento || 0) > 0, value: doc.descuento || 0 },
     iva:      { enabled: (doc.iva || 0) > 0, value: doc.iva || 0 },
-    currency: { code: doc.moneda || 'CRC', symbol: doc.moneda === 'CRC' ? '₡' : '$' },
+    currency: { code: doc.moneda || 'CRC', symbol: doc.moneda === 'CRC' ? '₡' : '$', rate: doc.tipo_cambio || 1 },
     problem: hoja?.problema_reportado || '',
     diagnosis: hoja?.diagnostico || '',
     observations: hoja?.observaciones || doc.observaciones || '',

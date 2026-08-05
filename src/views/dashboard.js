@@ -32,8 +32,8 @@ export async function dashboardView() {
       supabase.from('documentos').select('id', { count: 'exact', head: true }).eq('doc_type', 'OT').in('estado', ['pendiente', 'en_proceso']),
       supabase.from('documentos').select('id', { count: 'exact', head: true }).eq('doc_type', 'FAC').eq('estado', 'facturado'),
       supabase.from('documentos').select('estado').eq('doc_type', 'OT'),
-      supabase.from('documentos').select('total').eq('doc_type', 'FAC').eq('estado', 'facturado'),
-      supabase.from('documentos').select('id, doc_type, doc_num, created_at, total, clientes(nombre, empresa)').order('created_at', { ascending: false }).limit(4)
+      supabase.from('documentos').select('total, moneda, tipo_cambio').eq('doc_type', 'FAC').eq('estado', 'facturado'),
+      supabase.from('documentos').select('id, doc_type, doc_num, created_at, total, moneda, tipo_cambio, clientes(nombre, empresa)').order('created_at', { ascending: false }).limit(4)
     ]), 5000, null);
 
     if (window.location.hash !== initHash || !results) return;
@@ -44,7 +44,10 @@ export async function dashboardView() {
     stats.otsActive = otsActiveRes.count || 0;
     stats.facPaid = facPaidRes.count || 0;
     const facs = revenueRes.data || [];
-    stats.revenue = facs.reduce((a, f) => a + Number(f.total || 0), 0);
+    stats.revenue = facs.reduce((a, f) => {
+      const rate = f.moneda === 'USD' ? (Number(f.tipo_cambio || 1) * 1.03) : 1;
+      return a + Number(f.total || 0) * rate;
+    }, 0);
     const ots = allOtsRes.data || [];
     stats.otsPendientes = ots.filter(o => o.estado === 'pendiente').length;
     stats.otsEnProceso = ots.filter(o => o.estado === 'en_proceso').length;
@@ -311,7 +314,10 @@ function renderDashboard(content, stats) {
                               ${new Date(act.created_at).toLocaleDateString('es-CR')}
                             </td>
                             <td style="padding:12px 16px;border-bottom:1px solid var(--border-light);font-size:14px;font-weight:800;color:var(--navy);text-align:right;">
-                              ${fmtMoney(act.total || 0)}
+                              ${(() => {
+                                const rate = act.moneda === 'USD' ? (Number(act.tipo_cambio || 1) * 1.03) : 1;
+                                return fmtMoney((act.total || 0) * rate);
+                              })()}
                             </td>
                           </tr>
                         `;

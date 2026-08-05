@@ -14,12 +14,26 @@ const CEDULA = '205390118';
 const EMPTY = { ingresosMes: [], gastosMes: [], ingresosAnio: [], gastosAnio: [], allIngresos: [], allGastos: [], creditos: [], categorias: [] };
 
 function xmlToRecord(f, parsed, tipo) {
-  const bruto = parsed.totalComprobante || 0;
+  const isUsd = parsed.moneda === 'USD';
+  const rate = isUsd ? (Number(parsed.tipoCambio || 1) * 1.03) : 1;
+
+  const bruto = (parsed.totalComprobante || 0) * rate;
   const tarifa = parsed.tarifaIVA || 0;
-  const iva = parsed.totalImpuesto || 0;
+  const iva = (parsed.totalImpuesto || 0) * rate;
   const neto = bruto - iva;
   const fecha = parsed.fecha ? parsed.fecha.toISOString().split('T')[0] : null;
   const dateObj = parsed.fecha || new Date();
+
+  let desgloseIVA = null;
+  if (parsed.desgloseIVA) {
+    desgloseIVA = {};
+    for (const [k, v] of Object.entries(parsed.desgloseIVA)) {
+      desgloseIVA[k] = {
+        base: Number(v.base || 0) * rate,
+        iva: Number(v.iva || 0) * rate
+      };
+    }
+  }
 
   return {
     id: parsed.clave || f.name,
@@ -31,7 +45,7 @@ function xmlToRecord(f, parsed, tipo) {
     tarifa_iva: tarifa,
     monto_iva: iva,
     monto_neto: neto,
-    desgloseIVA: parsed.desgloseIVA || null,
+    desgloseIVA,
     fuente: 'xml',
     xml_clave: parsed.clave || '',
     deducible: true,
