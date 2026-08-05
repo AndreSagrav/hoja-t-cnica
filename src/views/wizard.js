@@ -29,10 +29,10 @@ function initWizardState(kind) {
     clientFact: {}, // Datos de facturación electrónica
     authUsers: [], // Usuarios autorizados para clientes empresariales
     convertFactura: false,
-    lines: [{ descripcion: '', cantidad: 1, precio: 0, codigo: '' }],
+    lines: [{ descripcion: '', cantidad: 1, precio: 0, codigo: '', moneda: 'CRC' }],
     discount: { enabled: false, value: 0 },
     iva: { enabled: false, value: 13 },
-    currency: { code: 'CRC', symbol: '₡' },
+    currency: { code: 'CRC', symbol: '₡', rate: 520 },
     problem: '', diagnosis: '', observations: kind === 'cotizacion' ?
       '1. Precios válidos por 15 días naturales.\n2. Tiempo de entrega: 2-3 días hábiles, sujeto a disponibilidad de repuestos.\n3. Forma de pago: 50% anticipado, 50% contra entrega.\n4. Garantía de 30 días sobre el servicio realizado.\n5. Los precios no incluyen IVA a menos que se indique lo contrario.' :
       'El equipo queda sujeto a revisión y diagnóstico. El tiempo de reparación puede variar según disponibilidad de repuestos. Se notificará al cliente cualquier cambio en el presupuesto. La garantía del servicio es de 30 días.',
@@ -49,6 +49,15 @@ export async function wizardNuevoView(params = {}) {
   const kind = params.kind || 'orden';
   initWizardState(kind);
   wState.docNum = ''; // Se generará al guardar, no al abrir
+  try {
+    const res = await fetch('https://api.hacienda.go.cr/indicadores/tc');
+    if (res.ok) {
+      const data = await res.json();
+      wState.currency.rate = Number(data.venta?.valor || 520);
+    }
+  } catch (e) {
+    console.warn("Exchange rate fetch error:", e);
+  }
   try {
     if (kind === 'orden') {
       let localCache = [];
@@ -466,8 +475,19 @@ function renderStep3() {
                 <input class="wiz-input" type="number" value="${esc(line.cantidad || '')}" data-field="cantidad" min="1"/>
               </div>
               <div class="wiz-line-field wiz-line-field-price">
-                <label class="wiz-label" style="display:${i===0?'flex':'none'}">Precio (${wState.currency.symbol})</label>
-                <input class="wiz-input" type="number" value="${esc(line.precio || '')}" data-field="precio"/>
+                <label class="wiz-label" style="display:${i===0?'flex':'none'}">Precio</label>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  <input class="wiz-input wiz-line-price" type="number" value="${esc(line.precio || '')}" data-field="precio" style="flex:1;"/>
+                  <select class="wiz-input wiz-line-currency" data-field="moneda" style="width:48px; padding:2px; font-size:11px; flex:none; height:32px;">
+                    <option value="CRC" ${line.moneda !== 'USD' ? 'selected' : ''}>₡</option>
+                    <option value="USD" ${line.moneda === 'USD' ? 'selected' : ''}>$</option>
+                  </select>
+                </div>
+                ${line.moneda === 'USD' ? `
+                  <div style="font-size:9px; color:var(--text-soft); font-weight:700; margin-top:2px;">
+                    ≈ ₡${((Number(line.precio) || 0) * (wState.currency.rate || 520) * 1.03).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                ` : ''}
               </div>
               <div class="wiz-line-field wiz-line-field-remove">
                 <button class="btn btn-ghost btn-remove-line" style="color:var(--red); font-size:18px; padding:4px 12px; border:none; background:transparent; cursor:pointer; min-height:36px; min-width:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--r-sm);" title="Eliminar fila">×</button>
@@ -542,8 +562,19 @@ function renderStep3() {
             <input class="wiz-input" type="number" value="${esc(line.cantidad || '')}" data-field="cantidad" min="1"/>
           </div>
           <div class="wiz-line-field wiz-line-field-price">
-            <label class="wiz-label" style="display:${i===0?'flex':'none'}">Precio (${wState.currency.symbol})</label>
-            <input class="wiz-input" type="number" value="${esc(line.precio || '')}" data-field="precio"/>
+            <label class="wiz-label" style="display:${i===0?'flex':'none'}">Precio</label>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <input class="wiz-input wiz-line-price" type="number" value="${esc(line.precio || '')}" data-field="precio" style="flex:1;"/>
+              <select class="wiz-input wiz-line-currency" data-field="moneda" style="width:48px; padding:2px; font-size:11px; flex:none; height:32px;">
+                <option value="CRC" ${line.moneda !== 'USD' ? 'selected' : ''}>₡</option>
+                <option value="USD" ${line.moneda === 'USD' ? 'selected' : ''}>$</option>
+              </select>
+            </div>
+            ${line.moneda === 'USD' ? `
+              <div style="font-size:9px; color:var(--text-soft); font-weight:700; margin-top:2px;">
+                ≈ ₡${((Number(line.precio) || 0) * (wState.currency.rate || 520) * 1.03).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            ` : ''}
           </div>
           <div class="wiz-line-field wiz-line-field-remove">
             <button class="btn btn-ghost btn-remove-line" style="color:var(--red); font-size:18px; padding:4px 12px; border:none; background:transparent; cursor:pointer; min-height:36px; min-width:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--r-sm);" title="Eliminar fila">×</button>
@@ -787,19 +818,31 @@ function saveCurrentStepData() {
     }
   }
   else if ((wState.docKind === 'orden' && wState.step === 5) || (wState.docKind !== 'orden' && wState.step === 3)) {
-    // Guardar líneas desde el DOM
+    // Guardar líneas desde el DOM y convertir USD a CRC permanentemente
     const rows = document.querySelectorAll('.wiz-line-row');
+    const rate = wState.currency.rate || 520;
     rows.forEach(row => {
       const idx = parseInt(row.dataset.idx, 10);
       if (idx >= 0 && wState.lines[idx]) {
         const descEl = row.querySelector('[data-field="descripcion"]');
         const qtyEl = row.querySelector('[data-field="cantidad"]');
         const priceEl = row.querySelector('[data-field="precio"]');
+        const curEl = row.querySelector('.wiz-line-currency');
+        
         if (descEl && !descEl.classList.contains('wiz-service-select')) {
           wState.lines[idx].descripcion = descEl.value;
         }
         if (qtyEl) wState.lines[idx].cantidad = parseFloat(qtyEl.value) || 0;
-        if (priceEl) wState.lines[idx].precio = parseFloat(priceEl.value) || 0;
+        
+        let priceVal = parseFloat(priceEl?.value) || 0;
+        const isUsd = curEl && curEl.value === 'USD';
+        if (isUsd) {
+          // Convert to colones permanently
+          priceVal = priceVal * rate * 1.03;
+        }
+        
+        wState.lines[idx].precio = priceVal;
+        wState.lines[idx].moneda = 'CRC'; // Reset line currency to CRC
       }
     });
     // Guardar IVA y descuento del paso de servicios
@@ -1082,7 +1125,7 @@ function bindStep3Events() {
       });
     });
 
-    // Escuchar inputs manuales
+    // Escuchar inputs manuales y actualizar conversión inline
     container.addEventListener('input', (e) => {
       if (e.target.classList.contains('wiz-line-desc')) {
         handleInventarioAutocomplete(e.target);
@@ -1095,6 +1138,53 @@ function bindStep3Events() {
       if (idx >= 0 && field && !e.target.classList.contains('wiz-service-select')) {
         const val = field === 'descripcion' ? e.target.value : parseFloat(e.target.value) || 0;
         wState.lines[idx][field] = val;
+        
+        if (field === 'precio') {
+          const curSelect = row.querySelector('.wiz-line-currency');
+          const isUsd = curSelect && curSelect.value === 'USD';
+          let helper = row.querySelector('.wiz-conversion-helper');
+          if (isUsd) {
+            const converted = val * (wState.currency.rate || 520) * 1.03;
+            if (!helper) {
+              const priceFieldDiv = row.querySelector('.wiz-line-field-price');
+              helper = document.createElement('div');
+              helper.className = 'wiz-conversion-helper';
+              helper.style.cssText = 'font-size:9px; color:var(--text-soft); font-weight:700; margin-top:2px;';
+              priceFieldDiv.appendChild(helper);
+            }
+            helper.textContent = `≈ ₡${converted.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          } else if (helper) {
+            helper.remove();
+          }
+        }
+        updateLiveTotal();
+      }
+    });
+
+    container.addEventListener('change', (e) => {
+      if (e.target.classList.contains('wiz-line-currency')) {
+        const row = e.target.closest('.wiz-line-row');
+        if (!row) return;
+        const idx = parseInt(row.dataset.idx, 10);
+        wState.lines[idx].moneda = e.target.value;
+        
+        const priceInput = row.querySelector('.wiz-line-price');
+        const val = parseFloat(priceInput?.value) || 0;
+        let helper = row.querySelector('.wiz-conversion-helper');
+        
+        if (e.target.value === 'USD') {
+          const converted = val * (wState.currency.rate || 520) * 1.03;
+          if (!helper) {
+            const priceFieldDiv = row.querySelector('.wiz-line-field-price');
+            helper = document.createElement('div');
+            helper.className = 'wiz-conversion-helper';
+            helper.style.cssText = 'font-size:9px; color:var(--text-soft); font-weight:700; margin-top:2px;';
+            priceFieldDiv.appendChild(helper);
+          }
+          helper.textContent = `≈ ₡${converted.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        } else if (helper) {
+          helper.remove();
+        }
         updateLiveTotal();
       }
     });
@@ -1125,7 +1215,7 @@ function bindStep3Events() {
       if (!row) return;
       const idx = parseInt(row.dataset.idx, 10);
       if (wState.lines.length === 1) {
-        wState.lines[0] = { descripcion: '', cantidad: 1, precio: 0, codigo: '' };
+        wState.lines[0] = { descripcion: '', cantidad: 1, precio: 0, codigo: '', moneda: 'CRC' };
       } else {
         wState.lines.splice(idx, 1);
       }
@@ -1134,7 +1224,7 @@ function bindStep3Events() {
   }
 
   document.getElementById('wiz-add-line')?.addEventListener('click', () => {
-    wState.lines.push({ descripcion: '', cantidad: 1, precio: 0, codigo: '' });
+    wState.lines.push({ descripcion: '', cantidad: 1, precio: 0, codigo: '', moneda: 'CRC' });
     renderWizard(); 
   });
 
