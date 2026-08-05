@@ -683,7 +683,12 @@ function renderStep4() {
 }
 
 function calcWizardTotal() {
-  const sub = wState.lines.reduce((a,l) => a + (Number(l.precio)||0)*(Number(l.cantidad)||0), 0);
+  const rate = wState.currency.rate || 520;
+  const sub = wState.lines.reduce((a, l) => {
+    const isUsd = l.moneda === 'USD';
+    const precioColones = isUsd ? (Number(l.precio) || 0) * rate * 1.03 : (Number(l.precio) || 0);
+    return a + precioColones * (Number(l.cantidad) || 0);
+  }, 0);
   const discVal = Number(wState.discount.value) || 0;
   const net = sub * (1 - discVal/100);
   return net * (1 + (wState.iva.enabled ? Number(wState.iva.value)/100 : 0));
