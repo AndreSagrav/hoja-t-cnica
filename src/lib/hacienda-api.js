@@ -1,9 +1,23 @@
 // Integración con APIs públicas de Hacienda CR y TSE
-// Usa proxies locales del servidor Vite para evitar CORS
+// En dev: usa proxies locales del servidor Vite
+// En prod: usa proxy CORS público (allorigins) para evitar CORS
 
-const API_HACIENDA = '/api/hacienda/ae';
-const API_GOMETA = '/api/gometa/cedulas';
-const API_CORREO = '/api/hacienda/correo';
+const IS_DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port === '5173' || location.port === '5174';
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+const API_HACIENDA = IS_DEV ? '/api/hacienda/ae' : 'https://api.hacienda.go.cr/fe/ae';
+const API_GOMETA = IS_DEV ? '/api/gometa/cedulas' : 'https://apis.gometa.org/cedulas';
+const API_CORREO = IS_DEV ? '/api/hacienda/correo' : 'https://api.hacienda.go.cr/fe/mifacturacorreo';
+
+function buildUrl(base, params) {
+  if (IS_DEV) {
+    const qs = new URLSearchParams(params).toString();
+    return qs ? `${base}?${qs}` : base;
+  }
+  const target = new URL(base);
+  for (const [k, v] of Object.entries(params)) target.searchParams.set(k, v);
+  return CORS_PROXY + encodeURIComponent(target.toString());
+}
 
 // Mapeo de tipos de identificación de Hacienda
 const TIPO_ID_MAP = {
@@ -90,7 +104,8 @@ export async function consultarIdentificacionHacienda(identificacion) {
 }
 
 async function fetchHacienda(limpia) {
-  const resp = await fetch(`${API_HACIENDA}?identificacion=${limpia}`);
+  const url = buildUrl(API_HACIENDA, { identificacion: limpia });
+  const resp = await fetch(url);
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data || !data.nombre) return null;
@@ -98,7 +113,8 @@ async function fetchHacienda(limpia) {
 }
 
 async function fetchGometa(limpia) {
-  const resp = await fetch(`${API_GOMETA}/${limpia}`);
+  const url = IS_DEV ? `${API_GOMETA}/${limpia}` : CORS_PROXY + encodeURIComponent(`${API_GOMETA}/${limpia}`);
+  const resp = await fetch(url);
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data || !data.results || !data.results.length) return null;
@@ -121,7 +137,8 @@ async function fetchGometa(limpia) {
 
 async function fetchCorreo(limpia) {
   // Yo Contribuyo - solo retorna datos si el contribuyente se ha registrado
-  const resp = await fetch(`${API_CORREO}?identificacion=${limpia}`);
+  const url = buildUrl(API_CORREO, { identificacion: limpia });
+  const resp = await fetch(url);
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data || !data.Resultado || !data.Resultado.Correo) return null;

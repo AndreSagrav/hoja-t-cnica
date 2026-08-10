@@ -2,7 +2,7 @@
   "name": "INNOVIO — Sistema de Gestión Industrial",
   "short_name": "INNOVIO",
   "description": "Sistema de Gestión Industrial y Facturación Electrónica",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#0d3270",
@@ -10,7 +10,7 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -20,14 +20,14 @@
     {
       "name": "Nueva Orden de Trabajo",
       "short_name": "Nueva OT",
-      "url": "/#/documentos/nuevo/orden",
-      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
+      "url": "./#/documentos/nuevo/orden",
+      "icons": [{ "src": "./icon-512.png", "sizes": "512x512" }]
     },
     {
       "name": "Nueva Cotización",
       "short_name": "Nueva COT",
-      "url": "/#/documentos/nuevo/cotizacion",
-      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
+      "url": "./#/documentos/nuevo/cotizacion",
+      "icons": [{ "src": "./icon-512.png", "sizes": "512x512" }]
     }
   ]
 }
