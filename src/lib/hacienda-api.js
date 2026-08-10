@@ -1,22 +1,47 @@
 // Integración con APIs públicas de Hacienda CR y TSE
 // En dev: usa proxies locales del servidor Vite
-// En prod: usa proxy CORS público (allorigins) para evitar CORS
+// En prod: usa múltiples proxies CORS públicos con fallback
 
 const IS_DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port === '5173' || location.port === '5174';
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
-const API_HACIENDA = IS_DEV ? '/api/hacienda/ae' : 'https://api.hacienda.go.cr/fe/ae';
-const API_GOMETA = IS_DEV ? '/api/gometa/cedulas' : 'https://apis.gometa.org/cedulas';
-const API_CORREO = IS_DEV ? '/api/hacienda/correo' : 'https://api.hacienda.go.cr/fe/mifacturacorreo';
+// Lista de proxies CORS públicos (se prueban en orden hasta que uno funcione)
+const CORS_PROXIES = [
+  (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  (url) => 'https://api.codetabs.com/v1/proxy/?quest=' + url,
+  (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+];
 
-function buildUrl(base, params) {
+const API_HACIENDA_BASE = 'https://api.hacienda.go.cr/fe/ae';
+const API_GOMETA_BASE = 'https://apis.gometa.org/cedulas';
+const API_CORREO_BASE = 'https://api.hacienda.go.cr/fe/mifacturacorreo';
+
+const API_HACIENDA = IS_DEV ? '/api/hacienda/ae' : API_HACIENDA_BASE;
+const API_GOMETA = IS_DEV ? '/api/gometa/cedulas' : API_GOMETA_BASE;
+const API_CORREO = IS_DEV ? '/api/hacienda/correo' : API_CORREO_BASE;
+
+async function fetchWithProxy(targetUrl) {
   if (IS_DEV) {
-    const qs = new URLSearchParams(params).toString();
-    return qs ? `${base}?${qs}` : base;
+    const resp = await fetch(targetUrl);
+    if (!resp.ok) return null;
+    return resp;
   }
+  // Probar cada proxy CORS hasta que uno funcione
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const proxiedUrl = proxy(targetUrl);
+      const resp = await fetch(proxiedUrl);
+      if (resp.ok) return resp;
+    } catch (e) {
+      // Continuar con el siguiente proxy
+    }
+  }
+  return null;
+}
+
+function buildTargetUrl(base, params) {
   const target = new URL(base);
   for (const [k, v] of Object.entries(params)) target.searchParams.set(k, v);
-  return CORS_PROXY + encodeURIComponent(target.toString());
+  return target.toString();
 }
 
 // Mapeo de tipos de identificación de Hacienda
@@ -104,18 +129,20 @@ export async function consultarIdentificacionHacienda(identificacion) {
 }
 
 async function fetchHacienda(limpia) {
-  const url = buildUrl(API_HACIENDA, { identificacion: limpia });
-  const resp = await fetch(url);
-  if (!resp.ok) return null;
+  const targetUrl = IS_DEV
+    ? `${API_HACIENDA}?identificacion=${limpia}`
+    : buildTargetUrl(API_HACIENDA_BASE, { identificacion: limpia });
+  const resp = await fetchWithProxy(targetUrl);
+  if (!resp) return null;
   const data = await resp.json();
   if (!data || !data.nombre) return null;
   return data;
 }
 
 async function fetchGometa(limpia) {
-  const url = IS_DEV ? `${API_GOMETA}/${limpia}` : CORS_PROXY + encodeURIComponent(`${API_GOMETA}/${limpia}`);
-  const resp = await fetch(url);
-  if (!resp.ok) return null;
+  const targetUrl = `${API_GOMETA_BASE}/${limpia}`;
+  const resp = await fetchWithProxy(IS_DEV ? `${API_GOMETA}/${limpia}` : targetUrl);
+  if (!resp) return null;
   const data = await resp.json();
   if (!data || !data.results || !data.results.length) return null;
   const r = data.results[0];
@@ -137,9 +164,11 @@ async function fetchGometa(limpia) {
 
 async function fetchCorreo(limpia) {
   // Yo Contribuyo - solo retorna datos si el contribuyente se ha registrado
-  const url = buildUrl(API_CORREO, { identificacion: limpia });
-  const resp = await fetch(url);
-  if (!resp.ok) return null;
+  const targetUrl = IS_DEV
+    ? `${API_CORREO}?identificacion=${limpia}`
+    : buildTargetUrl(API_CORREO_BASE, { identificacion: limpia });
+  const resp = await fetchWithProxy(targetUrl);
+  if (!resp) return null;
   const data = await resp.json();
   if (!data || !data.Resultado || !data.Resultado.Correo) return null;
   return data.Resultado.Correo;
