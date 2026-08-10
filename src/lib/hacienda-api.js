@@ -22,17 +22,18 @@ const API_CORREO = IS_DEV ? '/api/hacienda/correo' : API_CORREO_BASE;
 async function fetchWithProxy(targetUrl) {
   if (IS_DEV) {
     const resp = await fetch(targetUrl);
-    if (!resp.ok) return null;
-    return resp;
+    return resp.ok ? resp : null;
   }
-  // Probar cada proxy CORS hasta que uno funcione
+  // Probar cada proxy CORS hasta que uno responda (incluso con HTTP error)
   for (const proxy of CORS_PROXIES) {
     try {
       const proxiedUrl = proxy(targetUrl);
       const resp = await fetch(proxiedUrl);
-      if (resp.ok) return resp;
+      // Si el proxy respondió (cualquier HTTP status), usar esta respuesta
+      // Solo probar el siguiente proxy si hay error de red (fetch falla)
+      return resp;
     } catch (e) {
-      // Continuar con el siguiente proxy
+      // Error de red/CORS con este proxy, probar el siguiente
     }
   }
   return null;
