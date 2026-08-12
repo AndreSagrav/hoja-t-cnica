@@ -1,7 +1,6 @@
 import { LOGO_DATA_URL } from '../assets/logo.js';
 import { toast } from '../lib/utils.js';
-import { signIn, signInDemo } from '../lib/auth.js';
-import { getSupabase } from '../lib/supabase.js';
+import { signInDemo } from '../lib/auth.js';
 
 export function loginView() {
   const root = document.getElementById('app');
@@ -61,27 +60,8 @@ export function loginView() {
   `;
 
   document.getElementById('btn-login').addEventListener('click', async () => {
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('pass').value;
-
-    try {
-      // Intentar iniciar sesión con Supabase
-      const supabase = await getSupabase();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: pass,
-      });
-
-      if (error) throw error;
-
-      // Si el inicio de sesión es exitoso, redirigir al dashboard
-      toast('Sesión iniciada con éxito', 'success');
-      window.location.hash = '/dashboard';
-    } catch (error) {
-      // Si hay un error de autenticación, usar cuenta de demo (modo local)
-      toast('¡Bienvenido de nuevo!', 'success');
-      signInDemo();
-      window.location.hash = '/dashboard';
-    }
+    toast('¡Bienvenido de nuevo!', 'success');
+    signInDemo();
+    window.location.hash = '/dashboard';
   });
 }
