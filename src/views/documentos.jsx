@@ -14,11 +14,24 @@ const HACIENDA_ESTADOS = [
   { value: 'rechazado', label: 'Rechazado', color: '#ef4444' },
 ];
 
+const ESTADO_PAGO = {
+  pendiente: { label: 'Pendiente', color: '#f59e0b' },
+  pagada: { label: 'Pagada', color: '#10b981' },
+  cancelada: { label: 'Cancelada', color: '#ef4444' },
+};
+
 async function cambiarEstadoHacienda(docId, nuevoEstado, btn) {
   const supabase = await getSupabase();
   const { error } = await supabase.from('documentos').update({ estado_hacienda: nuevoEstado }).eq('id', docId);
   if (error) throw error;
   toast('Estado Hacienda actualizado: ' + HACIENDA_ESTADOS.find(e => e.value === nuevoEstado)?.label, 'success');
+}
+
+async function cambiarEstadoPago(docId, nuevoEstado, btn) {
+  const supabase = await getSupabase();
+  const { error } = await supabase.from('documentos').update({ estado: nuevoEstado }).eq('id', docId);
+  if (error) throw error;
+  toast('Estado actualizado: ' + ESTADO_PAGO[nuevoEstado]?.label, 'success');
 }
 
 let docState = { search:'', tipo:'', estado:'', loading:false };
@@ -348,6 +361,31 @@ function renderListToBox(data) {
           });
         });
 
+        detailsDiv.querySelectorAll('.acc-btn-pago').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const nuevoEstado = btn.dataset.estado;
+            const docId = parseInt(btn.dataset.docid);
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '⏳';
+            btn.disabled = true;
+            try {
+              await cambiarEstadoPago(docId, nuevoEstado, btn);
+              detailsDiv.querySelectorAll('.acc-btn-pago').forEach(b => {
+                const info = ESTADO_PAGO[b.dataset.estado];
+                const active = b.dataset.estado === nuevoEstado;
+                b.style.borderColor = active ? info.color : '#e2e8f0';
+                b.style.background = active ? info.color + '22' : 'white';
+                b.style.color = active ? info.color : '#94a3b8';
+              });
+            } catch (err) {
+              toast('Error: ' + (err.message || err), 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+          });
+        });
+
       } catch (e) {
         detailsDiv.innerHTML = `<div style="color:var(--red);font-size:12px;">Error: ${esc(e.message)}</div>`;
       }
@@ -406,6 +444,15 @@ function renderAccordionHTML(data) {
             return `<button class="btn acc-btn-hacienda" data-estado="${e.value}" data-docid="${data.id}" style="padding:3px 8px; font-size:9px; font-weight:700; border-radius:4px; border:1.5px solid ${isActive ? e.color : '#e2e8f0'}; background:${isActive ? e.color + '22' : 'white'}; color:${isActive ? e.color : '#94a3b8'}; cursor:pointer;">${e.label}</button>`;
           }).join('')}
         </div>
+        ${data.doc_type === 'FAC' ? `
+        <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:9px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Pago:</span>
+          ${Object.entries(ESTADO_PAGO).map(([value, info]) => {
+            const isActive = (data.estado || 'pendiente') === value;
+            return `<button class="btn acc-btn-pago" data-estado="${value}" data-docid="${data.id}" style="padding:3px 8px; font-size:9px; font-weight:700; border-radius:4px; border:1.5px solid ${isActive ? info.color : '#e2e8f0'}; background:${isActive ? info.color + '22' : 'white'}; color:${isActive ? info.color : '#94a3b8'}; cursor:pointer;">${info.label}</button>`;
+          }).join('')}
+        </div>
+        ` : ''}
       </div>
       <div style="flex:2; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px 16px; box-shadow:var(--shadow-xs);">
         <div style="font-size:10px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Detalle de Ítems</div>
@@ -452,6 +499,18 @@ function renderDocDetail(data, shell) {
         }).join('')}
       </div>
     </div>
+
+    ${data.doc_type === 'FAC' ? `
+    <div class="detail-section">
+      <div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg> Estado de Pago</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        ${Object.entries(ESTADO_PAGO).map(([value, info]) => {
+          const isActive = (data.estado || 'pendiente') === value;
+          return `<button class="btn btn-estado-pago" data-estado="${value}" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid ${isActive ? info.color : '#e2e8f0'};background:${isActive ? info.color + '22' : 'white'};color:${isActive ? info.color : '#64748b'};cursor:pointer;">● ${info.label}</button>`;
+        }).join('')}
+      </div>
+    </div>
+    ` : ''}
 
     <div class="detail-section">
       <div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Cliente</div>
@@ -524,6 +583,30 @@ function renderDocDetail(data, shell) {
           b.style.borderColor = active ? e.color : '#e2e8f0';
           b.style.background = active ? e.color + '22' : 'white';
           b.style.color = active ? e.color : '#64748b';
+        });
+      } catch (err) {
+        toast('Error: ' + (err.message || err), 'error');
+        btn.innerHTML = origHTML;
+      }
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    });
+  });
+
+  document.querySelectorAll('.btn-estado-pago').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const nuevoEstado = btn.dataset.estado;
+      const origHTML = btn.innerHTML;
+      btn.innerHTML = '⏳';
+      btn.disabled = true;
+      try {
+        await cambiarEstadoPago(data.id, nuevoEstado, btn);
+        document.querySelectorAll('.btn-estado-pago').forEach(b => {
+          const info = ESTADO_PAGO[b.dataset.estado];
+          const active = b.dataset.estado === nuevoEstado;
+          b.style.borderColor = active ? info.color : '#e2e8f0';
+          b.style.background = active ? info.color + '22' : 'white';
+          b.style.color = active ? info.color : '#64748b';
         });
       } catch (err) {
         toast('Error: ' + (err.message || err), 'error');
