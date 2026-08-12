@@ -309,7 +309,7 @@ function renderListToBox(data) {
         const btnFac = detailsDiv.querySelector('.acc-btn-factura');
         if(btnFac) btnFac.addEventListener('click', async (e) => {
           e.stopPropagation();
-          if (!confirm('¿Convertir este documento en Factura? Se creará una nueva factura con los mismos datos.')) return;
+          if (!confirm('¿Convertir este documento en Factura? Se cambiará el tipo a FAC manteniendo todos los datos.')) return;
           btnFac.disabled = true;
           btnFac.textContent = '⏳...';
           try {
@@ -488,12 +488,12 @@ function renderDocDetail(data, shell) {
   const btnConvert = document.getElementById('btn-convert-factura');
   if (btnConvert) {
     btnConvert.addEventListener('click', async () => {
-      if (!confirm('¿Convertir este documento en Factura? Se creará una nueva factura con los mismos datos.')) return;
+      if (!confirm('¿Convertir este documento en Factura? Se cambiará el tipo a FAC manteniendo todos los datos.')) return;
       btnConvert.disabled = true;
       btnConvert.textContent = '⏳ Convirtiendo...';
       try {
         const newId = await convertirAFactura(data.id);
-        toast('Factura creada correctamente', 'success');
+        toast('Documento convertido a Factura', 'success');
         window.location.hash = '/documentos/' + newId;
       } catch (e) {
         toast('Error al convertir: ' + (e.message || e), 'error');

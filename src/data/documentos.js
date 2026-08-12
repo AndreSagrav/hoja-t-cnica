@@ -343,61 +343,39 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
   return { documentoId: docId, clienteId: cliente.id };
 }
 
-// Convierte un documento (OT/COT) en Factura: crea un nuevo documento FAC
-// con los mismos datos del original y retorna el nuevo ID.
+// Convierte un documento (OT/COT) en Factura: simplemente cambia el tipo a FAC
+// en el mismo documento (mismo ID), sin crear uno nuevo.
 export async function convertirAFactura(documentoId) {
   const supabase = await getSupabase();
   const { data: doc, error } = await supabase
     .from('documentos')
-    .select('*, lineas_documento(*)')
+    .select('doc_num, cliente_id')
     .eq('id', documentoId)
     .single();
   if (error) throw error;
 
-  const newDocData = {
-    doc_type: 'FAC',
-    doc_num: await sugerirSiguienteNumero('factura', doc.cliente_id),
-    fecha: new Date().toLocaleDateString('en-CA'),
-    cliente_id: doc.cliente_id,
-    subtotal: doc.subtotal,
-    descuento: doc.descuento || 0,
-    iva: doc.iva || 0,
-    total: doc.total,
-    estado: 'pendiente',
-    moneda: doc.moneda || 'CRC',
-    tipo_cambio: doc.tipo_cambio || 1,
-    observaciones: doc.observaciones || ''
-  };
-
-  const { data: newDoc, error: insError } = await supabase
+  // Generar numero simple FAC-001, FAC-002, etc.
+  const { data: lastFac } = await supabase
     .from('documentos')
-    .insert([newDocData])
-    .select('id')
-    .single();
-  if (insError) throw insError;
+    .select('doc_num')
+    .eq('doc_type', 'FAC')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  const lineasData = (doc.lineas_documento || []).map((line, i) => ({
-    documento_id: newDoc.id,
-    linea_num: i + 1,
-    descripcion: line.descripcion,
-    cantidad: line.cantidad,
-    precio_unitario: line.precio_unitario,
-    total_linea: line.precio_unitario * line.cantidad
-  }));
-
-  if (lineasData.length) {
-    const { error: lineError } = await supabase.from('lineas_documento').insert(lineasData);
-    if (lineError) throw lineError;
+  let nextNum = 'FAC-001';
+  if (lastFac?.doc_num) {
+    const match = lastFac.doc_num.match(/-(\d+)$/);
+    if (match) nextNum = `FAC-${String(parseInt(match[1]) + 1).padStart(3, '0')}`;
   }
 
-  // Marcar el documento original como facturado
   const { error: updError } = await supabase
     .from('documentos')
-    .update({ estado: 'facturado' })
+    .update({ doc_type: 'FAC', doc_num: nextNum })
     .eq('id', documentoId);
-  if (updError) console.warn('No se pudo marcar el documento original como facturado:', updError);
+  if (updError) throw updError;
 
-  return newDoc.id;
+  return documentoId;
 }
 
 // ── Funciones auxiliares para el editor ───────────────────────────────────
