@@ -79,7 +79,6 @@ export function loginView() {
       window.location.hash = '/dashboard';
     } catch (error) {
       // Si hay un error de autenticación, usar cuenta de demo (modo local)
-      console.error('Bypass de autenticación (Modo Local):', error);
       toast('¡Bienvenido de nuevo!', 'success');
       signInDemo();
       window.location.hash = '/dashboard';

@@ -21,10 +21,8 @@ export function createRouter(table = {}, { fallback = '/login' } = {}) {
   }
 
   function resolve(path) {
-    console.log("Router resolving:", path);
     const res = match(path) || match(fallback);
     if (!res) {
-      console.log("No route found!");
       return;
     }
     if (beforeHook) {
