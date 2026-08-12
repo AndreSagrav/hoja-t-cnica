@@ -436,7 +436,10 @@ function buildComprobanteHTML(d) {
             `).join('') : ''}
             ${d.sinpe?.numero ? `
               <div style="padding:8px 12px; background:#fff; border:1px solid #e2e8f0; border-radius:6px;">
-                <div style="font-size:12px; font-weight:700; color:var(--text-main);">📱 SINPE Móvil</div>
+                <div style="font-size:12px; font-weight:700; color:var(--text-main); display:flex; justify-content:space-between; align-items:center;">
+                  📱 SINPE Móvil
+                  <span style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:#dcfce7; color:#166534;">CRC</span>
+                </div>
                 <div style="font-size:10px; color:var(--text-muted); margin-top:3px; font-family:monospace;">${esc(d.sinpe.numero)}</div>
                 ${d.sinpe.titular ? `<div style="font-size:10px; color:var(--text-muted);">${esc(d.sinpe.titular)}</div>` : ''}
               </div>
