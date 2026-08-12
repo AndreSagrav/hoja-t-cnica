@@ -12,17 +12,23 @@ import { getSupabase } from '../lib/supabase.js';
 async function cargarCuentasSinpe() {
   try {
     const supabase = await getSupabase();
-    const { data: cuentas } = await supabase
+    const { data: cuentas, error: errCuentas } = await supabase
       .from('cuentas_bancarias')
       .select('*')
       .order('created_at', { ascending: true });
-    const { data: sinpe } = await supabase
+    if (errCuentas) console.error('[comprobante] Error cargando cuentas_bancarias:', errCuentas);
+
+    const { data: sinpe, error: errSinpe } = await supabase
       .from('sinpe_config')
       .select('*')
       .limit(1)
       .maybeSingle();
+    if (errSinpe) console.error('[comprobante] Error cargando sinpe_config:', errSinpe);
+
+    console.log('[comprobante] Cuentas cargadas:', cuentas?.length || 0, 'SINPE:', sinpe ? 'sí' : 'no');
     return { cuentas: cuentas || [], sinpe: sinpe || null };
   } catch (e) {
+    console.error('[comprobante] Error general cargando cuentas/sinpe:', e);
     return { cuentas: [], sinpe: null };
   }
 }
