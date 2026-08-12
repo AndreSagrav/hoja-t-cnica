@@ -421,26 +421,27 @@ function buildComprobanteHTML(d) {
 
           <!-- CUENTAS BANCARIAS Y SINPE -->
           ${(d.cuentas?.length || d.sinpe?.numero) ? `
-          <div style="margin-top:24px; padding:16px 20px; background:#f8fafc; border:1px solid var(--border-color); border-radius:8px;">
-            <div style="font-size:10px; font-weight:800; color:var(--text-light); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px;">Datos para Pago</div>
+          <div style="margin-top:20px; padding:14px 20px; background:#f8fafc; border:1px solid var(--border-color); border-radius:8px;">
+            <div style="font-size:10px; font-weight:800; color:var(--text-light); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;">Datos para Pago</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
             ${d.cuentas?.length ? d.cuentas.map(c => `
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:6px 0; border-bottom:1px dashed #e2e8f0;">
-                <div>
-                  <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(c.banco)} <span style="font-size:10px; color:var(--text-muted); font-weight:400;">(${esc(c.tipo||'cuenta')})</span></div>
-                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Titular: ${esc(c.titular)}</div>
-                  ${c.iban ? `<div style="font-size:11px; color:var(--text-muted); font-family:monospace; margin-top:2px;">IBAN: ${esc(c.iban)}</div>` : ''}
+              <div style="padding:8px 12px; background:#fff; border:1px solid #e2e8f0; border-radius:6px;">
+                <div style="font-size:12px; font-weight:700; color:var(--text-main); display:flex; justify-content:space-between; align-items:center;">
+                  ${esc(c.banco)}
+                  <span style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:${c.moneda==='USD'?'#dbeafe':'#dcfce7'}; color:${c.moneda==='USD'?'#1e40af':'#166534'};">${c.moneda||'CRC'}</span>
                 </div>
-                <div style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:4px; background:${c.moneda==='USD'?'#dbeafe':'#dcfce7'}; color:${c.moneda==='USD'?'#1e40af':'#166534'};">${c.moneda||'CRC'}</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">${esc(c.tipo||'cuenta')} — ${esc(c.titular)}</div>
+                ${c.iban ? `<div style="font-size:10px; color:var(--text-muted); font-family:monospace; margin-top:2px;">${esc(c.iban)}</div>` : ''}
               </div>
             `).join('') : ''}
             ${d.sinpe?.numero ? `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; margin-top:4px;">
-                <div>
-                  <div style="font-size:12px; font-weight:700; color:var(--text-main);">📱 SINPE Móvil</div>
-                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${esc(d.sinpe.numero)}${d.sinpe.titular ? ' — ' + esc(d.sinpe.titular) : ''}</div>
-                </div>
+              <div style="padding:8px 12px; background:#fff; border:1px solid #e2e8f0; border-radius:6px;">
+                <div style="font-size:12px; font-weight:700; color:var(--text-main);">📱 SINPE Móvil</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:3px; font-family:monospace;">${esc(d.sinpe.numero)}</div>
+                ${d.sinpe.titular ? `<div style="font-size:10px; color:var(--text-muted);">${esc(d.sinpe.titular)}</div>` : ''}
               </div>
             ` : ''}
+            </div>
           </div>
           ` : ''}
 
