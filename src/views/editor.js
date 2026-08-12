@@ -442,34 +442,27 @@ function bindEvents() {
     state.clientCompany = e.target.value;
   });
 
-  document.getElementById('cli-phone').addEventListener('input', (e) => {
-    state.clientPhone = e.target.value;
-  });
+  const cliPhone = document.getElementById('cli-phone');
+  if (cliPhone) cliPhone.addEventListener('input', (e) => { state.clientPhone = e.target.value; });
 
-  document.getElementById('cli-email').addEventListener('input', (e) => {
-    state.clientEmail = e.target.value;
-  });
+  const cliEmail = document.getElementById('cli-email');
+  if (cliEmail) cliEmail.addEventListener('input', (e) => { state.clientEmail = e.target.value; });
 
-  document.getElementById('cli-cedula').addEventListener('input', (e) => {
-    state.clientCedula = e.target.value;
-  });
+  const cliCedula = document.getElementById('cli-cedula');
+  if (cliCedula) cliCedula.addEventListener('input', (e) => { state.clientCedula = e.target.value; });
 
-  // Eventos para campos de OT
-  document.getElementById('f-problem').addEventListener('input', (e) => {
-    state.problem = e.target.value;
-  });
+  // Eventos para campos de OT (solo existen si es orden de trabajo)
+  const fProblem = document.getElementById('f-problem');
+  if (fProblem) fProblem.addEventListener('input', (e) => { state.problem = e.target.value; });
 
-  document.getElementById('f-diagnosis').addEventListener('input', (e) => {
-    state.diagnosis = e.target.value;
-  });
+  const fDiagnosis = document.getElementById('f-diagnosis');
+  if (fDiagnosis) fDiagnosis.addEventListener('input', (e) => { state.diagnosis = e.target.value; });
 
-  document.getElementById('f-time-in').addEventListener('input', (e) => {
-    state.timeIn = e.target.value;
-  });
+  const fTimeIn = document.getElementById('f-time-in');
+  if (fTimeIn) fTimeIn.addEventListener('input', (e) => { state.timeIn = e.target.value; });
 
-  document.getElementById('f-time-out').addEventListener('input', (e) => {
-    state.timeOut = e.target.value;
-  });
+  const fTimeOut = document.getElementById('f-time-out');
+  if (fTimeOut) fTimeOut.addEventListener('input', (e) => { state.timeOut = e.target.value; });
 
   // Eventos para líneas
   const lineasContainer = document.getElementById('lineas-container');
