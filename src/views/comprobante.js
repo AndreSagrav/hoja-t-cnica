@@ -134,7 +134,7 @@ const V2_CSS = `
     border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px 14px; min-height: 60px;
     background: #f8fafc; color: #94a3b8; font-style: italic; font-size: 12px; margin-bottom: 10px;
   }
-  .text-box { font-size: 13px; color: var(--text-main); margin-bottom: 10px; white-space: pre-wrap; }
+  .text-box { font-size: 13px; color: var(--text-main); margin-bottom: 10px; white-space: pre-wrap; line-height: 1.4; }
 
   .tariff-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
   .tariff-table th { background: #f8fafc; color: var(--text-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 6px 10px; border-bottom: 2px solid var(--border-color); text-align: left; }
@@ -354,9 +354,9 @@ function buildComprobanteHTML(d) {
           </div>
           ${(d.diagnosis || d.observations || d.problem) ? `
             <div class="text-box">
-              ${d.problem ? `<strong>Problema Reportado:</strong>\n${esc(d.problem)}\n\n` : ''}
-              ${d.diagnosis ? `<strong>Diagnóstico:</strong>\n${esc(d.diagnosis)}\n\n` : ''}
-              ${d.observations ? `<strong>Observaciones:</strong>\n${esc(d.observations)}` : ''}
+              ${d.problem ? `<strong>Problema Reportado:</strong> ${esc(d.problem)}` : ''}
+              ${d.diagnosis ? `${d.problem ? '<br>' : ''}<strong>Diagnóstico:</strong> ${esc(d.diagnosis)}` : ''}
+              ${d.observations ? `${(d.problem||d.diagnosis) ? '<br>' : ''}<strong>Observaciones:</strong> ${esc(d.observations)}` : ''}
             </div>
           ` : `
             <div class="writable-box">
