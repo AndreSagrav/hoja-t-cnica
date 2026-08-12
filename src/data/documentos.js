@@ -344,34 +344,23 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
 }
 
 // Convierte un documento (OT/COT) en Factura: simplemente cambia el tipo a FAC
-// en el mismo documento (mismo ID), sin crear uno nuevo.
+// en el mismo documento (mismo ID), manteniendo el mismo consecutivo, solo cambia el prefijo.
 export async function convertirAFactura(documentoId) {
   const supabase = await getSupabase();
   const { data: doc, error } = await supabase
     .from('documentos')
-    .select('doc_num, cliente_id')
+    .select('doc_num')
     .eq('id', documentoId)
     .single();
   if (error) throw error;
 
-  // Generar numero simple FAC-001, FAC-002, etc.
-  const { data: lastFac } = await supabase
-    .from('documentos')
-    .select('doc_num')
-    .eq('doc_type', 'FAC')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let nextNum = 'FAC-001';
-  if (lastFac?.doc_num) {
-    const match = lastFac.doc_num.match(/-(\d+)$/);
-    if (match) nextNum = `FAC-${String(parseInt(match[1]) + 1).padStart(3, '0')}`;
-  }
+  // Mantener el mismo consecutivo, solo cambiar el prefijo a FAC
+  const oldNum = doc.doc_num || '';
+  const newNum = oldNum.replace(/^[A-Z]+/, 'FAC');
 
   const { error: updError } = await supabase
     .from('documentos')
-    .update({ doc_type: 'FAC', doc_num: nextNum })
+    .update({ doc_type: 'FAC', doc_num: newNum })
     .eq('id', documentoId);
   if (updError) throw updError;
 
