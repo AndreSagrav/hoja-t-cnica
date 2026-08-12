@@ -1,22 +1,85 @@
 import { ensureShell } from "../components/shell.js";
 import { esc, toast } from "../lib/utils.js";
-
-const KEY_CUENTAS = "innovio_cuentas_bancarias";
-const KEY_SINPE   = "innovio_sinpe";
+import { getSupabase } from "../lib/supabase.js";
 
 let cuentas = [], sinpe = null, selectedId = null, mode = null;
 
-function loadLS() {
-  try { cuentas = JSON.parse(localStorage.getItem(KEY_CUENTAS)) || []; } catch { cuentas = []; }
-  try { sinpe = JSON.parse(localStorage.getItem(KEY_SINPE)) || null; } catch { sinpe = null; }
+async function loadDB() {
+  const supabase = await getSupabase();
+  const { data: ctaData, error: ctaErr } = await supabase
+    .from('cuentas_bancarias')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (ctaErr) { console.error('Error cargando cuentas:', ctaErr); cuentas = []; }
+  else cuentas = ctaData || [];
+
+  const { data: sinpeData, error: sinpeErr } = await supabase
+    .from('sinpe_config')
+    .select('*')
+    .limit(1)
+    .maybeSingle();
+  if (sinpeErr) { console.error('Error cargando SINPE:', sinpeErr); sinpe = null; }
+  else sinpe = sinpeData || null;
 }
 
-function saveLS() {
-  localStorage.setItem(KEY_CUENTAS, JSON.stringify(cuentas));
-  localStorage.setItem(KEY_SINPE, JSON.stringify(sinpe));
+async function saveCuentaDB(payload) {
+  const supabase = await getSupabase();
+  if (payload.id) {
+    const { data, error } = await supabase
+      .from('cuentas_bancarias')
+      .update({ banco: payload.banco, titular: payload.titular, iban: payload.iban, tipo: payload.tipo, moneda: payload.moneda, descripcion: payload.descripcion, updated_at: new Date().toISOString() })
+      .eq('id', payload.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  } else {
+    const { data, error } = await supabase
+      .from('cuentas_bancarias')
+      .insert([{ banco: payload.banco, titular: payload.titular, iban: payload.iban, tipo: payload.tipo, moneda: payload.moneda, descripcion: payload.descripcion }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
 }
 
-export function cuentasView() {
+async function deleteCuentaDB(id) {
+  const supabase = await getSupabase();
+  const { error } = await supabase.from('cuentas_bancarias').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function saveSinpeDB(payload) {
+  const supabase = await getSupabase();
+  if (sinpe?.id) {
+    const { data, error } = await supabase
+      .from('sinpe_config')
+      .update({ numero: payload.numero, titular: payload.titular, descripcion: payload.descripcion, updated_at: new Date().toISOString() })
+      .eq('id', sinpe.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  } else {
+    const { data, error } = await supabase
+      .from('sinpe_config')
+      .insert([{ numero: payload.numero, titular: payload.titular, descripcion: payload.descripcion }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+}
+
+async function deleteSinpeDB() {
+  if (!sinpe?.id) return;
+  const supabase = await getSupabase();
+  const { error } = await supabase.from('sinpe_config').delete().eq('id', sinpe.id);
+  if (error) throw error;
+}
+
+export async function cuentasView() {
   const shell = ensureShell("/cuentas");
   shell.setTitle(""); shell.setActions("");
   const c = shell.content();
@@ -47,7 +110,7 @@ export function cuentasView() {
 </div>`;
 
   document.getElementById("cta-new-btn").addEventListener("click", () => showFormCuenta(null));
-  loadLS();
+  await loadDB();
   renderAll();
 }
 
@@ -199,13 +262,16 @@ function showDetailCuenta(c) {
     ${c.descripcion?`<div class="detail-section"><div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Notas</div><p style="font-size:13.5px;color:var(--text);line-height:1.7;">${esc(c.descripcion)}</p></div>`:""}`;
 
   document.getElementById("cta-edit-btn").addEventListener("click", () => showFormCuenta(c));
-  document.getElementById("cta-del-btn").addEventListener("click", () => {
+  document.getElementById("cta-del-btn").addEventListener("click", async () => {
     if (!confirm(`¿Eliminar la cuenta de ${c.banco}?`)) return;
-    cuentas = cuentas.filter(x => x.id !== c.id);
-    saveLS(); selectedId = null; mode = null;
-    renderAll();
-    document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon">🏦</div><div class="crm-placeholder-text">Cuenta eliminada</div></div>`;
-    toast("Cuenta eliminada");
+    try {
+      await deleteCuentaDB(c.id);
+      cuentas = cuentas.filter(x => x.id !== c.id);
+      selectedId = null; mode = null;
+      renderAll();
+      document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon">🏦</div><div class="crm-placeholder-text">Cuenta eliminada</div></div>`;
+      toast("Cuenta eliminada");
+    } catch (err) { toast("Error al eliminar: " + (err.message || err), "error"); }
   });
   if (c.iban) {
     document.getElementById("cta-copy-iban").addEventListener("click", () => {
@@ -244,12 +310,15 @@ function showDetailSinpe() {
       .then(() => toast("Número copiado al portapapeles"))
       .catch(() => toast("No se pudo copiar", "error"));
   });
-  document.getElementById("cta-del-sinpe").addEventListener("click", () => {
-    if (!confirm("¿Eliminar configuración de SINPE?")) return;
-    sinpe = null; saveLS(); mode = null;
-    renderAll();
-    document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon">📱</div><div class="crm-placeholder-text">SINPE eliminado</div></div>`;
-    toast("SINPE eliminado");
+  document.getElementById("cta-del-sinpe").addEventListener("click", async () => {
+    if (!confirm("¿Eliminar la configuración de SINPE?")) return;
+    try {
+      await deleteSinpeDB();
+      sinpe = null; mode = null;
+      renderAll();
+      document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon">📱</div><div class="crm-placeholder-text">SINPE eliminado</div></div>`;
+      toast("SINPE eliminado");
+    } catch (err) { toast("Error al eliminar SINPE: " + (err.message || err), "error"); }
   });
 }
 
@@ -288,29 +357,31 @@ function showFormCuenta(c) {
     if (c) showDetailCuenta(c);
     else document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg></div><div class="crm-placeholder-text">Seleccioná una cuenta</div></div>`;
   });
-  document.getElementById("cf-save").addEventListener("click", () => {
+  document.getElementById("cf-save").addEventListener("click", async () => {
     const banco   = document.getElementById("cf-banco").value.trim();
     const titular = document.getElementById("cf-titular").value.trim();
     if (!banco || !titular) { toast("Banco y titular son obligatorios", "error"); return; }
     const payload = {
-      id:          c?.id || Date.now(),
+      id:          c?.id || null,
       banco, titular,
       iban:        document.getElementById("cf-iban").value.trim(),
       tipo:        document.getElementById("cf-tipo").value,
       moneda:      document.getElementById("cf-moneda").value,
       descripcion: document.getElementById("cf-desc").value.trim()
     };
-    if (isEdit) {
-      const idx = cuentas.findIndex(x => x.id === c.id);
-      if (idx >= 0) cuentas[idx] = payload;
-    } else {
-      cuentas.push(payload);
-    }
-    saveLS();
-    selectedId = String(payload.id); mode = "cuenta";
-    renderAll();
-    showDetailCuenta(cuentas.find(x => String(x.id) === String(payload.id)));
-    toast(isEdit ? "Cuenta actualizada" : "Cuenta creada");
+    try {
+      const saved = await saveCuentaDB(payload);
+      if (isEdit) {
+        const idx = cuentas.findIndex(x => x.id === c.id);
+        if (idx >= 0) cuentas[idx] = saved;
+      } else {
+        cuentas.push(saved);
+      }
+      selectedId = String(saved.id); mode = "cuenta";
+      renderAll();
+      showDetailCuenta(cuentas.find(x => String(x.id) === String(saved.id)));
+      toast(isEdit ? "Cuenta actualizada" : "Cuenta creada");
+    } catch (err) { toast("Error al guardar: " + (err.message || err), "error"); }
   });
 }
 
@@ -337,23 +408,29 @@ function showFormSinpe() {
     if (sinpe?.numero) showDetailSinpe();
     else document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg></div><div class="crm-placeholder-text">Seleccioná una opción</div></div>`;
   });
-  document.getElementById("sf-save").addEventListener("click", () => {
+  document.getElementById("sf-save").addEventListener("click", async () => {
     const numero = document.getElementById("sf-num").value.trim();
     if (!numero) { toast("El número de teléfono es obligatorio", "error"); return; }
-    sinpe = {
+    const payload = {
       numero,
       titular:     document.getElementById("sf-tit").value.trim(),
       descripcion: document.getElementById("sf-desc").value.trim()
     };
-    saveLS(); mode = "sinpe";
-    renderAll(); showDetailSinpe();
-    toast("SINPE guardado");
+    try {
+      sinpe = await saveSinpeDB(payload);
+      mode = "sinpe";
+      renderAll(); showDetailSinpe();
+      toast("SINPE guardado");
+    } catch (err) { toast("Error al guardar SINPE: " + (err.message || err), "error"); }
   });
-  document.getElementById("sf-del")?.addEventListener("click", () => {
+  document.getElementById("sf-del")?.addEventListener("click", async () => {
     if (!confirm("¿Eliminar la configuración de SINPE?")) return;
-    sinpe = null; saveLS(); mode = null;
-    renderAll();
-    document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div><div class="crm-placeholder-text">SINPE eliminado</div></div>`;
-    toast("SINPE eliminado");
+    try {
+      await deleteSinpeDB();
+      sinpe = null; mode = null;
+      renderAll();
+      document.getElementById("cta-detail").innerHTML = `<div class="crm-placeholder"><div class="crm-placeholder-icon"><svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg></div><div class="crm-placeholder-text">SINPE eliminado</div></div>`;
+      toast("SINPE eliminado");
+    } catch (err) { toast("Error al eliminar SINPE: " + (err.message || err), "error"); }
   });
 }
