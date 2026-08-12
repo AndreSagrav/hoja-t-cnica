@@ -1,6 +1,7 @@
 import { ensureShell } from '../components/shell.js';
 import { getSupabase } from '../lib/supabase.js';
 import { fmtMoney, fmtDate, esc, toast, debounce } from '../lib/utils.js';
+import { convertirAFactura } from '../data/documentos.js';
 
 const PAGE_SIZE = 80;
 const ESTADO_COLOR = { pendiente:'#f59e0b', en_proceso:'#3b82f6', completado:'#10b981', facturado:'#6366f1', cancelado:'#ef4444' };
@@ -44,7 +45,7 @@ export async function documentosListView() {
 </div>`;
 
   document.getElementById('doc-new-btn').addEventListener('click', () => {
-    window.location.hash = '/wizard/nuevo';
+    window.location.hash = '/documentos/nuevo/orden';
   });
 
   document.getElementById('doc-search').addEventListener('input', debounce(e => { docState.search = e.target.value.trim(); loadDocList(); }, 280));
@@ -71,7 +72,7 @@ export async function documentoDetalleView({ id }) {
       .select(`
         *,
         clientes(nombre, empresa, telefono, email, direccion),
-        items(*)
+        lineas_documento(*)
       `)
       .eq('id', id)
       .single();
@@ -280,7 +281,7 @@ function renderListToBox(data) {
         const supabase = await getSupabase();
         const { data, error } = await supabase
           .from('documentos')
-          .select('*, clientes(nombre, empresa, telefono, email, direccion), items(*)')
+          .select('*, clientes(nombre, empresa, telefono, email, direccion), lineas_documento(*)')
           .eq('id', row.dataset.id)
           .single();
         if (error) throw error;
@@ -291,6 +292,22 @@ function renderListToBox(data) {
         if(btnEdit) btnEdit.addEventListener('click', (e) => { e.stopPropagation(); window.location.hash = `/documentos/${data.id}/editar`; });
         const btnComp = detailsDiv.querySelector('.acc-btn-comp');
         if(btnComp) btnComp.addEventListener('click', (e) => { e.stopPropagation(); window.location.hash = `/documentos/${data.id}/comprobante`; });
+        const btnFac = detailsDiv.querySelector('.acc-btn-factura');
+        if(btnFac) btnFac.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('¿Convertir este documento en Factura? Se creará una nueva factura con los mismos datos.')) return;
+          btnFac.disabled = true;
+          btnFac.textContent = '⏳...';
+          try {
+            const newId = await convertirAFactura(data.id);
+            toast('Factura creada correctamente', 'success');
+            window.location.hash = '/documentos/' + newId;
+          } catch (err) {
+            toast('Error al convertir: ' + (err.message || err), 'error');
+            btnFac.disabled = false;
+            btnFac.textContent = 'Convertir en Factura';
+          }
+        });
 
       } catch (e) {
         detailsDiv.innerHTML = `<div style="color:var(--red);font-size:12px;">Error: ${esc(e.message)}</div>`;
@@ -305,7 +322,8 @@ function renderAccordionHTML(data) {
   const dirStr = data.clientes?.direccion || '—';
   
   let itemsHtml = '<div style="color:var(--text-soft);font-size:11px;padding:10px 0;">No hay ítems registrados</div>';
-  if (data.items && data.items.length) {
+  const items = data.lineas_documento || data.items || [];
+  if (items && items.length) {
     itemsHtml = `
       <table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:11px;">
         <thead>
@@ -317,7 +335,7 @@ function renderAccordionHTML(data) {
           </tr>
         </thead>
         <tbody>
-          ${data.items.map(it => `
+          ${items.map(it => `
             <tr style="border-bottom:1px solid rgba(0,0,0,0.03);">
               <td style="padding:8px 4px; color:var(--text-mid);">${esc(it.descripcion)}</td>
               <td style="padding:8px 4px; text-align:center; color:var(--text-mid);">${it.cantidad}</td>
@@ -337,9 +355,10 @@ function renderAccordionHTML(data) {
         <div style="font-size:13px; font-weight:800; color:var(--navy); margin-bottom:4px; letter-spacing:-0.01em;">${esc(clienteStr)}</div>
         <div style="font-size:11px; color:var(--text-mid); margin-bottom:4px;"><span style="color:var(--text-soft);margin-right:4px;">📞</span> ${esc(telStr)}</div>
         <div style="font-size:11px; color:var(--text-mid);"><span style="color:var(--text-soft);margin-right:4px;">📍</span> ${esc(dirStr)}</div>
-        <div style="margin-top:16px; display:flex; gap:8px;">
+        <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn btn-primary acc-btn-edit" style="padding:5px 12px; font-size:10px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar Documento</button>
           <button class="btn acc-btn-comp" style="padding:5px 12px; font-size:10px; border:1px solid var(--border); background:white;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Ver Comprobante</button>
+          ${data.doc_type !== 'FAC' ? `<button class="btn acc-btn-factura" style="padding:5px 12px; font-size:10px; border:1px solid #6366f1; background:#6366f122; color:#6366f1;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : ''}
         </div>
       </div>
       <div style="flex:2; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px 16px; box-shadow:var(--shadow-xs);">
@@ -373,6 +392,7 @@ function renderDocDetail(data, shell) {
         <div class="detail-hero-actions" style="margin-left: 0;">
           <button class="hero-btn hero-btn-main" onclick="window.location.hash='/documentos/${data.id}/editar'"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar</button>
           <button class="hero-btn hero-btn-edit" onclick="window.location.hash='/documentos/${data.id}/comprobante'"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Comprobante</button>
+          ${data.doc_type !== 'FAC' ? `<button class="hero-btn hero-btn-main" id="btn-convert-factura" style="background:#6366f1;border-color:#6366f1;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : ''}
         </div>
       </div>
     </div>
@@ -389,17 +409,17 @@ function renderDocDetail(data, shell) {
 
     <div class="detail-section">
       <div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Ítems del Documento</div>
-      ${data.items?.length ? `
+      ${(data.lineas_documento || data.items)?.length ? `
         <div class="table-wrap">
           <table class="data">
             <thead><tr><th>Descripción</th><th style="text-align:center;">Cant.</th><th style="text-align:right;">Precio</th><th style="text-align:right;">Total</th></tr></thead>
             <tbody>
-              ${data.items.map(item => `
+              ${(data.lineas_documento || data.items).map(item => `
                 <tr>
                   <td>${esc(item.descripcion)}</td>
                   <td style="text-align:center;">${item.cantidad}</td>
-                  <td style="text-align:right;">${fmtMoney(item.precio)}</td>
-                  <td style="text-align:right;font-weight:var(--fw-bold);color:var(--navy);">${fmtMoney(item.total)}</td>
+                  <td style="text-align:right;">${fmtMoney(item.precio_unitario || item.precio)}</td>
+                  <td style="text-align:right;font-weight:var(--fw-bold);color:var(--navy);">${fmtMoney((item.precio_unitario || item.precio) * item.cantidad)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -408,4 +428,22 @@ function renderDocDetail(data, shell) {
       ` : '<div style="text-align:center;padding:var(--sp-6);color:var(--text-soft);font-size:var(--fs-sm);">No hay ítems registrados</div>'}
     </div>
   `;
+
+  const btnConvert = document.getElementById('btn-convert-factura');
+  if (btnConvert) {
+    btnConvert.addEventListener('click', async () => {
+      if (!confirm('¿Convertir este documento en Factura? Se creará una nueva factura con los mismos datos.')) return;
+      btnConvert.disabled = true;
+      btnConvert.textContent = '⏳ Convirtiendo...';
+      try {
+        const newId = await convertirAFactura(data.id);
+        toast('Factura creada correctamente', 'success');
+        window.location.hash = '/documentos/' + newId;
+      } catch (e) {
+        toast('Error al convertir: ' + (e.message || e), 'error');
+        btnConvert.disabled = false;
+        btnConvert.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura';
+      }
+    });
+  }
 }
