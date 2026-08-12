@@ -7,6 +7,20 @@ const PAGE_SIZE = 80;
 const ESTADO_COLOR = { pendiente:'#f59e0b', en_proceso:'#3b82f6', completado:'#10b981', facturado:'#6366f1', cancelado:'#ef4444' };
 const ESTADO_BG    = { pendiente:'#fff7ed', en_proceso:'#eff6ff', completado:'#f0fdf4', facturado:'#f5f3ff', cancelado:'#fef2f2' };
 
+const HACIENDA_ESTADOS = [
+  { value: 'sin_enviar', label: 'Sin enviar', color: '#94a3b8' },
+  { value: 'pendiente_h', label: 'Pendiente', color: '#f59e0b' },
+  { value: 'aceptado', label: 'Aceptado', color: '#10b981' },
+  { value: 'rechazado', label: 'Rechazado', color: '#ef4444' },
+];
+
+async function cambiarEstadoHacienda(docId, nuevoEstado, btn) {
+  const supabase = await getSupabase();
+  const { error } = await supabase.from('documentos').update({ estado_hacienda: nuevoEstado }).eq('id', docId);
+  if (error) throw error;
+  toast('Estado Hacienda actualizado: ' + HACIENDA_ESTADOS.find(e => e.value === nuevoEstado)?.label, 'success');
+}
+
 let docState = { search:'', tipo:'', estado:'', loading:false };
 
 export async function documentosListView() {
@@ -309,6 +323,31 @@ function renderListToBox(data) {
           }
         });
 
+        detailsDiv.querySelectorAll('.acc-btn-hacienda').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const nuevoEstado = btn.dataset.estado;
+            const docId = parseInt(btn.dataset.docid);
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '⏳';
+            btn.disabled = true;
+            try {
+              await cambiarEstadoHacienda(docId, nuevoEstado, btn);
+              detailsDiv.querySelectorAll('.acc-btn-hacienda').forEach(b => {
+                const he = HACIENDA_ESTADOS.find(h => h.value === b.dataset.estado);
+                const active = b.dataset.estado === nuevoEstado;
+                b.style.borderColor = active ? he.color : '#e2e8f0';
+                b.style.background = active ? he.color + '22' : 'white';
+                b.style.color = active ? he.color : '#94a3b8';
+              });
+            } catch (err) {
+              toast('Error: ' + (err.message || err), 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+          });
+        });
+
       } catch (e) {
         detailsDiv.innerHTML = `<div style="color:var(--red);font-size:12px;">Error: ${esc(e.message)}</div>`;
       }
@@ -360,6 +399,13 @@ function renderAccordionHTML(data) {
           <button class="btn acc-btn-comp" style="padding:5px 12px; font-size:10px; border:1px solid var(--border); background:white;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Ver Comprobante</button>
           ${data.doc_type !== 'FAC' ? `<button class="btn acc-btn-factura" style="padding:5px 12px; font-size:10px; border:1px solid #6366f1; background:#6366f122; color:#6366f1;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : ''}
         </div>
+        <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:9px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Hacienda:</span>
+          ${HACIENDA_ESTADOS.map(e => {
+            const isActive = (data.estado_hacienda || 'sin_enviar') === e.value;
+            return `<button class="btn acc-btn-hacienda" data-estado="${e.value}" data-docid="${data.id}" style="padding:3px 8px; font-size:9px; font-weight:700; border-radius:4px; border:1.5px solid ${isActive ? e.color : '#e2e8f0'}; background:${isActive ? e.color + '22' : 'white'}; color:${isActive ? e.color : '#94a3b8'}; cursor:pointer;">${e.label}</button>`;
+          }).join('')}
+        </div>
       </div>
       <div style="flex:2; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px 16px; box-shadow:var(--shadow-xs);">
         <div style="font-size:10px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Detalle de Ítems</div>
@@ -392,8 +438,18 @@ function renderDocDetail(data, shell) {
         <div class="detail-hero-actions" style="margin-left: 0;">
           <button class="hero-btn hero-btn-main" onclick="window.location.hash='/documentos/${data.id}/editar'"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar</button>
           <button class="hero-btn hero-btn-edit" onclick="window.location.hash='/documentos/${data.id}/comprobante'"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Comprobante</button>
-          ${data.doc_type !== 'FAC' ? `<button class="hero-btn hero-btn-main" id="btn-convert-factura" style="background:#6366f1;border-color:#6366f1;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : ''}
+          ${data.doc_type !== 'FAC' ? `<button class="hero-btn hero-btn-main" id="btn-convert-factura" style="background:#6366f1;border-color:#6366f1;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : `<button class="hero-btn" id="btn-comprobante-electronico" style="background:#059669;border-color:#059669;color:white;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.062-.18-2.082-.512-3.04z"></path></svg> Comprobante Electrónico</button>`}
         </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.062-.18-2.082-.512-3.04z"></path></svg> Estado Hacienda</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        ${HACIENDA_ESTADOS.map(e => {
+          const isActive = (data.estado_hacienda || 'sin_enviar') === e.value;
+          return `<button class="btn btn-estado-hacienda" data-estado="${e.value}" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid ${isActive ? e.color : '#e2e8f0'};background:${isActive ? e.color + '22' : 'white'};color:${isActive ? e.color : '#64748b'};cursor:pointer;">● ${e.label}</button>`;
+        }).join('')}
       </div>
     </div>
 
@@ -446,4 +502,35 @@ function renderDocDetail(data, shell) {
       }
     });
   }
+
+  const btnCompElec = document.getElementById('btn-comprobante-electronico');
+  if (btnCompElec) {
+    btnCompElec.addEventListener('click', () => {
+      toast('Próximamente: Generación de comprobante electrónico Hacienda', 'warn');
+    });
+  }
+
+  document.querySelectorAll('.btn-estado-hacienda').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const nuevoEstado = btn.dataset.estado;
+      const origHTML = btn.innerHTML;
+      btn.innerHTML = '⏳';
+      btn.disabled = true;
+      try {
+        await cambiarEstadoHacienda(data.id, nuevoEstado, btn);
+        document.querySelectorAll('.btn-estado-hacienda').forEach(b => {
+          const e = HACIENDA_ESTADOS.find(h => h.value === b.dataset.estado);
+          const active = b.dataset.estado === nuevoEstado;
+          b.style.borderColor = active ? e.color : '#e2e8f0';
+          b.style.background = active ? e.color + '22' : 'white';
+          b.style.color = active ? e.color : '#64748b';
+        });
+      } catch (err) {
+        toast('Error: ' + (err.message || err), 'error');
+        btn.innerHTML = origHTML;
+      }
+      btn.disabled = false;
+      btn.innerHTML = origHTML;
+    });
+  });
 }
