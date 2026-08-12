@@ -79,6 +79,47 @@ async function deleteSinpeDB() {
   if (error) throw error;
 }
 
+// Migración one-time: si hay datos en localStorage, subirlos a Supabase
+async function migrarDeLocalStorage() {
+  const KEY_CUENTAS = "innovio_cuentas_bancarias";
+  const KEY_SINPE   = "innovio_sinpe";
+  const MIGRATED    = "innovio_cuentas_migrated";
+
+  if (localStorage.getItem(MIGRATED)) return; // Ya migrado
+
+  let oldCuentas = [], oldSinpe = null;
+  try { oldCuentas = JSON.parse(localStorage.getItem(KEY_CUENTAS)) || []; } catch { oldCuentas = []; }
+  try { oldSinpe = JSON.parse(localStorage.getItem(KEY_SINPE)) || null; } catch { oldSinpe = null; }
+
+  if (!oldCuentas.length && !oldSinpe) {
+    localStorage.setItem(MIGRATED, "1");
+    return;
+  }
+
+  const supabase = await getSupabase();
+
+  // Migrar cuentas
+  if (oldCuentas.length) {
+    const rows = oldCuentas.map(c => ({
+      banco: c.banco, titular: c.titular, iban: c.iban,
+      tipo: c.tipo, moneda: c.moneda, descripcion: c.descripcion
+    }));
+    const { error } = await supabase.from('cuentas_bancarias').insert(rows);
+    if (error) console.error('Error migrando cuentas:', error);
+  }
+
+  // Migrar SINPE
+  if (oldSinpe?.numero) {
+    const { error } = await supabase.from('sinpe_config').insert([{
+      numero: oldSinpe.numero, titular: oldSinpe.titular, descripcion: oldSinpe.descripcion
+    }]);
+    if (error) console.error('Error migrando SINPE:', error);
+  }
+
+  localStorage.setItem(MIGRATED, "1");
+  toast("Cuentas migradas a la base de datos", "success");
+}
+
 export async function cuentasView() {
   const shell = ensureShell("/cuentas");
   shell.setTitle(""); shell.setActions("");
@@ -110,6 +151,7 @@ export async function cuentasView() {
 </div>`;
 
   document.getElementById("cta-new-btn").addEventListener("click", () => showFormCuenta(null));
+  await migrarDeLocalStorage();
   await loadDB();
   renderAll();
 }
