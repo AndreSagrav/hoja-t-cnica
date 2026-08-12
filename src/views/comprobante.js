@@ -265,10 +265,7 @@ function buildComprobanteHTML(d) {
   // Fecha
   const docDateStr = d.date || new Date().toISOString().split('T')[0];
 
-  // Botones flotantes
-  const hasValidPhone = d.clientPhone && d.clientPhone.replace(/\D/g, '').length >= 8;
-  const hasEmail = d.clientEmail && d.clientEmail.includes('@');
-
+  // Botones flotantes — siempre visibles
   return `
     <style>${V2_CSS}</style>
 
@@ -276,8 +273,8 @@ function buildComprobanteHTML(d) {
     <div class="comp-fab-group">
       <button class="comp-fab comp-fab-close" id="comp-btn-close" title="Cerrar">✕</button>
       <button class="comp-fab comp-fab-download" id="comp-btn-download" title="Descargar PDF">📥</button>
-      ${hasValidPhone ? '<button class="comp-fab comp-fab-wa" id="comp-btn-wa" title="Enviar por WhatsApp">💬</button>' : ''}
-      ${hasEmail ? '<button class="comp-fab comp-fab-email" id="comp-btn-email" title="Enviar por Correo">✉️</button>' : ''}
+      <button class="comp-fab comp-fab-wa" id="comp-btn-wa" title="Enviar por WhatsApp">💬</button>
+      <button class="comp-fab comp-fab-email" id="comp-btn-email" title="Enviar por Correo">✉️</button>
       <button class="comp-fab comp-fab-print" id="comp-btn-print" title="Imprimir">🖨️</button>
     </div>
 
@@ -535,7 +532,7 @@ function bindCompEvents(container, data) {
   }
 
   const btnWA = container.querySelector('#comp-btn-wa');
-  if (btnWA && data.clientPhone) {
+  if (btnWA) {
     btnWA.addEventListener('click', () => {
       withLoading(btnWA, async () => {
         try {
@@ -551,7 +548,7 @@ function bindCompEvents(container, data) {
   }
 
   const btnEmail = container.querySelector('#comp-btn-email');
-  if (btnEmail && data.clientEmail) {
+  if (btnEmail) {
     btnEmail.addEventListener('click', () => {
       withLoading(btnEmail, async () => {
         try {
