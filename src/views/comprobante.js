@@ -7,6 +7,25 @@ import { fmtMoney, esc, toast } from '../lib/utils.js';
 import { calcTotals } from '../lib/comprobante.js';
 import { generarPDFComprobante, shareViaWhatsApp, shareViaEmail, downloadPDF, canShareFiles } from '../lib/share.js';
 import { LOGO_DATA_URL } from '../assets/logo.js';
+import { getSupabase } from '../lib/supabase.js';
+
+async function cargarCuentasSinpe() {
+  try {
+    const supabase = await getSupabase();
+    const { data: cuentas } = await supabase
+      .from('cuentas_bancarias')
+      .select('*')
+      .order('created_at', { ascending: true });
+    const { data: sinpe } = await supabase
+      .from('sinpe_config')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+    return { cuentas: cuentas || [], sinpe: sinpe || null };
+  } catch (e) {
+    return { cuentas: [], sinpe: null };
+  }
+}
 
 // ── Utilidades ──────────────────────────────────────────────
 const safe = (v, fallback = '—') => (v && String(v).trim()) ? String(v).trim() : fallback;
@@ -397,6 +416,31 @@ function buildComprobanteHTML(d) {
           </div>
           ` : ''}
 
+          <!-- CUENTAS BANCARIAS Y SINPE -->
+          ${(d.cuentas?.length || d.sinpe?.numero) ? `
+          <div style="margin-top:24px; padding:16px 20px; background:#f8fafc; border:1px solid var(--border-color); border-radius:8px;">
+            <div style="font-size:10px; font-weight:800; color:var(--text-light); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px;">Datos para Pago</div>
+            ${d.cuentas?.length ? d.cuentas.map(c => `
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:6px 0; border-bottom:1px dashed #e2e8f0;">
+                <div>
+                  <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(c.banco)} <span style="font-size:10px; color:var(--text-muted); font-weight:400;">(${esc(c.tipo||'cuenta')})</span></div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Titular: ${esc(c.titular)}</div>
+                  ${c.iban ? `<div style="font-size:11px; color:var(--text-muted); font-family:monospace; margin-top:2px;">IBAN: ${esc(c.iban)}</div>` : ''}
+                </div>
+                <div style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:4px; background:${c.moneda==='USD'?'#dbeafe':'#dcfce7'}; color:${c.moneda==='USD'?'#1e40af':'#166534'};">${c.moneda||'CRC'}</div>
+              </div>
+            `).join('') : ''}
+            ${d.sinpe?.numero ? `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; margin-top:4px;">
+                <div>
+                  <div style="font-size:12px; font-weight:700; color:var(--text-main);">📱 SINPE Móvil</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${esc(d.sinpe.numero)}${d.sinpe.titular ? ' — ' + esc(d.sinpe.titular) : ''}</div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          ` : ''}
+
           <!-- FIRMA TÉCNICO (solo OT) -->
           ${isOrden ? `
           <div class="signatures">
@@ -584,7 +628,10 @@ export async function comprobanteDocumentoView({ id }) {
   document.body.appendChild(loadingEl);
 
   try {
-    const completo = await obtenerDocumentoCompleto(id);
+    const [completo, cuentasInfo] = await Promise.all([
+      obtenerDocumentoCompleto(id),
+      cargarCuentasSinpe()
+    ]);
     const { doc, cliente, lineas, hoja, trabajos } = completo;
 
     const data = {
@@ -611,7 +658,9 @@ export async function comprobanteDocumentoView({ id }) {
       timeIn: hoja?.hora_entrada || '',
       timeOut: hoja?.hora_salida || '',
       workItems: trabajos || [],
-      contact: { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' }
+      contact: { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' },
+      cuentas: cuentasInfo.cuentas,
+      sinpe: cuentasInfo.sinpe
     };
 
     loadingEl.remove();
@@ -624,7 +673,7 @@ export async function comprobanteDocumentoView({ id }) {
 }
 
 // ── Vista: Comprobante desde sessionStorage (preview) ───────
-export function comprobantePreviewView() {
+export async function comprobantePreviewView() {
   let raw = null;
   try { raw = JSON.parse(sessionStorage.getItem('innovio:editor:preview') || 'null'); } catch {}
 
@@ -633,6 +682,8 @@ export function comprobantePreviewView() {
     window.history.back();
     return;
   }
+
+  const cuentasInfo = await cargarCuentasSinpe();
 
   const data = {
     docType: raw.docType || 'ORDEN DE TRABAJO',
@@ -657,7 +708,9 @@ export function comprobantePreviewView() {
     timeIn: raw.timeIn || '',
     timeOut: raw.timeOut || '',
     workItems: raw.workItems || raw.tareasRealizadas || [],
-    contact: raw.contact || { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' }
+    contact: raw.contact || { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' },
+    cuentas: cuentasInfo.cuentas,
+    sinpe: cuentasInfo.sinpe
   };
 
   renderComprobante(data);
