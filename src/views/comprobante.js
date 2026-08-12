@@ -588,6 +588,7 @@ function renderComprobante(data) {
 
   iframe.addEventListener('load', () => {
     const doc = iframe.contentDocument;
+    console.log('[comprobante] Data antes de render:', { cuentas: data.cuentas?.length, sinpe: data.sinpe?.numero });
     const html = buildComprobanteHTML(data);
     // Extraer el <style> y el body del HTML
     const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
