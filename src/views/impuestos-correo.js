@@ -321,16 +321,19 @@ function startAutoRefresh() {
 
 async function checkImapStatus() {
   try {
-    const res = await fetch('/api/facturas/status');
-    if (!res.ok) return;
-    const data = await res.json();
-    if (!data.hasCredentials) {
-      toast('⚠️ No hay credenciales de Gmail configuradas. Ve a Configuración e ingresa tu correo y contraseña de aplicación.', 'warning');
-      updateStatus(false);
-    } else if (!data.imapReady) {
-      toast('⚠️ IMAP no está conectado. Reintentando...', 'warning');
-      updateStatus(false);
+    // Verificar si hay credenciales en Supabase
+    const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/config?select=value&key=eq.gmail_imap', {
+      headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0 && data[0].value && data[0].value.user !== 'placeholder') {
+        updateStatus(true);
+        return;
+      }
     }
+    toast('⚠️ No hay credenciales configuradas. Ve a Configuración e ingresa tu correo y contraseña de aplicación.', 'warning');
+    updateStatus(false);
   } catch {}
 }
 
@@ -348,22 +351,40 @@ function initEventHandlers() {
     btn.disabled = true;
     btn.innerHTML = '⏳ Sincronizando...';
     try {
-      const res = await fetch('/api/facturas/sync', { method: 'POST' });
+      // Usar Supabase Edge Function (funciona desde cualquier dispositivo)
+      const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/functions/v1/sync-email', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
+          'Content-Type': 'application/json'
+        }
+      });
       if (res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = await res.json();
         if (data.ok === false) {
           toast('⚠️ ' + (data.error || 'No se pudo sincronizar'), 'warning');
+        } else {
+          toast('✅ ' + (data.message || 'Sincronización completada'), 'success');
         }
+      } else {
+        // Fallback: intentar dev server local
+        try {
+          await fetch('/api/facturas/sync', { method: 'POST' });
+          await new Promise(r => setTimeout(r, 3000));
+        } catch {}
       }
-      // Wait 3s for IMAP to fetch new emails
-      await new Promise(r => setTimeout(r, 3000));
     } catch (e) {
-      toast('❌ Error de conexión con el servidor', 'error');
+      // Fallback: intentar dev server local
+      try {
+        await fetch('/api/facturas/sync', { method: 'POST' });
+        await new Promise(r => setTimeout(r, 3000));
+      } catch {
+        toast('❌ No se pudo conectar con el servidor de sincronización', 'error');
+      }
     }
     await loadFacturas();
     btn.disabled = false;
     btn.innerHTML = originalText;
-    toast('✅ Sincronización completada', 'success');
   });
 
   // Config modal
@@ -392,16 +413,31 @@ function initEventHandlers() {
       localStorage.setItem('gmail_imap_user', user);
       localStorage.setItem('gmail_imap_pass', pass);
       
-      const res = await fetch('/api/facturas/creds', {
+      // Guardar en Supabase via REST API (funciona desde cualquier dispositivo)
+      const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/config', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user, pass })
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({ key: 'gmail_imap', value: { user, pass }, updated_at: new Date().toISOString() })
       });
-      if (!res.ok) throw new Error('Error');
-      toast('✅ Credenciales guardadas. Monitor reiniciado.', 'success');
+      
+      // También intentar guardar en dev server local (si está corriendo)
+      try {
+        await fetch('/api/facturas/creds', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user, pass })
+        });
+      } catch {}
+      
+      if (!res.ok) throw new Error('Error al guardar en Supabase');
+      toast('✅ Credenciales guardadas. Sincronización lista.', 'success');
       setTimeout(() => document.getElementById('config-modal').classList.remove('show'), 800);
-      // Verificar estado despues de 2s
-      setTimeout(() => checkImapStatus(), 2000);
+      // Forzar sincronización inmediata
+      setTimeout(() => document.getElementById('btn-sync').click(), 1000);
     } catch {
       toast('❌ Error al guardar', 'error');
     } finally {
