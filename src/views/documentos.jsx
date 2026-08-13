@@ -1,7 +1,7 @@
 import { ensureShell } from '../components/shell.js';
 import { getSupabase } from '../lib/supabase.js';
 import { fmtMoney, fmtDate, esc, toast, debounce } from '../lib/utils.js';
-import { convertirAFactura } from '../data/documentos.js';
+import { convertirAFactura, eliminarDocumento } from '../data/documentos.js';
 
 const PAGE_SIZE = 80;
 const ESTADO_COLOR = { pendiente:'#f59e0b', en_proceso:'#3b82f6', completado:'#10b981', facturado:'#6366f1', cancelado:'#ef4444' };
@@ -336,6 +336,24 @@ function renderListToBox(data) {
           }
         });
 
+        const btnDel = detailsDiv.querySelector('.acc-btn-delete');
+        if(btnDel) btnDel.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm(`¿Eliminar el documento ${data.doc_type} ${data.doc_num || ''}? Esta acción no se puede deshacer.`)) return;
+          btnDel.disabled = true;
+          btnDel.textContent = '⏳...';
+          try {
+            await eliminarDocumento(data.id);
+            toast('Documento eliminado', 'success');
+            row.remove();
+            detailsRow.remove();
+          } catch (err) {
+            toast('Error al eliminar: ' + (err.message || err), 'error');
+            btnDel.disabled = false;
+            btnDel.textContent = 'Eliminar';
+          }
+        });
+
         detailsDiv.querySelectorAll('.acc-btn-hacienda').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -436,6 +454,7 @@ function renderAccordionHTML(data) {
           <button class="btn btn-primary acc-btn-edit" style="padding:5px 12px; font-size:10px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar Documento</button>
           <button class="btn acc-btn-comp" style="padding:5px 12px; font-size:10px; border:1px solid var(--border); background:white;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Ver Comprobante</button>
           ${data.doc_type !== 'FAC' ? `<button class="btn acc-btn-factura" style="padding:5px 12px; font-size:10px; border:1px solid #6366f1; background:#6366f122; color:#6366f1;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : ''}
+          <button class="btn acc-btn-delete" style="padding:5px 12px; font-size:10px; border:1px solid #ef4444; background:#ef444411; color:#ef4444;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar</button>
         </div>
         <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
           <span style="font-size:9px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Hacienda:</span>
@@ -486,6 +505,7 @@ function renderDocDetail(data, shell) {
           <button class="hero-btn hero-btn-main" id="btn-edit-doc"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar</button>
           <button class="hero-btn hero-btn-edit" id="btn-comp-doc"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Comprobante</button>
           ${data.doc_type !== 'FAC' ? `<button class="hero-btn hero-btn-main" id="btn-convert-factura" style="background:#6366f1;border-color:#6366f1;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : `<button class="hero-btn" id="btn-comprobante-electronico" style="background:#059669;border-color:#059669;color:white;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.062-.18-2.082-.512-3.04z"></path></svg> Comprobante Electrónico</button>`}
+          <button class="hero-btn" id="btn-delete-doc" style="background:#ef4444;border-color:#ef4444;color:white;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar</button>
         </div>
       </div>
     </div>
@@ -572,6 +592,24 @@ function renderDocDetail(data, shell) {
   if (btnCompElec) {
     btnCompElec.addEventListener('click', () => {
       toast('Próximamente: Generación de comprobante electrónico Hacienda', 'warn');
+    });
+  }
+
+  const btnDelete = document.getElementById('btn-delete-doc');
+  if (btnDelete) {
+    btnDelete.addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar el documento ${data.doc_type} ${data.doc_num || ''}? Esta acción no se puede deshacer.`)) return;
+      btnDelete.disabled = true;
+      btnDelete.textContent = '⏳ Eliminando...';
+      try {
+        await eliminarDocumento(data.id);
+        toast('Documento eliminado', 'success');
+        window.location.hash = '/documentos';
+      } catch (e) {
+        toast('Error al eliminar: ' + (e.message || e), 'error');
+        btnDelete.disabled = false;
+        btnDelete.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar';
+      }
     });
   }
 

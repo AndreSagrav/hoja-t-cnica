@@ -367,6 +367,32 @@ export async function convertirAFactura(documentoId) {
   return documentoId;
 }
 
+// Elimina un documento y todos sus registros relacionados
+export async function eliminarDocumento(documentoId) {
+  const supabase = await getSupabase();
+
+  // 1. Borrar trabajos_realizados de las hojas asociadas
+  const { data: hojas } = await supabase
+    .from('hojas_trabajo')
+    .select('id')
+    .eq('documento_id', documentoId);
+  if (hojas && hojas.length) {
+    for (const h of hojas) {
+      await supabase.from('trabajos_realizados').delete().eq('hoja_trabajo_id', h.id);
+    }
+  }
+
+  // 2. Borrar hojas_trabajo
+  await supabase.from('hojas_trabajo').delete().eq('documento_id', documentoId);
+
+  // 3. Borrar lineas_documento
+  await supabase.from('lineas_documento').delete().eq('documento_id', documentoId);
+
+  // 4. Borrar el documento
+  const { error } = await supabase.from('documentos').delete().eq('id', documentoId);
+  if (error) throw error;
+}
+
 // ── Funciones auxiliares para el editor ───────────────────────────────────
 export function dbToFormData(completo) {
   const { doc, cliente, lineas, hoja, trabajos } = completo;
