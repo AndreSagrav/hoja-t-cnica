@@ -262,18 +262,11 @@ function facturaAPIPlugin() {
             envContent += `\nGMAIL_USER=${user}\nGMAIL_PASS=${pass}\n`;
             fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
             
-            // También guardar en Supabase para persistencia entre máquinas
+            // También guardar en archivo local persistente (no se borra como .env)
             try {
-              await fetch('https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/config', {
-                method: 'POST',
-                headers: {
-                  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
-                  'Content-Type': 'application/json',
-                  'Prefer': 'resolution=merge-duplicates'
-                },
-                body: JSON.stringify({ key: 'gmail_imap', value: { user, pass }, updated_at: new Date().toISOString() })
-              });
-            } catch (e) { console.warn('[IMAP] No se pudo guardar en Supabase:', e.message); }
+              const credsPath = path.join(__dirname, '.gmail-creds.json');
+              fs.writeFileSync(credsPath, JSON.stringify({ user, pass, savedAt: new Date().toISOString() }), 'utf-8');
+            } catch (e) { console.warn('[IMAP] No se pudo guardar creds.json:', e.message); }
             
             startImapWatcher();
             res.setHeader('Content-Type', 'application/json');
@@ -364,28 +357,24 @@ async function startImapWatcher() {
   let user = process.env.GMAIL_USER;
   let pass = process.env.GMAIL_PASS;
   
-  // Si no hay .env local, intentar leer credenciales desde Supabase
+  // Si no hay .env local, intentar leer credenciales desde archivo persistente
   if (!user || !pass) {
     try {
-      const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/config?select=value&key=eq.gmail_imap', {
-        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY' }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.length > 0 && data[0].value) {
-          user = data[0].value.user;
-          pass = data[0].value.pass;
-          // Restaurar a .env local para próximas veces
-          const envPath = path.join(__dirname, '.env');
-          let envContent = '';
-          if (fs.existsSync(envPath)) envContent = fs.readFileSync(envPath, 'utf-8');
-          envContent = envContent.replace(/^GMAIL_USER=.*$/m, '').replace(/^GMAIL_PASS=.*$/m, '');
-          envContent += `\nGMAIL_USER=${user}\nGMAIL_PASS=${pass}\n`;
-          fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
-          console.log('[IMAP] ✅ Credenciales restauradas desde Supabase');
-        }
+      const credsPath = path.join(__dirname, '.gmail-creds.json');
+      if (fs.existsSync(credsPath)) {
+        const creds = JSON.parse(fs.readFileSync(credsPath, 'utf-8'));
+        user = creds.user;
+        pass = creds.pass;
+        // Restaurar a .env local para el ciclo actual
+        const envPath = path.join(__dirname, '.env');
+        let envContent = '';
+        if (fs.existsSync(envPath)) envContent = fs.readFileSync(envPath, 'utf-8');
+        envContent = envContent.replace(/^GMAIL_USER=.*$/m, '').replace(/^GMAIL_PASS=.*$/m, '');
+        envContent += `\nGMAIL_USER=${user}\nGMAIL_PASS=${pass}\n`;
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+        console.log('[IMAP] ✅ Credenciales restauradas desde .gmail-creds.json');
       }
-    } catch (e) { console.warn('[IMAP] No se pudo leer config desde Supabase:', e.message); }
+    } catch (e) { console.warn('[IMAP] No se pudo leer .gmail-creds.json:', e.message); }
   }
   
   if (!user || !pass) return console.log('[IMAP] No credentials found. Setup required in UI.');

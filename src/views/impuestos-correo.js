@@ -287,6 +287,21 @@ export function impuestosCorreoView() {
     </div>
   `;
 
+  // Pre-llenar credenciales si existen en localStorage
+  const savedUser = localStorage.getItem('gmail_imap_user');
+  const savedPass = localStorage.getItem('gmail_imap_pass');
+  if (savedUser) document.getElementById('gmail-user').value = savedUser;
+  if (savedPass) document.getElementById('gmail-pass').value = savedPass;
+  
+  // Si hay credenciales guardadas, enviarlas al servidor automaticamente
+  if (savedUser && savedPass) {
+    fetch('/api/facturas/creds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: savedUser, pass: savedPass })
+    }).catch(() => {});
+  }
+  
   initEventHandlers();
   loadFacturas();
   startWatcher();
@@ -382,6 +397,10 @@ function initEventHandlers() {
     btn.disabled = true;
 
     try {
+      // Guardar en localStorage como respaldo
+      localStorage.setItem('gmail_imap_user', user);
+      localStorage.setItem('gmail_imap_pass', pass);
+      
       const res = await fetch('/api/facturas/creds', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -390,6 +409,8 @@ function initEventHandlers() {
       if (!res.ok) throw new Error('Error');
       toast('✅ Credenciales guardadas. Monitor reiniciado.', 'success');
       setTimeout(() => document.getElementById('config-modal').classList.remove('show'), 800);
+      // Verificar estado despues de 2s
+      setTimeout(() => checkImapStatus(), 2000);
     } catch {
       toast('❌ Error al guardar', 'error');
     } finally {
