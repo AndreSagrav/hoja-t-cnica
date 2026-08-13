@@ -478,28 +478,31 @@ async function startImapWatcher() {
       } catch {}
       
       const sinceStr = sinceDate.toISOString();
-      // Formato segun README de imap-simple: ['SINCE', dateString]
-      // node-imap acepta Date o string parseable
-      const searchCriteria = ['SINCE', sinceStr];
+      const searchCriteria = ['ALL'];
       const fetchOptions = { bodies: [''], struct: true, markSeen: false };
       
       console.log(`[IMAP] Buscando correos desde ${sinceStr}...`);
-      const messages = await conn.search(searchCriteria, fetchOptions);
-      console.log(`[IMAP] Encontrados: ${messages.length} correos con adjuntos desde ${sinceStr}`);
+      const allMessages = await conn.search(searchCriteria, fetchOptions);
+      console.log(`[IMAP] Total en INBOX: ${allMessages.length} correos. Filtrando por fecha...`);
       
       const emailIndex = loadEmailIndex();
       const existingIds = new Set(emailIndex.map(e => e.messageId));
       let savedCount = 0;
+      let processedCount = 0;
 
-      for (let item of messages) {
+      for (let item of allMessages) {
         const all = item.parts.find(p => p.which === '');
         if (!all) continue;
         
         try {
           const mail = await simpleParser(all.body);
+          
+          // Filtrar por fecha
+          if (mail.date && mail.date < sinceDate) continue;
+          
+          processedCount++;
           const msgId = mail.messageId || `msg-${Date.now()}-${Math.random().toString(36).slice(2)}`;
           const existingEmail = emailIndex.find(e => e.messageId === msgId);
-          // Skip if already indexed AND already has attachments saved
           if (existingEmail && existingEmail.attachments && existingEmail.attachments.length > 0) continue;
 
           const savedAttachments = [];
@@ -606,10 +609,10 @@ async function startImapWatcher() {
         fs.writeFileSync(lastSyncPath, new Date().toISOString(), 'utf-8');
       } catch {}
       if (!firstRunDone) {
-        console.log(`[IMAP] ✅ Primera carga completa. ${savedCount} adjuntos guardados de ${messages.length} correos.`);
+        console.log(`[IMAP] ✅ Primera carga completa. ${savedCount} adjuntos guardados de ${processedCount} correos recientes (de ${allMessages.length} total).`);
         firstRunDone = true;
       } else if (savedCount > 0) {
-        console.log(`[IMAP] ${savedCount} adjuntos nuevos guardados.`);
+        console.log(`[IMAP] ${savedCount} adjuntos nuevos guardados de ${processedCount} correos recientes.`);
       }
     } catch (err) {
       console.error('[IMAP] Error en fetchEmails:', err.message);
