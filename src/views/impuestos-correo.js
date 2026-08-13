@@ -291,6 +291,7 @@ export function impuestosCorreoView() {
   loadFacturas();
   startWatcher();
   startAutoRefresh();
+  checkImapStatus();
 
   // Safety net: browsers sometimes autocomplete AFTER our JS runs.
   // Check after 200ms and clear any phantom text the browser injected.
@@ -312,6 +313,21 @@ function startAutoRefresh() {
   }, 30000);
 }
 
+async function checkImapStatus() {
+  try {
+    const res = await fetch('/api/facturas/status');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.hasCredentials) {
+      toast('⚠️ No hay credenciales de Gmail configuradas. Ve a Configuración e ingresa tu correo y contraseña de aplicación.', 'warning');
+      updateStatus(false);
+    } else if (!data.imapReady) {
+      toast('⚠️ IMAP no está conectado. Reintentando...', 'warning');
+      updateStatus(false);
+    }
+  } catch {}
+}
+
 function stopAutoRefresh() {
   if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
   if (eventSource) { eventSource.close(); eventSource = null; }
@@ -326,10 +342,18 @@ function initEventHandlers() {
     btn.disabled = true;
     btn.innerHTML = '⏳ Sincronizando...';
     try {
-      await fetch('/api/facturas/sync', { method: 'POST' });
+      const res = await fetch('/api/facturas/sync', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.ok === false) {
+          toast('⚠️ ' + (data.error || 'No se pudo sincronizar'), 'warning');
+        }
+      }
       // Wait 3s for IMAP to fetch new emails
       await new Promise(r => setTimeout(r, 3000));
-    } catch {}
+    } catch (e) {
+      toast('❌ Error de conexión con el servidor', 'error');
+    }
     await loadFacturas();
     btn.disabled = false;
     btn.innerHTML = originalText;
@@ -550,12 +574,13 @@ function startWatcher() {
       }
     } catch {}
   };
-  eventSource.onerror = () => {
+  eventSource.onerror = (err) => {
     updateStatus(false);
-    eventSource.close();
+    if (eventSource) eventSource.close();
     eventSource = null;
     // Auto-reconnect after 5 seconds
     sseReconnectTimer = setTimeout(() => {
+      console.log('[SSE] Reconectando...');
       startWatcher();
     }, 5000);
   };

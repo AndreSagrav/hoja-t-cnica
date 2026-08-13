@@ -220,7 +220,7 @@ function facturaAPIPlugin() {
           _fetchEmailsFn().catch(err => console.error('[IMAP] Sync error:', err.message));
           res.end(JSON.stringify({ ok: true, message: 'Sincronización iniciada' }));
         } else {
-          res.end(JSON.stringify({ ok: false, error: 'IMAP watcher no disponible' }));
+          res.end(JSON.stringify({ ok: false, error: 'IMAP no configurado. Ve a Configuración e ingresa tus credenciales de Gmail.' }));
         }
       });
 
@@ -244,27 +244,54 @@ function facturaAPIPlugin() {
         fs.createReadStream(filePath).pipe(res);
       });
 
-      // ── POST /api/facturas/creds — guarda credenciales IMAP ──
+      // ── POST /api/facturas/creds — guarda credenciales IMAP en Supabase ──
       server.middlewares.use((req, res, next) => {
         if (req.url !== '/api/facturas/creds' || req.method !== 'POST') return next();
         let body = '';
         req.on('data', c => body += c);
-        req.on('end', () => {
+        req.on('end', async () => {
           try {
             const { user, pass } = JSON.parse(body);
+            if (!user || !pass) throw new Error('Usuario y contraseña requeridos');
+            
+            // Guardar en archivo .env local (para el IMAP watcher)
             const envPath = path.join(__dirname, '.env');
             let envContent = '';
             if (fs.existsSync(envPath)) envContent = fs.readFileSync(envPath, 'utf-8');
             envContent = envContent.replace(/^GMAIL_USER=.*$/m, '').replace(/^GMAIL_PASS=.*$/m, '');
             envContent += `\nGMAIL_USER=${user}\nGMAIL_PASS=${pass}\n`;
             fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+            
+            // También guardar en Supabase para persistencia entre máquinas
+            try {
+              await fetch('https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/config', {
+                method: 'POST',
+                headers: {
+                  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
+                  'Content-Type': 'application/json',
+                  'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify({ key: 'gmail_imap', value: { user, pass }, updated_at: new Date().toISOString() })
+              });
+            } catch (e) { console.warn('[IMAP] No se pudo guardar en Supabase:', e.message); }
+            
             startImapWatcher();
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ ok: true }));
-          } catch (err) { console.error('[UPLOAD ERROR]', err); res.statusCode = 500;
+          } catch (err) { console.error('[CREDS ERROR]', err); res.statusCode = 500;
             res.end(JSON.stringify({ error: err.message }));
           }
         });
+      });
+
+      // ── GET /api/facturas/status — estado de la conexión IMAP ──
+      server.middlewares.use((req, res, next) => {
+        if (req.url !== '/api/facturas/status' || req.method !== 'GET') return next();
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ 
+          imapReady: !!_fetchEmailsFn,
+          hasCredentials: !!(process.env.GMAIL_USER && process.env.GMAIL_PASS)
+        }));
       });
 
       // ── GET /api/hacienda/ae?identificacion=XXX — proxy a API Hacienda sin CORS ──
@@ -334,8 +361,33 @@ async function startImapWatcher() {
   const dotenv = await import('dotenv');
   dotenv.config({ override: true });
   
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_PASS;
+  let user = process.env.GMAIL_USER;
+  let pass = process.env.GMAIL_PASS;
+  
+  // Si no hay .env local, intentar leer credenciales desde Supabase
+  if (!user || !pass) {
+    try {
+      const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/config?select=value&key=eq.gmail_imap', {
+        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.length > 0 && data[0].value) {
+          user = data[0].value.user;
+          pass = data[0].value.pass;
+          // Restaurar a .env local para próximas veces
+          const envPath = path.join(__dirname, '.env');
+          let envContent = '';
+          if (fs.existsSync(envPath)) envContent = fs.readFileSync(envPath, 'utf-8');
+          envContent = envContent.replace(/^GMAIL_USER=.*$/m, '').replace(/^GMAIL_PASS=.*$/m, '');
+          envContent += `\nGMAIL_USER=${user}\nGMAIL_PASS=${pass}\n`;
+          fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+          console.log('[IMAP] ✅ Credenciales restauradas desde Supabase');
+        }
+      }
+    } catch (e) { console.warn('[IMAP] No se pudo leer config desde Supabase:', e.message); }
+  }
+  
   if (!user || !pass) return console.log('[IMAP] No credentials found. Setup required in UI.');
 
   console.log(`[IMAP] Arrancando watcher para ${user}`);
@@ -350,47 +402,69 @@ async function startImapWatcher() {
       host: 'imap.gmail.com', 
       port: 993, 
       tls: true, 
-      authTimeout: 10000,
+      authTimeout: 15000,
+      connTimeout: 15000,
       tlsOptions: { rejectUnauthorized: false }
     }
   };
 
   let connection = null;
+  let retryCount = 0;
+  const MAX_RETRIES = 5;
+  const RETRY_DELAY = 10000;
+
+  async function ensureConnection() {
+    if (connection) return connection;
+    if (retryCount >= MAX_RETRIES) {
+      console.error(`[IMAP] ❌ Máximo de reintentos (${MAX_RETRIES}) alcanzado. Esperando próximo ciclo.`);
+      retryCount = 0;
+      return null;
+    }
+    console.log(`[IMAP] Conectando a Gmail... (intento ${retryCount + 1}/${MAX_RETRIES})`);
+    try {
+      connection = await imaps.connect(config);
+      connection.on('error', err => {
+        console.log('[IMAP] ImapSimple error:', err.message);
+        connection = null;
+      });
+      connection.imap.on('error', err => {
+        console.log('[IMAP] Socket error:', err.message);
+        connection = null;
+      });
+      connection.imap.on('close', () => {
+        console.log('[IMAP] Conexión cerrada por servidor.');
+        connection = null;
+      });
+      console.log('[IMAP] ✅ Conectado exitosamente');
+      retryCount = 0;
+      return connection;
+    } catch (err) {
+      console.error(`[IMAP] ❌ Error conectando: ${err.message}`);
+      retryCount++;
+      connection = null;
+      await new Promise(r => setTimeout(r, RETRY_DELAY));
+      return ensureConnection();
+    }
+  }
 
   async function fetchEmails() {
     _fetchEmailsFn = fetchEmails;
     try {
-      if (!connection) {
-        console.log('[IMAP] Conectando a Gmail...');
-        connection = await imaps.connect(config);
-        connection.on('error', err => {
-          console.log('[IMAP] ImapSimple error:', err.message);
-          connection = null;
-        });
-        connection.imap.on('error', err => {
-          console.log('[IMAP] Socket error:', err.message);
-          connection = null;
-        });
-        connection.imap.on('close', () => {
-          connection = null;
-        });
-        console.log('[IMAP] ✅ Conectado exitosamente');
-      }
+      const conn = await ensureConnection();
+      if (!conn) return;
+      
       try {
-        await connection.openBox('[Gmail]/All Mail');
+        await conn.openBox('[Gmail]/All Mail');
       } catch (e) {
-        try { await connection.openBox('[Gmail]/Todos'); } catch(e2) {
-          try { await connection.openBox('INBOX'); } catch(e3) {
-            // If all box opens fail, the connection is likely dead
+        try { await conn.openBox('[Gmail]/Todos'); } catch(e2) {
+          try { await conn.openBox('INBOX'); } catch(e3) {
             console.log('[IMAP] Conexión muerta, reconectando...');
-            try { connection.end(); } catch {}
+            try { conn.end(); } catch {}
             connection = null;
-            connection = await imaps.connect(config);
-            connection.on('error', err => { console.log('[IMAP] Error:', err.message); connection = null; });
-            connection.imap.on('error', err => { console.log('[IMAP] Socket error:', err.message); connection = null; });
-            connection.imap.on('close', () => { connection = null; });
-            try { await connection.openBox('[Gmail]/All Mail'); } catch(e4) {
-              try { await connection.openBox('INBOX'); } catch(e5) {}
+            const newConn = await ensureConnection();
+            if (!newConn) return;
+            try { await newConn.openBox('[Gmail]/All Mail'); } catch(e4) {
+              try { await newConn.openBox('INBOX'); } catch(e5) {}
             }
           }
         }
@@ -526,14 +600,17 @@ async function startImapWatcher() {
         console.log(`[IMAP] ${savedCount} adjuntos nuevos guardados.`);
       }
     } catch (err) {
-      console.error('[IMAP] Error:', err.message);
+      console.error('[IMAP] Error en fetchEmails:', err.message);
       connection = null;
+      retryCount++;
     }
   }
 
   // Correr inmediatamente y luego cada 60 segundos
-  fetchEmails();
-  imapInterval = setInterval(fetchEmails, 60000);
+  fetchEmails().catch(err => console.error('[IMAP] Error inicial:', err.message));
+  imapInterval = setInterval(() => {
+    fetchEmails().catch(err => console.error('[IMAP] Error en interval:', err.message));
+  }, 60000);
 }
 
 export default {
