@@ -478,7 +478,9 @@ async function startImapWatcher() {
       } catch {}
       
       const sinceStr = sinceDate.toISOString();
-      const searchCriteria = [['SINCE', sinceStr]];
+      // Formato segun README de imap-simple: ['SINCE', dateString]
+      // node-imap acepta Date o string parseable
+      const searchCriteria = ['SINCE', sinceStr];
       const fetchOptions = { bodies: [''], struct: true, markSeen: false };
       
       console.log(`[IMAP] Buscando correos desde ${sinceStr}...`);
