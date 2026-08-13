@@ -532,8 +532,44 @@ async function handleFiles(fileList) {
 
 async function loadFacturas() {
   try {
-    const taxData = await fetchTaxData(0, 0, true);
-    const all = [...(taxData.allIngresos || []), ...(taxData.allGastos || [])];
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    let all = [];
+
+    if (isLocal) {
+      // En localhost: cargar XMLs directamente del dev server (IMAP los guarda en disco)
+      const res = await fetch('/api/facturas', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        const CEDULA = '310260270'; // Cédula del contribuyente
+        const seenClaves = new Set();
+        for (const f of data.files) {
+          try {
+            const parsed = parseComprobanteXML(f.xml);
+            const tipo = clasificarComprobante(parsed, CEDULA);
+            if (tipo === 'desconocido') continue;
+            if (parsed.clave && seenClaves.has(parsed.clave)) continue;
+            if (parsed.clave) seenClaves.add(parsed.clave);
+            all.push({
+              id: parsed.clave || f.name,
+              descripcion: `${parsed.emisor?.nombre || ''} - ${parsed.fecha?.toLocaleDateString?.() || ''}`,
+              fecha: parsed.fecha?.toISOString?.() || new Date().toISOString(),
+              monto_bruto: parsed.totalComprobante || 0,
+              monto_iva: parsed.totalImpuesto || 0,
+              tarifa_iva: parsed.tarifaIVA || 0,
+              proveedor: parsed.emisor?.nombre || '',
+              cliente: parsed.receptor?.nombre || '',
+              xml_clave: parsed.clave || f.name,
+              raw_xml: f.xml,
+              tipo
+            });
+          } catch {}
+        }
+      }
+    } else {
+      // En produccion: cargar de Supabase via fetchTaxData
+      const taxData = await fetchTaxData(0, 0, true);
+      all = [...(taxData.allIngresos || []), ...(taxData.allGastos || [])];
+    }
 
     const uniqueFacturas = [];
     const seenClaves = new Set();

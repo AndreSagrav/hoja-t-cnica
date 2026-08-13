@@ -18,6 +18,66 @@ function loadEmailIndex() {
   try { return JSON.parse(fs.readFileSync(EMAILS_INDEX, 'utf-8')); } catch { return []; }
 }
 
+// Sincronizar un XML a Supabase fiscal_facturas automaticamente
+async function syncXMLToSupabase(filename, xmlContent) {
+  try {
+    const SUPABASE_URL = 'https://qznxejukrtprtzxbkcan.supabase.co';
+    const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY';
+    
+    // Extraer datos del XML
+    const claveMatch = xmlContent.match(/<Clave>(\d+)<\/Clave>/);
+    const fechaMatch = xmlContent.match(/<FechaEmision>([^<]+)<\/FechaEmision>/);
+    const totalMatch = xmlContent.match(/<TotalComprobante>([^<]+)<\/TotalComprobante>/);
+    const impMatch = xmlContent.match(/<TotalImpuesto>([^<]+)<\/TotalImpuesto>/);
+    const emisorNameMatch = xmlContent.match(/<Emisor>[\s\S]*?<Nombre>([^<]+)<\/Nombre>/);
+    const emisorIdMatch = xmlContent.match(/<Emisor>[\s\S]*?<Identificacion>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
+    const receptorIdMatch = xmlContent.match(/<Receptor>[\s\S]*?<Identificacion>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
+    const tipoDocMatch = xmlContent.match(/<(FacturaElectronica|TiqueteElectronico|NotaCreditoElectronica|NotaDebitoElectronica)/);
+    
+    if (!claveMatch) return; // No es un comprobante válido
+    
+    const clave = claveMatch[1];
+    const cedulaReceptor = receptorIdMatch ? receptorIdMatch[1] : '';
+    const cedulaEmisor = emisorIdMatch ? emisorIdMatch[1] : '';
+    const CEDULA = '310260270';
+    const tipo = cedulaReceptor === CEDULA ? 'ingreso' : (cedulaEmisor === CEDULA ? 'gasto' : 'gasto');
+    
+    const record = {
+      id: clave,
+      xml_clave: clave,
+      fecha: fechaMatch ? new Date(fechaMatch[1]).toISOString() : new Date().toISOString(),
+      monto_bruto: totalMatch ? parseFloat(totalMatch[1]) : 0,
+      monto_iva: impMatch ? parseFloat(impMatch[1]) : 0,
+      proveedor: emisorNameMatch ? emisorNameMatch[1] : '',
+      cliente: '',
+      descripcion: emisorNameMatch ? emisorNameMatch[1] : filename,
+      raw_xml: xmlContent,
+      tipo,
+      deducible: false,
+      created_at: new Date().toISOString()
+    };
+    
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/fiscal_facturas?on_conflict=id`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(record)
+    });
+    
+    if (res.ok) {
+      console.log(`[IMAP] ☁️ XML subido a Supabase: ${filename}`);
+    } else {
+      console.warn(`[IMAP] ⚠️ Error subiendo a Supabase: ${res.status}`);
+    }
+  } catch (e) {
+    console.warn('[IMAP] ⚠️ Sync Supabase falló:', e.message);
+  }
+}
+
 let _fetchEmailsFn = null;
 function saveEmailIndex(data) {
   fs.writeFileSync(EMAILS_INDEX, JSON.stringify(data, null, 2), 'utf-8');
@@ -448,16 +508,16 @@ async function startImapWatcher() {
       if (!conn) return;
       
       let boxOpened = false;
-      try {
-        await conn.openBox('INBOX');
-        boxOpened = true;
-      } catch (e) {
-        console.log('[IMAP] Error abriendo INBOX, reconectando...');
-        try { conn.end(); } catch {}
-        connection = null;
-        conn = await ensureConnection();
-        if (!conn) return;
-        try { await conn.openBox('INBOX'); boxOpened = true; } catch(e2) {}
+      const boxes = ['[Gmail]/All Mail', '[Gmail]/Todos', 'INBOX', '[Gmail]/Spam', '[Gmail]/Basura'];
+      for (const boxName of boxes) {
+        try {
+          await conn.openBox(boxName);
+          boxOpened = true;
+          console.log(`[IMAP] Buzón abierto: ${boxName}`);
+          break;
+        } catch (e) {
+          console.log(`[IMAP] No se pudo abrir ${boxName}: ${e.message}`);
+        }
       }
       if (!boxOpened) {
         console.log('[IMAP] No se pudo abrir ningún buzón');
@@ -534,6 +594,7 @@ async function startImapWatcher() {
                 if (!fs.existsSync(xmlDest)) {
                   fs.writeFileSync(xmlDest, att.content);
                   console.log(`[IMAP] ✅ XML guardado: ${fileName} (${(att.size/1024).toFixed(1)}KB)`);
+                  syncXMLToSupabase(fileName, xmlContent);
                 }
                 savedAttachments.push({
                   filename: fileName,
@@ -620,6 +681,18 @@ async function startImapWatcher() {
       retryCount++;
     }
   }
+
+  // Sincronizar XMLs existentes a Supabase al arrancar
+  setTimeout(() => {
+    try {
+      const xmlFiles = fs.readdirSync(FACTURAS_DIR).filter(f => /\.xml$/i.test(f));
+      for (const f of xmlFiles) {
+        const xmlContent = fs.readFileSync(path.join(FACTURAS_DIR, f), 'utf-8');
+        if (xmlContent.includes('MensajeHacienda') || xmlContent.includes('MensajeReceptor')) continue;
+        syncXMLToSupabase(f, xmlContent);
+      }
+    } catch {}
+  }, 5000);
 
   // Correr inmediatamente y luego cada 60 segundos
   fetchEmails().catch(err => console.error('[IMAP] Error inicial:', err.message));
