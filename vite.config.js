@@ -404,8 +404,8 @@ async function startImapWatcher() {
 
   let connection = null;
   let retryCount = 0;
-  const MAX_RETRIES = 5;
-  const RETRY_DELAY = 10000;
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 30000; // 30s entre reintentos para evitar rate limiting de Gmail
 
   async function ensureConnection() {
     if (connection) return connection;

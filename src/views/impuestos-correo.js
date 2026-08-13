@@ -351,36 +351,36 @@ function initEventHandlers() {
     btn.disabled = true;
     btn.innerHTML = '⏳ Sincronizando...';
     try {
-      // Usar Supabase Edge Function (funciona desde cualquier dispositivo)
-      const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/functions/v1/sync-email', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
-          'Content-Type': 'application/json'
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        // Dev server local: usar IMAP via vite plugin
+        const res = await fetch('/api/facturas/sync', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          if (data.ok === false) {
+            toast('⚠️ ' + (data.error || 'No se pudo sincronizar'), 'warning');
+          }
         }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ok === false) {
-          toast('⚠️ ' + (data.error || 'No se pudo sincronizar'), 'warning');
-        } else {
-          toast('✅ ' + (data.message || 'Sincronización completada'), 'success');
-        }
+        await new Promise(r => setTimeout(r, 3000));
       } else {
-        // Fallback: intentar dev server local
+        // Producción: intentar Edge Function de Supabase
         try {
-          await fetch('/api/facturas/sync', { method: 'POST' });
-          await new Promise(r => setTimeout(r, 3000));
-        } catch {}
+          const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/functions/v1/sync-email', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
+              'Content-Type': 'application/json'
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ok !== false) {
+              toast('✅ ' + (data.message || 'Sincronización completada'), 'success');
+            }
+          }
+        } catch (e) {}
       }
     } catch (e) {
-      // Fallback: intentar dev server local
-      try {
-        await fetch('/api/facturas/sync', { method: 'POST' });
-        await new Promise(r => setTimeout(r, 3000));
-      } catch {
-        toast('❌ No se pudo conectar con el servidor de sincronización', 'error');
-      }
+      toast('❌ Error de conexión', 'error');
     }
     await loadFacturas();
     btn.disabled = false;
@@ -409,7 +409,6 @@ function initEventHandlers() {
     btn.disabled = true;
 
     try {
-      // Guardar en localStorage para pre-llenar el form la próxima vez
       localStorage.setItem('gmail_imap_user', user);
       localStorage.setItem('gmail_imap_pass', pass);
       
@@ -425,19 +424,22 @@ function initEventHandlers() {
       });
       
       // También intentar guardar en dev server local (si está corriendo)
-      try {
-        await fetch('/api/facturas/creds', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user, pass })
-        });
-      } catch {}
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        try {
+          await fetch('/api/facturas/creds', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user, pass })
+          });
+        } catch {}
+      }
       
       if (!res.ok) throw new Error('Error al guardar en Supabase');
-      toast('✅ Credenciales guardadas. Sincronización lista.', 'success');
+      toast('✅ Credenciales guardadas.', 'success');
       setTimeout(() => document.getElementById('config-modal').classList.remove('show'), 800);
-      // Forzar sincronización inmediata
-      setTimeout(() => document.getElementById('btn-sync').click(), 1000);
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        setTimeout(() => document.getElementById('btn-sync').click(), 1000);
+      }
     } catch {
       toast('❌ Error al guardar', 'error');
     } finally {
@@ -593,6 +595,11 @@ async function loadFacturas() {
 }
 
 function startWatcher() {
+  // Solo iniciar SSE watcher si estamos en localhost (dev server)
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    updateStatus(true); // Mostrar como conectado en producción
+    return;
+  }
   if (eventSource) eventSource.close();
   if (sseReconnectTimer) { clearTimeout(sseReconnectTimer); sseReconnectTimer = null; }
   
