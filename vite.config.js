@@ -444,24 +444,24 @@ async function startImapWatcher() {
   async function fetchEmails() {
     _fetchEmailsFn = fetchEmails;
     try {
-      const conn = await ensureConnection();
+      let conn = await ensureConnection();
       if (!conn) return;
       
+      let boxOpened = false;
       try {
-        await conn.openBox('[Gmail]/All Mail');
+        await conn.openBox('INBOX');
+        boxOpened = true;
       } catch (e) {
-        try { await conn.openBox('[Gmail]/Todos'); } catch(e2) {
-          try { await conn.openBox('INBOX'); } catch(e3) {
-            console.log('[IMAP] Conexión muerta, reconectando...');
-            try { conn.end(); } catch {}
-            connection = null;
-            const newConn = await ensureConnection();
-            if (!newConn) return;
-            try { await newConn.openBox('[Gmail]/All Mail'); } catch(e4) {
-              try { await newConn.openBox('INBOX'); } catch(e5) {}
-            }
-          }
-        }
+        console.log('[IMAP] Error abriendo INBOX, reconectando...');
+        try { conn.end(); } catch {}
+        connection = null;
+        conn = await ensureConnection();
+        if (!conn) return;
+        try { await conn.openBox('INBOX'); boxOpened = true; } catch(e2) {}
+      }
+      if (!boxOpened) {
+        console.log('[IMAP] No se pudo abrir ningún buzón');
+        return;
       }
       
       // Buscar solo correos recientes — desde la última sincronización o últimos 30 días
@@ -477,12 +477,12 @@ async function startImapWatcher() {
         }
       } catch {}
       
-      const sinceStr = sinceDate.toISOString().split('T')[0]; // YYYY-MM-DD
-      const searchCriteria = ['SINCE', sinceDate];
+      const sinceStr = sinceDate.toISOString();
+      const searchCriteria = [['SINCE', sinceStr]];
       const fetchOptions = { bodies: [''], struct: true, markSeen: false };
       
       console.log(`[IMAP] Buscando correos desde ${sinceStr}...`);
-      const messages = await connection.search(searchCriteria, fetchOptions);
+      const messages = await conn.search(searchCriteria, fetchOptions);
       console.log(`[IMAP] Encontrados: ${messages.length} correos con adjuntos desde ${sinceStr}`);
       
       const emailIndex = loadEmailIndex();
