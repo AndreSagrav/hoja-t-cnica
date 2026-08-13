@@ -150,14 +150,14 @@ function extractXMLFromRaw(raw: string): { filename: string; content: string }[]
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+  };
+
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
-      },
-    });
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   try {
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
     if (configError || !configData?.value || configData.value.user === "placeholder") {
       return new Response(
         JSON.stringify({ ok: false, error: "No hay credenciales configuradas" }),
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
@@ -213,22 +213,61 @@ Deno.serve(async (req) => {
         const raw = await fetchMessage(sendCommand, uid);
         const xmls = extractXMLFromRaw(raw);
         for (const xml of xmls) {
-          // Verificar si ya existe en Storage
-          const { data: existing } = await supabase.storage
-            .from("facturas")
-            .list("", { search: xml.filename });
+          // Extraer clave del XML para usar como ID
+          const claveMatch = xml.content.match(/<Clave>(\d+)<\/Clave>/);
+          if (!claveMatch) continue;
+          const clave = claveMatch[1];
 
-          if (!existing || !existing.find(f => f.name === xml.filename)) {
-            // Subir a Supabase Storage
-            const { error: uploadError } = await supabase.storage
-              .from("facturas")
-              .upload(xml.filename, new Blob([xml.content], { type: "application/xml" }));
+          // Verificar si ya existe en fiscal_facturas
+          const { data: existing } = await supabase
+            .from("fiscal_facturas")
+            .select("id")
+            .eq("id", clave)
+            .maybeSingle();
 
-            if (!uploadError) {
-              savedCount++;
-              newXMLs.push(xml);
-              console.log(`[sync-email] ✅ XML guardado: ${xml.filename}`);
-            }
+          if (existing) {
+            console.log(`[sync-email] ⏭️ Ya existe: ${clave}`);
+            continue;
+          }
+
+          // Extraer datos del XML
+          const fechaMatch = xml.content.match(/<FechaEmision>([^<]+)<\/FechaEmision>/);
+          const totalMatch = xml.content.match(/<TotalComprobante>([^<]+)<\/TotalComprobante>/);
+          const impMatch = xml.content.match(/<TotalImpuesto>([^<]+)<\/TotalImpuesto>/);
+          const emisorNameMatch = xml.content.match(/<Emisor>[\s\S]*?<Nombre>([^<]+)<\/Nombre>/);
+          const emisorIdMatch = xml.content.match(/<Emisor>[\s\S]*?<Identificacion>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
+          const receptorIdMatch = xml.content.match(/<Receptor>[\s\S]*?<Identificacion>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
+
+          const cedulaReceptor = receptorIdMatch ? receptorIdMatch[1] : "";
+          const cedulaEmisor = emisorIdMatch ? emisorIdMatch[1] : "";
+          const CEDULA = "310260270";
+          const tipo = cedulaReceptor === CEDULA ? "ingreso" : "gasto";
+
+          const record = {
+            id: clave,
+            xml_clave: clave,
+            fecha: fechaMatch ? new Date(fechaMatch[1]).toISOString() : new Date().toISOString(),
+            monto_bruto: totalMatch ? parseFloat(totalMatch[1]) : 0,
+            monto_iva: impMatch ? parseFloat(impMatch[1]) : 0,
+            proveedor: emisorNameMatch ? emisorNameMatch[1] : "",
+            cliente: "",
+            descripcion: emisorNameMatch ? emisorNameMatch[1] : xml.filename,
+            raw_xml: xml.content,
+            tipo,
+            deducible: false,
+            created_at: new Date().toISOString()
+          };
+
+          const { error: insertError } = await supabase
+            .from("fiscal_facturas")
+            .insert(record);
+
+          if (!insertError) {
+            savedCount++;
+            newXMLs.push(xml);
+            console.log(`[sync-email] ✅ XML guardado: ${clave}`);
+          } else {
+            console.warn(`[sync-email] ⚠️ Error insertando: ${insertError.message}`);
           }
         }
       } catch (e) {
@@ -255,7 +294,7 @@ Deno.serve(async (req) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          ...corsHeaders,
         },
       }
     );
@@ -267,7 +306,7 @@ Deno.serve(async (req) => {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          ...corsHeaders,
         },
       }
     );

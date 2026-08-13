@@ -584,11 +584,13 @@ async function startImapWatcher() {
                   console.log(`[IMAP] ⏭️ Saltando respuesta Hacienda: ${safe}`);
                   continue;
                 }
-                // Generate filename if missing
+                // Generate filename from XML clave to avoid collisions with generic names
                 let fileName = safe;
-                if (!fileName || fileName === '_') {
-                  const claveMatch = xmlContent.match(/<Clave>(\d+)<\/Clave>/);
-                  fileName = (claveMatch ? claveMatch[1] : `xml-${Date.now()}-${Math.random().toString(36).slice(2,8)}`) + '.xml';
+                const claveMatch = xmlContent.match(/<Clave>(\d+)<\/Clave>/);
+                if (claveMatch) {
+                  fileName = claveMatch[1] + '.xml';
+                } else if (!fileName || fileName === '_' || fileName === 'FacturaElectronica.xml') {
+                  fileName = `xml-${Date.now()}-${Math.random().toString(36).slice(2,8)}.xml`;
                 }
                 const xmlDest = path.join(FACTURAS_DIR, fileName);
                 if (!fs.existsSync(xmlDest)) {

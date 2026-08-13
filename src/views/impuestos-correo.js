@@ -362,8 +362,28 @@ function initEventHandlers() {
         }
         await new Promise(r => setTimeout(r, 3000));
       } else {
-        // Producción: recargar datos desde Supabase
-        toast('Recargando facturas...', 'success');
+        // Producción: llamar Edge Function de Supabase para sincronizar IMAP
+        try {
+          const res = await fetch('https://qznxejukrtprtzxbkcan.supabase.co/functions/v1/sync-email', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY',
+              'Content-Type': 'application/json'
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ok === false) {
+              toast('⚠️ ' + (data.error || 'No se pudo sincronizar'), 'warning');
+            } else {
+              toast('✅ ' + (data.message || 'Sincronización completada'), 'success');
+            }
+          } else {
+            toast('⚠️ Error en sincronización (' + res.status + ')', 'warning');
+          }
+        } catch (e) {
+          toast('❌ No se pudo conectar con Supabase', 'error');
+        }
       }
     } catch (e) {
       toast('❌ Error de conexión', 'error');
