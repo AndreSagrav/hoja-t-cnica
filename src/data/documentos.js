@@ -244,7 +244,7 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
     docRetry--;
     let result;
     if (currentDocumentoId) {
-      result = await supabase.from('documentos').update(docData).eq('id', currentDocumentoId).select('id');
+      result = await supabase.from('documentos').update(docData).eq('id', currentDocumentoId).select('id').single();
     } else {
       result = await supabase.from('documentos').insert([docData]).select('id').single();
     }
@@ -263,7 +263,7 @@ export async function guardarDocumentoCompleto(formData, currentDocumentoId = nu
     docId = data.id;
     docSaved = true;
   }
-  if (!docSaved) throw new Error("No se pudo guardar el documento en BD.");
+  if (!docSaved || !docId) throw new Error("No se pudo guardar el documento en BD.");
 
   // 4. Guardar líneas
   const lineasData = lines.map((line, i) => ({
