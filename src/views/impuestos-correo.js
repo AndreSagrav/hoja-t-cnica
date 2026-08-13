@@ -293,15 +293,6 @@ export function impuestosCorreoView() {
   if (savedUser) document.getElementById('gmail-user').value = savedUser;
   if (savedPass) document.getElementById('gmail-pass').value = savedPass;
   
-  // Si hay credenciales guardadas, enviarlas al servidor automaticamente
-  if (savedUser && savedPass) {
-    fetch('/api/facturas/creds', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user: savedUser, pass: savedPass })
-    }).catch(() => {});
-  }
-  
   initEventHandlers();
   loadFacturas();
   startWatcher();
@@ -397,7 +388,7 @@ function initEventHandlers() {
     btn.disabled = true;
 
     try {
-      // Guardar en localStorage como respaldo
+      // Guardar en localStorage para pre-llenar el form la próxima vez
       localStorage.setItem('gmail_imap_user', user);
       localStorage.setItem('gmail_imap_pass', pass);
       
