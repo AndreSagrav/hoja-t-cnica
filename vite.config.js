@@ -464,14 +464,26 @@ async function startImapWatcher() {
         }
       }
       
-      // Siempre buscar ALL — el filtro por messageId evita reprocesar.
-      // SINCE es lento en Gmail y tiene problemas de formato con node-imap.
-      const searchCriteria = ['ALL'];
+      // Buscar solo correos recientes — desde la última sincronización o últimos 30 días
+      const lastSyncPath = path.join(__dirname, 'facturas', '.last-sync');
+      let sinceDate = new Date();
+      sinceDate.setDate(sinceDate.getDate() - 30); // Por defecto, últimos 30 días
+      try {
+        if (fs.existsSync(lastSyncPath)) {
+          const lastSync = new Date(fs.readFileSync(lastSyncPath, 'utf-8').trim());
+          if (!isNaN(lastSync.getTime())) {
+            sinceDate = lastSync;
+          }
+        }
+      } catch {}
+      
+      const sinceStr = sinceDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      const searchCriteria = ['SINCE', sinceDate];
       const fetchOptions = { bodies: [''], struct: true, markSeen: false };
       
-      console.log(`[IMAP] Buscando correos...`);
+      console.log(`[IMAP] Buscando correos desde ${sinceStr}...`);
       const messages = await connection.search(searchCriteria, fetchOptions);
-      console.log(`[IMAP] Encontrados: ${messages.length} correos`);
+      console.log(`[IMAP] Encontrados: ${messages.length} correos con adjuntos desde ${sinceStr}`);
       
       const emailIndex = loadEmailIndex();
       const existingIds = new Set(emailIndex.map(e => e.messageId));
@@ -587,6 +599,10 @@ async function startImapWatcher() {
       }
       
       saveEmailIndex(emailIndex);
+      // Guardar fecha de última sincronización
+      try {
+        fs.writeFileSync(lastSyncPath, new Date().toISOString(), 'utf-8');
+      } catch {}
       if (!firstRunDone) {
         console.log(`[IMAP] ✅ Primera carga completa. ${savedCount} adjuntos guardados de ${messages.length} correos.`);
         firstRunDone = true;
