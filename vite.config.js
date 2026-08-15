@@ -39,8 +39,8 @@ async function syncXMLToSupabase(filename, xmlContent) {
     const clave = claveMatch[1];
     const cedulaReceptor = receptorIdMatch ? receptorIdMatch[1] : '';
     const cedulaEmisor = emisorIdMatch ? emisorIdMatch[1] : '';
-    const CEDULA = '310260270';
-    const tipo = cedulaReceptor === CEDULA ? 'ingreso' : (cedulaEmisor === CEDULA ? 'gasto' : 'gasto');
+    const CEDULA = '0205390118';
+    const tipo = cedulaEmisor === CEDULA ? 'ingreso' : 'gasto';
     
     const record = {
       id: clave,

@@ -560,7 +560,7 @@ async function loadFacturas() {
       const res = await fetch('/api/facturas', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        const CEDULA = '310260270'; // Cédula del contribuyente
+        const CEDULA = '0205390118'; // Cédula del contribuyente
         const seenClaves = new Set();
         for (const f of data.files) {
           try {
@@ -585,6 +585,18 @@ async function loadFacturas() {
           } catch {}
         }
       }
+      // Tambien cargar de Supabase para registros que no estan en disco local
+      try {
+        const taxData = await fetchTaxData(0, 0, true);
+        const cloudAll = [...(taxData.allIngresos || []), ...(taxData.allGastos || [])];
+        const localClaves = new Set(all.map(r => r.xml_clave || r.id));
+        for (const rec of cloudAll) {
+          const clave = rec.xml_clave || rec.id;
+          if (clave && !localClaves.has(clave)) {
+            all.push(rec);
+          }
+        }
+      } catch {}
     } else {
       // En produccion: cargar de Supabase via fetchTaxData
       const taxData = await fetchTaxData(0, 0, true);
@@ -706,15 +718,16 @@ function updateKPIs() {
   const ivaIngresos = ingresos.reduce((s, f) => s + (f.parsed.totalImpuesto || 0), 0);
   const ivaGastos = gastos.reduce((s, f) => s + (f.parsed.totalImpuesto || 0), 0);
 
-  const el = (id) => document.getElementById(id);
-  el('kpi-total-val').textContent = formatColones(sumIngresos + sumGastos);
-  el('kpi-total-count').textContent = `${facturas.length} documentos`;
-  el('kpi-ingreso-val').textContent = formatColones(sumIngresos);
-  el('kpi-ingreso-count').textContent = `${ingresos.length} factura${ingresos.length !== 1 ? 's' : ''}`;
-  el('kpi-gasto-val').textContent = formatColones(sumGastos);
-  el('kpi-gasto-count').textContent = `${gastos.length} factura${gastos.length !== 1 ? 's' : ''}`;
-  el('kpi-iva-val').textContent = formatColones(ivaIngresos - ivaGastos);
-  el('kpi-iva-count').textContent = `${formatColones(ivaIngresos)} − ${formatColones(ivaGastos)}`;
+  const el = (id) => { const e = document.getElementById(id); return e; };
+  const set = (id, val) => { const e = el(id); if (e) e.textContent = val; };
+  set('kpi-total-val', formatColones(sumIngresos + sumGastos));
+  set('kpi-total-count', `${facturas.length} documentos`);
+  set('kpi-ingreso-val', formatColones(sumIngresos));
+  set('kpi-ingreso-count', `${ingresos.length} factura${ingresos.length !== 1 ? 's' : ''}`);
+  set('kpi-gasto-val', formatColones(sumGastos));
+  set('kpi-gasto-count', `${gastos.length} factura${gastos.length !== 1 ? 's' : ''}`);
+  set('kpi-iva-val', formatColones(ivaIngresos - ivaGastos));
+  set('kpi-iva-count', `${formatColones(ivaIngresos)} − ${formatColones(ivaGastos)}`);
 }
 
 function renderFacturas() {

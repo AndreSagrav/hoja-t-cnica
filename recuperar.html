@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Recuperar datos de localStorage</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background: #f8f9fc; color: #1e293b; }
+.box { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+h1 { color: #0d3270; font-size: 22px; }
+h2 { color: #0d3270; font-size: 16px; margin-top: 0; }
+pre { background: #f1f5f9; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+.empty { color: #ef4444; font-style: italic; }
+.found { color: #10b981; font-weight: 700; }
+button { background: #0d3270; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+button:hover { background: #1a4a8a; }
+.copy-btn { background: #00a88f; margin-left: 10px; }
+</style>
+</head>
+<body>
+<h1>Recuperar datos de localStorage</h1>
+
+<div class="box">
+  <h2>innovio_cuentas_bancarias</h2>
+  <div id="cuentas-result"></div>
+</div>
+
+<div class="box">
+  <h2>innovio_sinpe</h2>
+  <div id="sinpe-result"></div>
+</div>
+
+<div class="box">
+  <h2>Todas las claves de localStorage</h2>
+  <div id="all-keys"></div>
+</div>
+
+<div class="box">
+  <h2>Exportar todo</h2>
+  <button onclick="exportAll()">Descargar JSON</button>
+  <button class="copy-btn" onclick="copyAll()">Copiar al portapapeles</button>
+</div>
+
+<script>
+function displayData() {
+  // Cuentas
+  const cuentasRaw = localStorage.getItem('innovio_cuentas_bancarias');
+  const cuentasEl = document.getElementById('cuentas-result');
+  if (cuentasRaw) {
+    try {
+      const data = JSON.parse(cuentasRaw);
+      cuentasEl.innerHTML = '<p class="found">✓ Encontradas ' + data.length + ' cuentas</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    } catch(e) {
+      cuentasEl.innerHTML = '<p class="found">✓ Dato crudo encontrado</p><pre>' + esc(cuentasRaw) + '</pre>';
+    }
+  } else {
+    cuentasEl.innerHTML = '<p class="empty">✗ No hay datos de cuentas en localStorage</p>';
+  }
+
+  // SINPE
+  const sinpeRaw = localStorage.getItem('innovio_sinpe');
+  const sinpeEl = document.getElementById('sinpe-result');
+  if (sinpeRaw) {
+    try {
+      const data = JSON.parse(sinpeRaw);
+      sinpeEl.innerHTML = '<p class="found">✓ SINPE encontrado</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    } catch(e) {
+      sinpeEl.innerHTML = '<p class="found">✓ Dato crudo encontrado</p><pre>' + esc(sinpeRaw) + '</pre>';
+    }
+  } else {
+    sinpeEl.innerHTML = '<p class="empty">✗ No hay datos de SINPE en localStorage</p>';
+  }
+
+  // Todas las claves
+  const keysEl = document.getElementById('all-keys');
+  const keys = Object.keys(localStorage);
+  if (keys.length) {
+    let html = '<pre>';
+    keys.forEach(k => {
+      const val = localStorage.getItem(k);
+      const preview = val ? (val.substring(0, 100) + (val.length > 100 ? '...' : '')) : '(null)';
+      html += esc(k) + ' = ' + esc(preview) + '\n';
+    });
+    html += '</pre>';
+    keysEl.innerHTML = html;
+  } else {
+    keysEl.innerHTML = '<p class="empty">✗ localStorage está vacío</p>';
+  }
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function exportAll() {
+  const data = {};
+  Object.keys(localStorage).forEach(k => { data[k] = localStorage.getItem(k); });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'localStorage_export.json';
+  a.click();
+}
+
+function copyAll() {
+  const data = {};
+  Object.keys(localStorage).forEach(k => { data[k] = localStorage.getItem(k); });
+  navigator.clipboard.writeText(JSON.stringify(data, null, 2))
+    .then(() => alert('¡Copiado! Pegá esto en el chat.'))
+    .catch(() => alert('No se pudo copiar. Usá el botón Descargar JSON.'));
+}
+
+displayData();
+</script>
+</body>
+</html>

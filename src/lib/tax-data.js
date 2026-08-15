@@ -75,6 +75,7 @@ export async function fetchTaxData(anio, mes, force = false) {
       cloudData.forEach(row => {
         const rec = {
           id: row.id,
+          tipo: row.tipo,
           fecha: row.fecha,
           descripcion: row.descripcion || '',
           cliente: row.cliente || '',
