@@ -618,6 +618,7 @@ async function loadFacturas() {
 
       if (!parsed) {
         parsed = {
+          success: true,
           clave: rec.xml_clave || rec.id,
           fecha: rec.fecha ? new Date(rec.fecha) : new Date(),
           totalComprobante: rec.monto_bruto || 0,
@@ -625,7 +626,8 @@ async function loadFacturas() {
           tarifaIVA: rec.tarifa_iva || 0,
           emisor: { nombre: rec.proveedor || '' },
           receptor: { nombre: rec.cliente || '' },
-          descripcion: rec.descripcion || ''
+          descripcion: rec.descripcion || '',
+          tipoDocumento: 'Factura electrónica'
         };
       }
 

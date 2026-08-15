@@ -87,6 +87,7 @@ export async function fetchTaxData(anio, mes, force = false) {
           desgloseIVA: row.desglose_iva || null,
           fuente: row.raw_xml ? 'xml' : 'manual',
           xml_clave: row.xml_clave || '',
+          raw_xml: row.raw_xml || null,
           deducible: row.deducible !== false,
           periodo_mes: row.periodo_mes || (row.fecha ? new Date(row.fecha).getMonth() + 1 : 1),
           periodo_anio: row.periodo_anio || (row.fecha ? new Date(row.fecha).getFullYear() : anio),
