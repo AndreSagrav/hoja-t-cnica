@@ -27,6 +27,8 @@ export async function impuestosDeclaracionesView() {
   const initHash = window.location.hash;
 
   let activeTab = 'iva';
+  let ivaViewMode = 'calc'; // 'calc' | 'replica'
+  let rentaViewMode = 'calc'; // 'calc' | 'replica'
 
   function render() {
     if (window.location.hash !== initHash) return;
@@ -55,8 +57,6 @@ export async function impuestosDeclaracionesView() {
   render();
 
   // ─── IVA TAB ──────────────────────────────────────────────
-
-  let ivaViewMode = 'calc'; // 'calc' | 'replica'
 
   async function renderIVATab(container) {
     let selMes = mes; // Default to current month
@@ -648,8 +648,6 @@ export async function impuestosDeclaracionesView() {
   }
 
   // ─── RENTA TAB ────────────────────────────────────────────
-
-  let rentaViewMode = 'calc'; // 'calc' | 'replica'
 
   async function renderRentaTab(container) {
     let selAnio = anio - 1; // Previous year by default
