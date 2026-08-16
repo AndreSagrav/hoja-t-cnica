@@ -56,17 +56,18 @@ export async function impuestosDeclaracionesView() {
 
   // ─── IVA TAB ──────────────────────────────────────────────
 
+  let ivaViewMode = 'calc'; // 'calc' | 'replica'
+
   async function renderIVATab(container) {
     let selMes = mes; // Default to current month
     let selAnio = anio;
-    let viewMode = 'calc'; // 'calc' | 'replica'
 
     container.innerHTML = `
       <div class="tax-section" style="animation-delay:0.1s">
         <div class="tax-section-header">
           <div class="tax-section-title">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-            ${viewMode === 'replica' ? 'Réplica D-150 — Declaración de IVA' : 'Calculadora IVA Mensual'}
+            ${ivaViewMode === 'replica' ? 'Réplica D-150 — Declaración de IVA' : 'Calculadora IVA Mensual'}
           </div>
           <div style="display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap;">
             <select id="iva-mes" class="tax-select">
@@ -80,8 +81,8 @@ export async function impuestosDeclaracionesView() {
               <input type="number" id="iva-saldo-favor-previo" style="width:100px;border:none;background:transparent;padding:var(--sp-2) 0;box-shadow:none;outline:none;font-weight:600;color:var(--text);" placeholder="0" min="0">
             </div>
             <button class="tax-btn tax-btn-primary" id="btn-calc-iva">Calcular</button>
-            <button class="tax-btn ${viewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d150" style="font-size:var(--fs-xs);">
-              ${viewMode === 'replica' ? '📊 Calculadora' : '📋 Réplica D-150'}
+            <button class="tax-btn ${ivaViewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d150" style="font-size:var(--fs-xs);">
+              ${ivaViewMode === 'replica' ? '📊 Calculadora' : '📋 Réplica D-150'}
             </button>
           </div>
         </div>
@@ -130,7 +131,7 @@ export async function impuestosDeclaracionesView() {
         const calc = calcularIVAMensual(ingresos, gastos, saldoAnterior);
         const mesNombre = MESES[selMes - 1];
 
-        if (viewMode === 'replica') {
+        if (ivaViewMode === 'replica') {
           renderD150Replica(resultDiv, calc, { mes: selMes, anio: selAnio, mesNombre, saldoAnterior, prevMes, prevAnio, ingresos, gastos });
           return;
         }
@@ -308,7 +309,7 @@ export async function impuestosDeclaracionesView() {
 
     container.querySelector('#btn-calc-iva')?.addEventListener('click', calcIVA);
     container.querySelector('#btn-toggle-d150')?.addEventListener('click', () => {
-      viewMode = viewMode === 'replica' ? 'calc' : 'replica';
+      ivaViewMode = ivaViewMode === 'replica' ? 'calc' : 'replica';
       renderIVATab(container);
     });
     // Auto-calculate on load
@@ -480,16 +481,17 @@ export async function impuestosDeclaracionesView() {
 
   // ─── RENTA TAB ────────────────────────────────────────────
 
+  let rentaViewMode = 'calc'; // 'calc' | 'replica'
+
   async function renderRentaTab(container) {
     let selAnio = anio - 1; // Previous year by default
-    let viewMode = 'calc'; // 'calc' | 'replica'
 
     container.innerHTML = `
       <div class="tax-section" style="animation-delay:0.1s">
         <div class="tax-section-header">
           <div class="tax-section-title">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            ${viewMode === 'replica' ? 'Réplica D-101 — Declaración de Renta' : 'Calculadora Renta Anual'}
+            ${rentaViewMode === 'replica' ? 'Réplica D-101 — Declaración de Renta' : 'Calculadora Renta Anual'}
           </div>
           <div style="display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap;">
             <span style="font-size:var(--fs-sm);color:var(--text-mid);font-weight:var(--fw-medium);">Año fiscal:</span>
@@ -502,8 +504,8 @@ export async function impuestosDeclaracionesView() {
               <span class="tax-toggle-label" style="font-size:var(--fs-sm);color:var(--text-mid);font-weight:var(--fw-medium);">Deducción única 25%</span>
             </label>
             <button class="tax-btn tax-btn-primary" id="btn-calc-renta">Calcular</button>
-            <button class="tax-btn ${viewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d101" style="font-size:var(--fs-xs);">
-              ${viewMode === 'replica' ? '📊 Calculadora' : '📋 Réplica D-101'}
+            <button class="tax-btn ${rentaViewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d101" style="font-size:var(--fs-xs);">
+              ${rentaViewMode === 'replica' ? '📊 Calculadora' : '📋 Réplica D-101'}
             </button>
           </div>
         </div>
@@ -546,7 +548,7 @@ export async function impuestosDeclaracionesView() {
 
         const parciales = calcularPagosParciales(calc.impuestoNeto, selAnio + 1);
 
-        if (viewMode === 'replica') {
+        if (rentaViewMode === 'replica') {
           renderD101Replica(resultDiv, calc, { selAnio, usarDeduccionUnica });
           return;
         }
@@ -698,7 +700,7 @@ export async function impuestosDeclaracionesView() {
 
     container.querySelector('#btn-calc-renta')?.addEventListener('click', calcRenta);
     container.querySelector('#btn-toggle-d101')?.addEventListener('click', () => {
-      viewMode = viewMode === 'replica' ? 'calc' : 'replica';
+      rentaViewMode = rentaViewMode === 'replica' ? 'calc' : 'replica';
       renderRentaTab(container);
     });
     calcRenta();
