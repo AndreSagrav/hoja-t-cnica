@@ -18,6 +18,7 @@ const PAGE_SIZE = 15;
 let autoRefreshTimer = null;
 let sseReconnectTimer = null;
 let sortDirection = 'desc'; // 'desc' = más reciente primero, 'asc' = más antiguo primero
+let selectedIds = new Set();
 
 export function impuestosCorreoView() {
   // Reset filters on every navigation to this view
@@ -25,6 +26,7 @@ export function impuestosCorreoView() {
   filterTipo = 'todos';
   currentPage = 1;
   sortDirection = 'desc';
+  selectedIds.clear();
 
   const shell = ensureShell('/impuestos/correo');
   shell.setTitle('Bandeja de Facturas');
@@ -131,6 +133,26 @@ export function impuestosCorreoView() {
       .bf-amount.ingreso { color: #1b5e20; }
       .bf-amount.gasto { color: #c0392b; }
       .bf-iva-small { font-size: 10px; color: var(--text-soft); display: block; margin-top: 2px; font-variant-numeric: tabular-nums; }
+      
+      /* Bulk action bar */
+      .bf-bulk-bar { display: none; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; background: linear-gradient(135deg, rgba(0,194,168,0.08), rgba(0,194,168,0.03)); border: 1px solid rgba(0,194,168,0.2); border-radius: var(--r-md); animation: bfBulkEnter 0.25s var(--ease-spring); }
+      .bf-bulk-bar.show { display: flex; }
+      @keyframes bfBulkEnter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+      .bf-bulk-count { font-size: 12px; font-weight: 700; color: var(--accent-dark); white-space: nowrap; }
+      .bf-bulk-actions { display: flex; gap: 6px; margin-left: auto; }
+      .bf-bulk-btn { height: 28px; padding: 0 10px; border-radius: var(--r-sm); font-size: 10px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-mid); transition: all 0.2s ease; display: flex; align-items: center; gap: 4px; font-family: var(--font); }
+      .bf-bulk-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+      .bf-bulk-btn.danger { color: #c0392b; border-color: rgba(192,57,43,0.3); }
+      .bf-bulk-btn.danger:hover { background: rgba(192,57,43,0.08); border-color: #c0392b; }
+      .bf-bulk-btn.success { color: #1b5e20; border-color: rgba(27,94,32,0.3); }
+      .bf-bulk-btn.success:hover { background: rgba(27,94,32,0.08); border-color: #1b5e20; }
+      .bf-bulk-btn.cancel:hover { background: var(--bg-subtle); }
+      
+      /* Checkbox styles */
+      .bf-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
+      .bf-table tbody tr.selected { background: rgba(0,194,168,0.08) !important; }
+      .bf-table thead th.bf-check-col { width: 32px; text-align: center; }
+      .bf-table td.bf-check-col { text-align: center; }
       
       /* Empty state */
       .bf-empty { text-align: center; padding: 40px 20px; }
@@ -636,7 +658,8 @@ async function loadFacturas() {
         name: rec.descripcion || rec.id,
         xml: rec.raw_xml || '',
         parsed,
-        tipo
+        tipo,
+        record: rec
       });
     });
 
@@ -819,11 +842,24 @@ function renderFacturas() {
     </div>
   ` : '';
 
+  const allPageIds = pageItems.map(f => f.parsed?.clave || f.name);
+  const allPageSelected = allPageIds.length > 0 && allPageIds.every(id => selectedIds.has(id));
+
   container.innerHTML = `
+    <div class="bf-bulk-bar ${selectedIds.size > 0 ? 'show' : ''}" id="bf-bulk-bar">
+      <span class="bf-bulk-count">${selectedIds.size} seleccionado${selectedIds.size !== 1 ? 's' : ''}</span>
+      <div class="bf-bulk-actions">
+        <button class="bf-bulk-btn success" id="bf-bulk-ingreso">↗ Marcar Ingreso</button>
+        <button class="bf-bulk-btn danger" id="bf-bulk-gasto">↙ Marcar Gasto</button>
+        <button class="bf-bulk-btn danger" id="bf-bulk-delete">🗑 Eliminar</button>
+        <button class="bf-bulk-btn cancel" id="bf-bulk-cancel">✕ Cancelar</button>
+      </div>
+    </div>
     <div class="bf-table-wrap">
       <table class="bf-table">
         <thead>
           <tr>
+            <th class="bf-check-col"><input type="checkbox" class="bf-checkbox" id="bf-select-all" ${allPageSelected ? 'checked' : ''} /></th>
             <th>Tipo</th>
             <th>Doc</th>
             <th>Fecha</th>
@@ -835,6 +871,8 @@ function renderFacturas() {
           ${pageItems.map(f => {
             const p = f.parsed;
             const ok = p.success;
+            const fid = p.clave || f.name;
+            const isSelected = selectedIds.has(fid);
             const tipoClass = f.tipo === 'ingreso' ? 'ingreso' : f.tipo === 'gasto' ? 'gasto' : 'desconocido';
             const tipoLabel = f.tipo === 'ingreso' ? '↗ Ingreso' : f.tipo === 'gasto' ? '↙ Gasto' : '? N/A';
             const fecha = p.fecha ? p.fecha.toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -842,9 +880,22 @@ function renderFacturas() {
             const total = ok ? formatColones(p.totalComprobante) : '—';
             const iva = ok ? formatColones(p.totalImpuesto) : '';
             const tipoDoc = p.tipoDocumento || '—';
+            const cf = f.record?.aplica_credito_fiscal;
+            const cfMetodo = f.record?.credito_fiscal_metodo;
+            const cfConfianza = f.record?.credito_fiscal_confianza || 0;
+            let cfBadge = '';
+            if (cfMetodo && cfMetodo !== 'no_detectado') {
+              const color = cf ? '#10b981' : '#ef4444';
+              const label = cf ? 'CF Sí' : 'CF No';
+              const title = `Crédito Fiscal: ${cf ? 'Aplica' : 'No aplica'} (método: ${cfMetodo}, confianza: ${cfConfianza}%)`;
+              cfBadge = `<span class="bf-cf-badge" style="display:inline-block;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid ${color};color:${color};background:${color}11;margin-top:2px;" title="${title}">${label}</span>`;
+            } else if (f.tipo === 'gasto') {
+              cfBadge = `<span class="bf-cf-badge" style="display:inline-block;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;border:1px solid #f59e0b;color:#f59e0b;background:#f59e0b11;margin-top:2px;" title="Pendiente de revisión">CF ?</span>`;
+            }
 
             return `
-              <tr>
+              <tr class="${isSelected ? 'selected' : ''}" data-fid="${fid}">
+                <td class="bf-check-col"><input type="checkbox" class="bf-checkbox bf-row-check" data-fid="${fid}" ${isSelected ? 'checked' : ''} /></td>
                 <td><span class="bf-badge ${tipoClass}">${tipoLabel}</span></td>
                 <td><span class="bf-tipo-doc">${tipoDoc}</span></td>
                 <td style="white-space:nowrap;color:var(--text-mid);font-size:11px;">${fecha}</td>
@@ -855,6 +906,7 @@ function renderFacturas() {
                 <td>
                   <span class="bf-amount ${tipoClass}">${f.tipo === 'ingreso' ? '+' : f.tipo === 'gasto' ? '−' : ''}${total}</span>
                   ${iva ? `<span class="bf-iva-small">IVA ${iva}</span>` : ''}
+                  ${cfBadge}
                 </td>
               </tr>
             `;
@@ -876,4 +928,81 @@ function renderFacturas() {
       renderFacturas();
     });
   });
+
+  // Bind select-all checkbox
+  const selectAllCb = document.getElementById('bf-select-all');
+  if (selectAllCb) {
+    selectAllCb.addEventListener('change', () => {
+      if (selectAllCb.checked) {
+        allPageIds.forEach(id => selectedIds.add(id));
+      } else {
+        allPageIds.forEach(id => selectedIds.delete(id));
+      }
+      renderFacturas();
+    });
+  }
+
+  // Bind row checkboxes
+  document.querySelectorAll('.bf-row-check').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const fid = cb.dataset.fid;
+      if (cb.checked) {
+        selectedIds.add(fid);
+      } else {
+        selectedIds.delete(fid);
+      }
+      renderFacturas();
+    });
+  });
+
+  // Bind bulk actions
+  const bulkCancel = document.getElementById('bf-bulk-cancel');
+  if (bulkCancel) bulkCancel.addEventListener('click', () => { selectedIds.clear(); renderFacturas(); });
+
+  const bulkDelete = document.getElementById('bf-bulk-delete');
+  if (bulkDelete) bulkDelete.addEventListener('click', () => bulkAction('delete'));
+
+  const bulkIngreso = document.getElementById('bf-bulk-ingreso');
+  if (bulkIngreso) bulkIngreso.addEventListener('click', () => bulkAction('ingreso'));
+
+  const bulkGasto = document.getElementById('bf-bulk-gasto');
+  if (bulkGasto) bulkGasto.addEventListener('click', () => bulkAction('gasto'));
+}
+
+async function bulkAction(action) {
+  if (selectedIds.size === 0) return;
+  const ids = Array.from(selectedIds);
+
+  if (action === 'delete') {
+    if (!confirm(`¿Eliminar ${ids.length} factura${ids.length !== 1 ? 's' : ''}? Esta acción no se puede deshacer.`)) return;
+  }
+
+  try {
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const SUPABASE_URL = 'https://qznxejukrtprtzxbkcan.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY';
+    const headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' };
+
+    if (action === 'delete') {
+      const filter = ids.map(id => `id=eq.${id}`).join('&');
+      await fetch(`${SUPABASE_URL}/rest/v1/fiscal_facturas?${filter}`, { method: 'DELETE', headers });
+      if (isLocal) {
+        for (const id of ids) {
+          await fetch(`/api/facturas/${encodeURIComponent(id)}.xml`, { method: 'DELETE' }).catch(() => {});
+        }
+      }
+      toast(`✅ ${ids.length} factura${ids.length !== 1 ? 's' : ''} eliminada${ids.length !== 1 ? 's' : ''}`, 'success');
+    } else {
+      const filter = ids.map(id => `id=eq.${id}`).join('&');
+      await fetch(`${SUPABASE_URL}/rest/v1/fiscal_facturas?${filter}`, { method: 'PATCH', headers, body: JSON.stringify({ tipo: action }) });
+      toast(`✅ ${ids.length} factura${ids.length !== 1 ? 's' : ''} marcada${ids.length !== 1 ? 's' : ''} como ${action}`, 'success');
+    }
+
+    selectedIds.clear();
+    await loadFacturas();
+  } catch (err) {
+    console.warn('Bulk action error:', err);
+    toast('⚠️ Error al procesar la acción', 'warning');
+  }
 }

@@ -354,9 +354,30 @@ export async function convertirAFactura(documentoId) {
     .single();
   if (error) throw error;
 
-  // Mantener el mismo consecutivo, solo cambiar el prefijo a FAC
   const oldNum = doc.doc_num || '';
-  const newNum = oldNum.replace(/^[A-Z]+/, 'FAC');
+  let newNum = oldNum.replace(/^[A-Z]+/, 'FAC');
+
+  const { data: existing } = await supabase
+    .from('documentos')
+    .select('id')
+    .eq('doc_num', newNum)
+    .maybeSingle();
+
+  if (existing) {
+    const { data: facs } = await supabase
+      .from('documentos')
+      .select('doc_num')
+      .like('doc_num', 'FAC-%')
+      .order('doc_num', { ascending: false })
+      .limit(1);
+
+    let nextNum = 1;
+    if (facs && facs.length) {
+      const match = facs[0].doc_num?.match(/FAC-(\d+)/);
+      if (match) nextNum = parseInt(match[1]) + 1;
+    }
+    newNum = `FAC-${String(nextNum).padStart(3, '0')}`;
+  }
 
   const { error: updError } = await supabase
     .from('documentos')

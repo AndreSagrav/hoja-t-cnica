@@ -4,7 +4,6 @@ window.__auth_cachedUser = window.__auth_cachedUser || null;
 window.__auth_listeners = window.__auth_listeners || new Set();
 
 export async function initAuth() {
-  // Reset cached auth state on initial app load / page refresh so startup always defaults to login screen
   window.__auth_cachedUser = null;
   try { sessionStorage.clear(); } catch {}
   try {

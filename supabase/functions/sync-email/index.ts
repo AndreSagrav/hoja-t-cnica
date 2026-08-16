@@ -191,6 +191,77 @@ function extractXMLFromRaw(raw: string): { filename: string; content: string }[]
   return results;
 }
 
+// ============================================================
+// Detección de crédito fiscal para facturas de servicentros
+// ============================================================
+const PALABRAS_ACEITE = ["aceite", "lubricante", "lubricación", "filtro", "grasa", "aditivo", "sintetico", "sintético", "multigrado", "motor", "transmision", "transmisión", "diferencial", "hidraulico", "hidráulico", "refrigerante", "anticongelante", "balata", "freno", "amortiguador", "bateria", "batería", "correa", "bujia", "bujía", "cable", "sensor", "frenos", "alineacion", "alineación", "balanceo", "suspension", "suspensión", "escobilla", "limpiaparabrisas", "bomba", "termostato", "radiador", "embraiague", "embrague", "kit", "empaque", "retenedor", "rodamiento", "balero", "cruceta", "homocinetica", "homocinética", "rotula", "axial", "rótula", "espiral", "resorte", "hoja", "estabilizadora", "pitman", "brazo", "terminal", "axial", "sellos", "junta", "cardan", "piñon", "piñón", "corona", "diferencial"];
+const PALABRAS_COMBUSTIBLE = ["gasolina", "diesel", "diésel", "combustible", "super", "regular", "premium", "etanol", "aditivo combustible", "full", "gasoil", "biodiesel", "bioetanol", "queroseno", "kerosene"];
+
+function detectarCreditoFiscal(xmlContent: string, emailRaw: string): { aplica: boolean; metodo: string; confianza: number } {
+  // Método 1: Tasa de IVA en el XML
+  const lineas = xmlContent.split(/<DetalleServicio>|<LineaDetalle>/);
+  let tasa13 = 0;
+  let tasa1 = 0;
+  for (const linea of lineas) {
+    const tarifaMatch = linea.match(/<CodigoTarifaIVA>([^<]+)<\/CodigoTarifaIVA>/) || linea.match(/<TarifaIVA>([^<]+)<\/TarifaIVA>/);
+    if (tarifaMatch) {
+      const tasa = parseFloat(tarifaMatch[1]);
+      if (tasa === 13) tasa13++;
+      else if (tasa === 1) tasa1++;
+    }
+  }
+  if (tasa13 > 0 && tasa1 === 0) {
+    return { aplica: true, metodo: "tasa_iva_13", confianza: 100 };
+  }
+  if (tasa1 > 0 && tasa13 === 0) {
+    return { aplica: false, metodo: "tasa_iva_1", confianza: 100 };
+  }
+
+  // Método 2: Palabras clave en descripción del producto (líneas del XML)
+  const descripciones = xmlContent.match(/<Detalle>([^<]+)<\/Detalle>/g) || [];
+  const textoDesc = descripciones.map(d => d.replace(/<\/?Detalle>/g, "").toLowerCase()).join(" ");
+  let scoreAceite = 0;
+  let scoreCombustible = 0;
+  for (const p of PALABRAS_ACEITE) {
+    if (textoDesc.includes(p)) scoreAceite++;
+  }
+  for (const p of PALABRAS_COMBUSTIBLE) {
+    if (textoDesc.includes(p)) scoreCombustible++;
+  }
+  if (scoreAceite > 0 && scoreCombustible === 0) {
+    return { aplica: true, metodo: "palabras_clave_descripcion", confianza: 85 };
+  }
+  if (scoreCombustible > 0 && scoreAceite === 0) {
+    return { aplica: false, metodo: "palabras_clave_descripcion", confianza: 85 };
+  }
+  if (scoreAceite > scoreCombustible) {
+    return { aplica: true, metodo: "palabras_clave_descripcion", confianza: 70 };
+  }
+  if (scoreCombustible > scoreAceite) {
+    return { aplica: false, metodo: "palabras_clave_descripcion", confianza: 70 };
+  }
+
+  // Método 3: Cuerpo del correo (subject + body)
+  const emailLower = emailRaw.toLowerCase();
+  let scoreAceiteEmail = 0;
+  let scoreCombustibleEmail = 0;
+  for (const p of PALABRAS_ACEITE) {
+    if (emailLower.includes(p)) scoreAceiteEmail++;
+  }
+  for (const p of PALABRAS_COMBUSTIBLE) {
+    if (emailLower.includes(p)) scoreCombustibleEmail++;
+  }
+  if (scoreAceiteEmail > 0 && scoreCombustibleEmail === 0) {
+    return { aplica: true, metodo: "cuerpo_correo", confianza: 60 };
+  }
+  if (scoreCombustibleEmail > 0 && scoreAceiteEmail === 0) {
+    return { aplica: false, metodo: "cuerpo_correo", confianza: 60 };
+  }
+
+  // Si no se pudo determinar, marcar como pendiente de revisión
+  return { aplica: false, metodo: "no_detectado", confianza: 0 };
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -328,6 +399,10 @@ Deno.serve(async (req) => {
 
           const receptorNameMatch = xml.content.match(/<Receptor>[\s\S]*?<Nombre>([^<]+)<\/Nombre>/);
 
+          // Detectar si aplica crédito fiscal (aceite/lubricante vs combustible)
+          const creditoFiscal = detectarCreditoFiscal(xml.content, raw);
+          console.log(`[sync-email] UID ${uid}: crédito fiscal=${creditoFiscal.aplica}, metodo=${creditoFiscal.metodo}, confianza=${creditoFiscal.confianza}`);
+
           const record = {
             id: clave,
             xml_clave: clave,
@@ -349,6 +424,9 @@ Deno.serve(async (req) => {
             raw_xml: xml.content,
             tipo,
             deducible: false,
+            aplica_credito_fiscal: creditoFiscal.aplica,
+            credito_fiscal_metodo: creditoFiscal.metodo,
+            credito_fiscal_confianza: creditoFiscal.confianza,
             created_at: new Date().toISOString()
           };
 

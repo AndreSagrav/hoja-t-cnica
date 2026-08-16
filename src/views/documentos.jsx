@@ -35,15 +35,21 @@ async function cambiarEstadoPago(docId, nuevoEstado, btn) {
 }
 
 let docState = { search:'', tipo:'', estado:'', loading:false };
+let selectedDocs = new Set();
 
 export async function documentosListView() {
   docState = { search:'', tipo:'', estado:'', loading:false };
+  selectedDocs.clear();
   const shell = ensureShell('/documentos');
   shell.setTitle(''); 
   shell.setActions('');
   const c = shell.content();
 
   c.innerHTML = `
+<style>
+  .doc-bulk-bar { align-items:center; gap:8px; padding:8px 14px; margin-bottom:8px; background:linear-gradient(135deg,rgba(0,194,168,0.08),rgba(0,194,168,0.03)); border:1px solid rgba(0,194,168,0.2); border-radius:6px; }
+  .doc-bulk-btn:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+</style>
 <div class="crm-panel">
   <div class="crm-header">
     <h2>📄 Gestión de Documentos <span class="crm-header-count" id="doc-count">—</span></h2>
@@ -232,11 +238,22 @@ function renderListToBox(data) {
     box.innerHTML = `<div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div><div class="crm-empty-text">Sin resultados</div></div>`; return;
   }
 
+  const allIds = data.map(d => d.id);
+  const allSelected = allIds.length > 0 && allIds.every(id => selectedDocs.has(id));
+
   const thead = `
+    <div class="doc-bulk-bar" style="${selectedDocs.size > 0 ? 'display:flex;' : 'display:none;'}" id="doc-bulk-bar">
+      <span style="font-size:12px;font-weight:700;color:var(--accent-dark);">${selectedDocs.size} seleccionado${selectedDocs.size !== 1 ? 's' : ''}</span>
+      <div style="display:flex;gap:6px;margin-left:auto;">
+        <button class="doc-bulk-btn" id="doc-bulk-delete" style="padding:5px 10px;font-size:10px;font-weight:600;border-radius:4px;border:1px solid #ef4444;background:#ef444411;color:#ef4444;cursor:pointer;">🗑 Eliminar</button>
+        <button class="doc-bulk-btn" id="doc-bulk-cancel" style="padding:5px 10px;font-size:10px;font-weight:600;border-radius:4px;border:1px solid var(--border);background:white;color:var(--text-mid);cursor:pointer;">✕ Cancelar</button>
+      </div>
+    </div>
     <div class="doc-table-wrap">
     <table class="doc-table">
       <thead>
         <tr>
+          <th style="width:32px;text-align:center;"><input type="checkbox" id="doc-select-all" ${allSelected ? 'checked' : ''} style="cursor:pointer;accent-color:var(--accent);" /></th>
           <th style="width: 140px;">Tipo / ID</th>
           <th>Cliente / Proveedor</th>
           <th style="width: 110px; text-align: center;">Fecha</th>
@@ -253,8 +270,10 @@ function renderListToBox(data) {
     const estado = d.estado || 'pendiente';
     const badgeClass = `doc-badge ${estado}`;
 
+    const isSelected = selectedDocs.has(d.id);
     return `
-    <tr class="doc-table-row" data-id="${d.id}">
+    <tr class="doc-table-row" data-id="${d.id}" style="${isSelected ? 'background:rgba(0,194,168,0.06);' : ''}">
+      <td style="text-align:center;"><input type="checkbox" class="doc-row-check" data-id="${d.id}" ${isSelected ? 'checked' : ''} style="cursor:pointer;accent-color:var(--accent);" /></td>
       <td>
         <div style="font-weight:800; color:var(--navy); font-size:12px;">
           ${tipo} ${d.doc_num ? `<span style="color:var(--text-soft);font-weight:600;font-size:11px;">#${d.doc_num}</span>` : ''}
@@ -280,7 +299,55 @@ function renderListToBox(data) {
   }).join('');
 
   box.innerHTML = thead + rows + `</tbody></table></div>`;
-  
+
+  // Bind select-all
+  const selectAllCb = document.getElementById('doc-select-all');
+  if (selectAllCb) {
+    selectAllCb.addEventListener('change', () => {
+      if (selectAllCb.checked) {
+        allIds.forEach(id => selectedDocs.add(id));
+      } else {
+        allIds.forEach(id => selectedDocs.delete(id));
+      }
+      renderListToBox(data);
+    });
+  }
+
+  // Bind row checkboxes
+  box.querySelectorAll('.doc-row-check').forEach(cb => {
+    cb.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const id = parseInt(cb.dataset.id);
+      if (cb.checked) {
+        selectedDocs.add(id);
+      } else {
+        selectedDocs.delete(id);
+      }
+      renderListToBox(data);
+    });
+  });
+
+  // Bind bulk actions
+  const bulkCancel = document.getElementById('doc-bulk-cancel');
+  if (bulkCancel) bulkCancel.addEventListener('click', () => { selectedDocs.clear(); renderListToBox(data); });
+
+  const bulkDelete = document.getElementById('doc-bulk-delete');
+  if (bulkDelete) bulkDelete.addEventListener('click', async () => {
+    if (selectedDocs.size === 0) return;
+    if (!confirm(`¿Eliminar ${selectedDocs.size} documento${selectedDocs.size !== 1 ? 's' : ''}? Esta acción no se puede deshacer.`)) return;
+    const ids = Array.from(selectedDocs);
+    try {
+      for (const id of ids) {
+        await eliminarDocumento(id);
+      }
+      toast(`✅ ${ids.length} documento${ids.length !== 1 ? 's' : ''} eliminado${ids.length !== 1 ? 's' : ''}`, 'success');
+      selectedDocs.clear();
+      await loadDocList();
+    } catch (err) {
+      toast('Error al eliminar: ' + (err.message || err), 'error');
+    }
+  });
+
   // Agregar eventos de click
   box.querySelectorAll('.doc-table-row').forEach(row => {
     row.addEventListener('click', async () => {
@@ -293,7 +360,7 @@ function renderListToBox(data) {
       const detailsRow = document.createElement('tr');
       detailsRow.className = 'doc-accordion-row';
       const detailsCell = document.createElement('td');
-      detailsCell.colSpan = 5;
+      detailsCell.colSpan = 6;
       detailsCell.style.padding = '0';
       detailsRow.appendChild(detailsCell);
       
@@ -371,6 +438,7 @@ function renderListToBox(data) {
                 b.style.background = active ? he.color + '22' : 'white';
                 b.style.color = active ? he.color : '#94a3b8';
               });
+              await loadDocList();
             } catch (err) {
               toast('Error: ' + (err.message || err), 'error');
             }
@@ -396,6 +464,7 @@ function renderListToBox(data) {
                 b.style.background = active ? info.color + '22' : 'white';
                 b.style.color = active ? info.color : '#94a3b8';
               });
+              await loadDocList();
             } catch (err) {
               toast('Error: ' + (err.message || err), 'error');
             }
@@ -628,6 +697,7 @@ function renderDocDetail(data, shell) {
           b.style.background = active ? e.color + '22' : 'white';
           b.style.color = active ? e.color : '#64748b';
         });
+        await loadDocList();
       } catch (err) {
         toast('Error: ' + (err.message || err), 'error');
         btn.innerHTML = origHTML;
@@ -652,6 +722,7 @@ function renderDocDetail(data, shell) {
           b.style.background = active ? info.color + '22' : 'white';
           b.style.color = active ? info.color : '#64748b';
         });
+        await loadDocList();
       } catch (err) {
         toast('Error: ' + (err.message || err), 'error');
         btn.innerHTML = origHTML;

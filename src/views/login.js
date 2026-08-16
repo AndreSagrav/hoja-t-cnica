@@ -1,6 +1,6 @@
 import { LOGO_DATA_URL } from '../assets/logo.js';
 import { toast } from '../lib/utils.js';
-import { signInDemo } from '../lib/auth.js';
+import { signInDemo, signIn } from '../lib/auth.js';
 
 export function loginView() {
   const root = document.getElementById('app');

@@ -92,7 +92,10 @@ export async function fetchTaxData(anio, mes, force = false) {
           periodo_mes: row.periodo_mes || (row.fecha ? new Date(row.fecha).getMonth() + 1 : 1),
           periodo_anio: row.periodo_anio || (row.fecha ? new Date(row.fecha).getFullYear() : anio),
           categoria_nombre: row.categoria_nombre || null,
-          notas: row.notas || ''
+          notas: row.notas || '',
+          aplica_credito_fiscal: row.aplica_credito_fiscal || false,
+          credito_fiscal_metodo: row.credito_fiscal_metodo || 'no_detectado',
+          credito_fiscal_confianza: row.credito_fiscal_confianza || 0
         };
 
         if (row.tipo === 'ingreso') {
