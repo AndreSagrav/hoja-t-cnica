@@ -418,11 +418,11 @@ Deno.serve(async (req) => {
             fecha: (() => {
               if (!fechaMatch) return new Date().toISOString();
               const raw = fechaMatch[1].trim();
-              const parsed = new Date(raw);
-              if (!isNaN(parsed.getTime())) return parsed.toISOString();
-              // Intentar formato YYYY-MM-DD
+              // Priorizar formato YYYY-MM-DD para evitar desfase por zona horaria
               const simpleMatch = raw.match(/(\d{4})-(\d{2})-(\d{2})/);
               if (simpleMatch) return `${simpleMatch[1]}-${simpleMatch[2]}-${simpleMatch[3]}`;
+              const parsed = new Date(raw);
+              if (!isNaN(parsed.getTime())) return parsed.toISOString();
               return new Date().toISOString();
             })(),
             monto_bruto: totalMatch ? parseFloat(totalMatch[1]) : 0,
