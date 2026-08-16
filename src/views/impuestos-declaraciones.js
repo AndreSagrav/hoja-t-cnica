@@ -320,160 +320,328 @@ export async function impuestosDeclaracionesView() {
 
   function renderD150Replica(resultDiv, calc, ctx) {
     const { mes, anio, mesNombre, saldoAnterior, prevMes, prevAnio } = ctx;
-    const TARIFAS = ['13', '4', '2', '1', '0'];
     const ventas = calc.ventasPorTarifa || {};
     const compras = calc.comprasPorTarifa || {};
 
     function v(t) { return ventas[t] || { base: 0, iva: 0, total: 0 }; }
     function c(t) { return compras[t] || { base: 0, iva: 0, total: 0 }; }
 
-    const totalVentasBase = TARIFAS.reduce((s, t) => s + v(t).base, 0);
-    const totalVentasIVA = TARIFAS.reduce((s, t) => s + v(t).iva, 0);
-    const totalVentasBruto = totalVentasBase + totalVentasIVA;
-    const totalComprasBase = TARIFAS.reduce((s, t) => s + c(t).base, 0);
-    const totalComprasIVA = TARIFAS.reduce((s, t) => s + c(t).iva, 0);
-    const totalComprasBruto = totalComprasBase + totalComprasIVA;
-
     const ivaPagar = calc.ivaPagar || 0;
     const saldoFavor = calc.saldoFavor || 0;
 
+    const TARIFAS_ORDEN = ['0.5', '1', '2', '3', '4', '4A', '13'];
+    const TARIFAS_LABEL = {
+      '0.5': '0,5%',
+      '1': '1%',
+      '2': '2%',
+      '3': '3%',
+      '4': '4%',
+      '4A': '4% (Servicios aéreos internacionales exclusivos)',
+      '13': '13%'
+    };
+
+    function getBaseVenta(t) {
+      if (t === '4A') return 0;
+      if (t === '0.5') return 0;
+      if (t === '3') return 0;
+      return v(t).base;
+    }
+    function getIVAVenta(t) {
+      if (t === '4A') return 0;
+      if (t === '0.5') return 0;
+      if (t === '3') return 0;
+      return v(t).iva;
+    }
+    function getBaseCompra(t) {
+      if (t === '4A') return 0;
+      if (t === '0.5') return 0;
+      if (t === '3') return 0;
+      return c(t).base;
+    }
+    function getIVACompra(t) {
+      if (t === '4A') return 0;
+      if (t === '0.5') return 0;
+      if (t === '3') return 0;
+      return c(t).iva;
+    }
+
+    const totalVentasGenerales = TARIFAS_ORDEN.reduce((s, t) => s + getBaseVenta(t), 0);
+    const totalVentasGravadas = TARIFAS_ORDEN.filter(t => t !== '4A').reduce((s, t) => s + getBaseVenta(t), 0);
+    const montoImpuestoVentas = TARIFAS_ORDEN.filter(t => t !== '4A').reduce((s, t) => s + getIVAVenta(t), 0);
+    const totalImporteCompras = TARIFAS_ORDEN.reduce((s, t) => s + getBaseCompra(t) + getIVACompra(t), 0);
+    const totalImpuestoSoportado = TARIFAS_ORDEN.filter(t => t !== '4A').reduce((s, t) => s + getIVACompra(t), 0);
+    const totalCreditoFiscal = calc.creditoFiscal || 0;
+
+    const accordionVentas = TARIFAS_ORDEN.map(t => `
+      <div class="d150-accordion" data-tarifa="v-${t}">
+        <div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')">
+          <span>Tarifa ${TARIFAS_LABEL[t]}</span>
+          <svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="d150-accordion-body">
+          ${t === '13' ? `
+            <div class="d150-field">
+              <label>Total ventas a 13%</label>
+              <div class="d150-input">${formatColones(getBaseVenta(t))}</div>
+            </div>
+            <div class="d150-field">
+              <label>Monto del impuesto a 13%</label>
+              <div class="d150-input">${formatColones(getIVAVenta(t))}</div>
+            </div>
+          ` : `
+            <div class="d150-field">
+              <label>Total ventas a ${TARIFAS_LABEL[t]}</label>
+              <div class="d150-input">${formatColones(getBaseVenta(t))}</div>
+            </div>
+          `}
+        </div>
+      </div>
+    `).join('');
+
+    const accordionCompras = TARIFAS_ORDEN.map(t => `
+      <div class="d150-accordion" data-tarifa="c-${t}">
+        <div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')">
+          <span>Compras a ${TARIFAS_LABEL[t]}</span>
+          <svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="d150-accordion-body">
+          ${t === '13' ? `
+            <div class="d150-field">
+              <label>Total importe compras a 13%</label>
+              <div class="d150-input">${formatColones(getBaseCompra(t) + getIVACompra(t))}</div>
+            </div>
+            <div class="d150-field">
+              <label>Impuesto soportado a 13%</label>
+              <div class="d150-input">${formatColones(getIVACompra(t))}</div>
+            </div>
+          ` : `
+            <div class="d150-field">
+              <label>Total importe compras a ${TARIFAS_LABEL[t]}</label>
+              <div class="d150-input">${formatColones(getBaseCompra(t) + getIVACompra(t))}</div>
+            </div>
+          `}
+        </div>
+      </div>
+    `).join('');
+
     resultDiv.innerHTML = `
       <style>
-        .d150-form { background:#fff; border:2px solid #1a3a6b; border-radius:6px; overflow:hidden; font-family:'Inter',-apple-system,sans-serif; color:#1a1a1a; }
-        .d150-header { background:linear-gradient(180deg,#1a3a6b,#0d3270); color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
-        .d150-header h2 { margin:0; font-size:18px; font-weight:700; letter-spacing:0.5px; }
-        .d150-header .d150-periodo { font-size:13px; opacity:0.9; }
-        .d150-body { padding:16px 20px; }
-        .d150-declarante { background:#f0f4fa; border:1px solid #c8d6e5; border-radius:4px; padding:10px 14px; margin-bottom:14px; font-size:13px; display:flex; gap:24px; flex-wrap:wrap; }
-        .d150-declarante span strong { color:#0d3270; }
-        .d150-section { margin-bottom:14px; }
-        .d150-section-title { font-size:14px; font-weight:700; color:#0d3270; border-bottom:2px solid #0d3270; padding-bottom:4px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
-        .d150-section-title .dot { width:8px; height:8px; background:#0d3270; border-radius:50%; }
-        .d150-table { width:100%; border-collapse:collapse; font-size:13px; }
-        .d150-table th { background:#e8eef6; color:#0d3270; font-weight:600; padding:7px 10px; text-align:left; border:1px solid #c8d6e5; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; }
-        .d150-table td { padding:7px 10px; border:1px solid #e0e6ed; }
-        .d150-table td.num { text-align:right; font-family:'JetBrains Mono','Consolas',monospace; font-size:12px; }
-        .d150-table tr.subtotal td { font-weight:600; background:#f7f9fc; border-top:2px solid #c8d6e5; }
-        .d150-table tr.total-row td { font-weight:700; background:#e8eef6; border-top:2px solid #0d3270; font-size:14px; }
-        .d150-resumen { background:#f7f9fc; border:1px solid #c8d6e5; border-radius:4px; padding:14px 16px; }
-        .d150-resumen-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; border-bottom:1px dotted #d0d8e4; }
-        .d150-resumen-row:last-child { border-bottom:none; }
-        .d150-resumen-row .label { color:#555; }
-        .d150-resumen-row .value { font-family:'JetBrains Mono','Consolas',monospace; font-weight:600; }
-        .d150-result { margin-top:10px; padding:12px 16px; border-radius:4px; font-weight:700; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
-        .d150-result.pagar { background:#fff3f0; border:2px solid #c0392b; color:#c0392b; }
-        .d150-result.favor { background:#f0fff4; border:2px solid #27ae60; color:#27ae60; }
-        .d150-footer { font-size:11px; color:#888; text-align:center; padding:10px; border-top:1px solid #e0e6ed; }
+        .d150-tribu { font-family:'Inter',-apple-system,system-ui,sans-serif; color:#1a1a2e; background:#f7f8fb; min-height:0; }
+        .d150-breadcrumb { font-size:12px; color:#555; margin-bottom:12px; }
+        .d150-breadcrumb a { color:#555; text-decoration:none; }
+        .d150-breadcrumb strong { color:#1a1a2e; }
+        .d150-title { font-size:22px; font-weight:700; color:#2c2c54; margin:0 0 16px 0; }
+        .d150-layout { display:flex; gap:18px; align-items:flex-start; }
+        .d150-stepper { width:230px; flex-shrink:0; background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .d150-step { display:flex; align-items:flex-start; gap:10px; margin-bottom:18px; position:relative; }
+        .d150-step:last-child { margin-bottom:0; }
+        .d150-step-dot { width:16px; height:16px; border-radius:50%; background:#e2e8f0; border:2px solid #cbd5e1; flex-shrink:0; margin-top:2px; }
+        .d150-step.active .d150-step-dot { background:#2c2c54; border-color:#2c2c54; }
+        .d150-step.completed .d150-step-dot { background:#2c2c54; border-color:#2c2c54; }
+        .d150-step.active .d150-step-dot::after { content:''; display:block; width:6px; height:6px; background:#fff; border-radius:50%; margin:3px auto; }
+        .d150-step-text { font-size:12px; color:#666; line-height:1.35; }
+        .d150-step.active .d150-step-text { font-weight:700; color:#2c2c54; }
+        .d150-main { flex:1; min-width:0; }
+        .d150-card { background:#fff; border-radius:12px; padding:22px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .d150-card h3 { font-size:16px; font-weight:700; color:#2c2c54; margin:0 0 10px 0; display:flex; align-items:center; gap:8px; }
+        .d150-card p { font-size:13px; color:#555; line-height:1.6; margin:0 0 12px 0; }
+        .d150-card ul { margin:0 0 12px 0; padding-left:18px; font-size:13px; color:#555; line-height:1.7; }
+        .d150-card .dotted { border-top:1px dashed #cbd5e1; margin:14px 0; }
+        .d150-accordion { border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px; overflow:hidden; }
+        .d150-accordion-head { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#fff; cursor:pointer; font-size:13px; font-weight:600; color:#2c2c54; }
+        .d150-accordion-head:hover { background:#f8fafc; }
+        .d150-accordion-body { display:none; padding:14px; background:#fff; border-top:1px solid #f1f5f9; }
+        .d150-accordion.open .d150-accordion-body { display:block; }
+        .d150-accordion.open .d150-chevron { transform:rotate(180deg); }
+        .d150-chevron { transition:transform .2s; color:#64748b; }
+        .d150-field { margin-bottom:12px; }
+        .d150-field:last-child { margin-bottom:0; }
+        .d150-field label { display:block; font-size:12px; color:#555; margin-bottom:5px; }
+        .d150-input { background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:9px 12px; font-size:13px; font-family:'JetBrains Mono','Consolas',monospace; color:#1a1a2e; text-align:right; min-width:180px; display:inline-block; }
+        .d150-input:focus { outline:none; border-color:#2c2c54; }
+        .d150-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:13px; }
+        .d150-row:last-child { border-bottom:none; }
+        .d150-row .value { font-family:'JetBrains Mono','Consolas',monospace; font-weight:600; color:#1a1a2e; }
+        .d150-row.total { font-weight:700; font-size:14px; padding-top:14px; }
+        .d150-resumen { width:280px; flex-shrink:0; background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .d150-resumen h4 { font-size:14px; font-weight:700; color:#2c2c54; margin:0 0 14px 0; }
+        .d150-resumen-row { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; color:#555; }
+        .d150-resumen-row span:first-child { font-weight:500; }
+        .d150-resumen-row span:last-child { color:#1a1a2e; font-weight:600; text-align:right; }
+        .d150-resumen-divider { border-top:1px solid #e2e8f0; margin:12px 0; }
+        .d150-resumen-total { font-size:13px; font-weight:700; }
+        .d150-buttons { display:flex; justify-content:space-between; margin-top:18px; }
+        .d150-btn { padding:10px 20px; border-radius:24px; font-size:13px; font-weight:600; cursor:pointer; border:none; min-width:120px; text-align:center; }
+        .d150-btn-prev { background:#fff; border:1.5px solid #2c2c54; color:#2c2c54; }
+        .d150-btn-next { background:#2c2c54; color:#fff; }
+        .d150-nota { font-size:11px; color:#888; margin-top:10px; line-height:1.5; }
+        @media (max-width:1024px) {
+          .d150-layout { flex-direction:column; }
+          .d150-stepper, .d150-resumen { width:100%; }
+        }
       </style>
-      <div class="d150-form">
-        <div class="d150-header">
-          <h2>FORMULARIO D-150</h2>
-          <div class="d150-periodo">Declaración de IVA · ${mesNombre} ${anio}</div>
+      <div class="d150-tribu">
+        <div class="d150-breadcrumb">
+          <a href="#/dashboard">Inicio</a> / <a href="#/impuestos">Declaraciones</a> / <strong>150 - Impuesto al valor agregado</strong>
         </div>
-        <div class="d150-body">
-          <div class="d150-declarante">
-            <span><strong>Declarante:</strong> BATISTA VARGAS CESAR ANDRES</span>
-            <span><strong>Cédula:</strong> 2-0539-0118</span>
-            <span><strong>Período:</strong> ${mesNombre} ${anio}</span>
-          </div>
+        <h2 class="d150-title">150 - Impuesto al valor agregado</h2>
 
-          <!-- VENTAS -->
-          <div class="d150-section">
-            <div class="d150-section-title"><span class="dot"></span> VENTAS DEL PERÍODO</div>
-            <table class="d150-table">
-              <thead>
-                <tr><th>Concepto</th><th class="num">Base Imponible</th><th class="num">IVA</th><th class="num">Total</th></tr>
-              </thead>
-              <tbody>
-                ${TARIFAS.filter(t => t !== '0').map(t => `
-                  <tr>
-                    <td>Gravadas al ${t}%</td>
-                    <td class="num">${formatColones(v(t).base)}</td>
-                    <td class="num">${formatColones(v(t).iva)}</td>
-                    <td class="num">${formatColones(v(t).total)}</td>
-                  </tr>
-                `).join('')}
-                <tr>
-                  <td>Exentas (0%)</td>
-                  <td class="num">${formatColones(v('0').base)}</td>
-                  <td class="num">₡0</td>
-                  <td class="num">${formatColones(v('0').base)}</td>
-                </tr>
-                <tr class="subtotal">
-                  <td>TOTAL VENTAS</td>
-                  <td class="num">${formatColones(totalVentasBase)}</td>
-                  <td class="num">${formatColones(totalVentasIVA)}</td>
-                  <td class="num">${formatColones(totalVentasBruto)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- COMPRAS -->
-          <div class="d150-section">
-            <div class="d150-section-title"><span class="dot"></span> COMPRAS DEL PERÍODO</div>
-            <table class="d150-table">
-              <thead>
-                <tr><th>Concepto</th><th class="num">Base Imponible</th><th class="num">IVA</th><th class="num">Total</th></tr>
-              </thead>
-              <tbody>
-                ${TARIFAS.filter(t => t !== '0').map(t => `
-                  <tr>
-                    <td>Gravadas al ${t}%</td>
-                    <td class="num">${formatColones(c(t).base)}</td>
-                    <td class="num">${formatColones(c(t).iva)}</td>
-                    <td class="num">${formatColones(c(t).total)}</td>
-                  </tr>
-                `).join('')}
-                <tr>
-                  <td>Exentas (0%)</td>
-                  <td class="num">${formatColones(c('0').base)}</td>
-                  <td class="num">₡0</td>
-                  <td class="num">${formatColones(c('0').base)}</td>
-                </tr>
-                <tr class="subtotal">
-                  <td>TOTAL COMPRAS</td>
-                  <td class="num">${formatColones(totalComprasBase)}</td>
-                  <td class="num">${formatColones(totalComprasIVA)}</td>
-                  <td class="num">${formatColones(totalComprasBruto)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- RESUMEN -->
-          <div class="d150-section">
-            <div class="d150-section-title"><span class="dot"></span> RESUMEN — DETERMINACIÓN DEL IVA</div>
-            <div class="d150-resumen">
-              <div class="d150-resumen-row">
-                <span class="label">(+) Débito Fiscal (IVA cobrado en ventas)</span>
-                <span class="value" style="color:#27ae60;">${formatColones(calc.debitoFiscal)}</span>
-              </div>
-              <div class="d150-resumen-row">
-                <span class="label">(-) Crédito Fiscal (IVA pagado en compras deducibles)</span>
-                <span class="value" style="color:#c0392b;">${formatColones(calc.creditoFiscal)}</span>
-              </div>
-              ${saldoAnterior > 0 ? `
-              <div class="d150-resumen-row">
-                <span class="label">(-) Saldo a favor período anterior (${MESES[prevMes - 1]})</span>
-                <span class="value" style="color:#c0392b;">${formatColones(saldoAnterior)}</span>
-              </div>
-              ` : ''}
-              ${calc.factorProporcionalidad < 1 ? `
-              <div class="d150-resumen-row">
-                <span class="label" style="font-size:11px;">Factor proporcionalidad: ${(calc.factorProporcionalidad * 100).toFixed(2)}%</span>
-                <span class="value" style="font-size:11px;opacity:0.7;">Crédito ajustado</span>
-              </div>
-              ` : ''}
-              <div class="d150-result ${ivaPagar > 0 ? 'pagar' : 'favor'}">
-                <span>${ivaPagar > 0 ? '💳 IVA A PAGAR' : '✅ SALDO A FAVOR'}</span>
-                <span>${formatColones(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span>
-              </div>
+        <div class="d150-layout">
+          <!-- STEPPER IZQUIERDO -->
+          <div class="d150-stepper">
+            <div class="d150-step active">
+              <div class="d150-step-dot"></div>
+              <div class="d150-step-text">Ventas generales</div>
+            </div>
+            <div class="d150-step">
+              <div class="d150-step-dot"></div>
+              <div class="d150-step-text">Pago diferido del impuesto por ventas a crédito del período a presentar o de períodos anteriores</div>
+            </div>
+            <div class="d150-step">
+              <div class="d150-step-dot"></div>
+              <div class="d150-step-text">Compras totales</div>
+            </div>
+            <div class="d150-step">
+              <div class="d150-step-dot"></div>
+              <div class="d150-step-text">Crédito fiscal</div>
+            </div>
+            <div class="d150-step">
+              <div class="d150-step-dot"></div>
+              <div class="d150-step-text">Cálculo del impuesto</div>
             </div>
           </div>
-        </div>
-        <div class="d150-footer">
-          Réplica visual para referencia — Completá estos valores en TRIBU-CR · Fecha límite: 15 de ${MESES[mes % 12]} ${mes === 12 ? anio + 1 : anio}
+
+          <!-- CONTENIDO PRINCIPAL -->
+          <div class="d150-main">
+
+            <!-- CRÉDITO FISCAL -->
+            <div class="d150-card" id="d150-credito-fiscal">
+              <h3>Crédito fiscal</h3>
+              <p>En esta sección del formulario se calcula el crédito fiscal para el IVA de la siguiente forma:</p>
+              <ul>
+                <li>Si usted vende a una única tarifa reducida y no es con derecho a crédito pleno, la "tarifa de IVA aplicada" es la tarifa menor de entre la tarifa de compras y la tarifa de ventas.</li>
+                <li>Si usted vende a una única tarifa que es con derecho a crédito pleno, la "tarifa de IVA aplicada" es la tarifa que ha soportado en sus compras.</li>
+                <li>Si usted vende a varias tarifas con derecho a crédito pleno, exentas o no, la "tarifa de IVA aplicada" es la que ha soportado en sus compras.</li>
+              </ul>
+              <p>La diferencia entre el monto del impuesto soportado y el crédito fiscal para el IVA será el "importe de costo o gasto para utilidades".</p>
+            </div>
+
+            <!-- COMPRAS TOTALES -->
+            <div class="d150-card" id="d150-compras-totales">
+              <h3>Compras totales</h3>
+              <p>En esta sección incluya el monto de las compras realizadas en este período por cada tarifa. El sistema calculará de forma automática el impuesto soportado en cada una.</p>
+              ${accordionCompras}
+
+              <div class="dotted"></div>
+              <div class="d150-row total">
+                <span>Total importe compras</span>
+                <span class="value">${formatColones(totalImporteCompras)}</span>
+              </div>
+              <div class="d150-row">
+                <span>Total importe de compras con IVA soportado</span>
+                <span class="value">${formatColones(TARIFAS_ORDEN.filter(t => t !== '4A').reduce((s, t) => s + getBaseCompra(t) + getIVACompra(t), 0))}</span>
+              </div>
+              <div class="d150-row">
+                <span>Total impuesto soportado</span>
+                <span class="value">${formatColones(totalImpuestoSoportado)}</span>
+              </div>
+              <div class="d150-row total">
+                <span>Total crédito fiscal del período</span>
+                <span class="value">${formatColones(totalCreditoFiscal)}</span>
+              </div>
+            </div>
+
+            <!-- PAGO DIFERIDO -->
+            <div class="d150-card" id="d150-pago-diferido">
+              <h3>Pago diferido del impuesto por ventas a crédito del período a presentar o de períodos anteriores</h3>
+              <p>En este apartado seleccione la opción "Sí lo utilizaré" si desea acogerse al esquema del pago diferido del impuesto por ventas a crédito; o si requiere cancelar el impuesto de períodos anteriores bajo esta modalidad.</p>
+              <p style="margin-top:12px;"><strong>Opción seleccionada:</strong> No lo utilizaré</p>
+            </div>
+
+            <!-- VENTAS GENERALES -->
+            <div class="d150-card" id="d150-ventas-generales">
+              <h3>Ventas generales</h3>
+              <p>En esta sección complete el importe de las ventas que ha realizado a cada una de las tarifas. El formulario calculará de forma automática el importe del monto del impuesto para cada una de ellas.</p>
+              <p style="font-size:12px;color:#777;margin-top:-6px;">Asimismo, si le corresponde, complete las casillas de las ventas sin impuesto que dan derecho a crédito pleno y las ventas sin impuesto que no dan derecho a crédito.</p>
+              ${accordionVentas}
+
+              <div class="dotted"></div>
+              <div class="d150-row total">
+                <span>Total ventas generales</span>
+                <span class="value">${formatColones(totalVentasGenerales)}</span>
+              </div>
+              <div class="d150-row total">
+                <span>Total ventas generales gravadas</span>
+                <span class="value">${formatColones(totalVentasGravadas)}</span>
+              </div>
+              <div class="d150-row total">
+                <span>Monto del impuesto ventas generales</span>
+                <span class="value">${formatColones(montoImpuestoVentas)}</span>
+              </div>
+              <div class="d150-row total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'};">
+                <span>${ivaPagar > 0 ? 'IVA a pagar' : 'Saldo a favor'}</span>
+                <span class="value">${formatColones(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span>
+              </div>
+            </div>
+
+            <div class="d150-buttons">
+              <button class="d150-btn d150-btn-prev" onclick="alert('Paso anterior (simulado)')">‹ Anterior</button>
+              <button class="d150-btn d150-btn-next" onclick="alert('Paso siguiente (simulado)')">Siguiente ›</button>
+            </div>
+            <p class="d150-nota">Réplica visual para referencia. Período: ${mesNombre} ${anio}. Completá los valores en TRIBU-CR antes del 15 de ${MESES[mes % 12]} ${mes === 12 ? anio + 1 : anio}.</p>
+          </div>
+
+          <!-- RESUMEN DERECHO -->
+          <div class="d150-resumen">
+            <h4>Resumen</h4>
+            <div class="d150-resumen-row">
+              <span>Identificación</span>
+              <span>205390118</span>
+            </div>
+            <div class="d150-resumen-row">
+              <span>Nombre</span>
+              <span>CESAR ANDRES BATISTA VARGAS</span>
+            </div>
+            <div class="d150-resumen-divider"></div>
+            <div class="d150-resumen-row">
+              <span>Período</span>
+              <span>${mes.toString().padStart(2,'0')}/${anio}</span>
+            </div>
+            <div class="d150-resumen-row">
+              <span>Declaración</span>
+              <span>150 - Impuesto al valor agregado</span>
+            </div>
+            <div class="d150-resumen-row">
+              <span>Fecha inicio</span>
+              <span>01/${mes.toString().padStart(2,'0')}/${anio}</span>
+            </div>
+            <div class="d150-resumen-row">
+              <span>Fecha fin</span>
+              <span>${new Date(anio, mes, 0).getDate()}/${mes.toString().padStart(2,'0')}/${anio}</span>
+            </div>
+            <div class="d150-resumen-divider"></div>
+            <div class="d150-resumen-row d150-resumen-total">
+              <span>Total monto del impuesto</span>
+              <span>${formatColones(calc.debitoFiscal)}</span>
+            </div>
+            <div class="d150-resumen-row d150-resumen-total">
+              <span>Total crédito fiscal</span>
+              <span>${formatColones(totalCreditoFiscal)}</span>
+            </div>
+            <div class="d150-resumen-row d150-resumen-total">
+              <span>Total gasto para utilidades</span>
+              <span>${formatColones(0)}</span>
+            </div>
+            <div class="d150-resumen-row d150-resumen-total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'};">
+              <span>Saldo a favor</span>
+              <span>${formatColones(saldoFavor)}</span>
+            </div>
+            <div class="d150-resumen-divider"></div>
+            <div class="d150-resumen-row" style="font-size:11px;color:#888;">
+              <span>Estado</span>
+              <span>En plazo</span>
+            </div>
+          </div>
         </div>
       </div>
     `;
