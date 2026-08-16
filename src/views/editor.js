@@ -509,11 +509,13 @@ function bindEvents() {
   // Eventos para totales
   document.getElementById('f-discount').addEventListener('input', (e) => {
     state.discount.value = parseFloat(e.target.value) || 0;
+    state.discount.enabled = state.discount.value > 0;
     refreshTotalsBox();
   });
 
   document.getElementById('f-iva').addEventListener('input', (e) => {
     state.iva.value = parseFloat(e.target.value) || 0;
+    state.iva.enabled = state.iva.value > 0;
     refreshTotalsBox();
   });
 }

@@ -16,8 +16,9 @@ const HACIENDA_ESTADOS = [
 
 const ESTADO_PAGO = {
   pendiente: { label: 'Pendiente', color: '#f59e0b' },
+  abonada: { label: 'Abonada', color: '#3b82f6' },
   pagada: { label: 'Pagada', color: '#10b981' },
-  cancelada: { label: 'Cancelada', color: '#ef4444' },
+  anulada: { label: 'Anulada', color: '#ef4444' },
 };
 
 async function cambiarEstadoHacienda(docId, nuevoEstado, btn) {
@@ -47,33 +48,85 @@ export async function documentosListView() {
 
   c.innerHTML = `
 <style>
-  .doc-bulk-bar { align-items:center; gap:8px; padding:8px 14px; margin-bottom:8px; background:linear-gradient(135deg,rgba(0,194,168,0.08),rgba(0,194,168,0.03)); border:1px solid rgba(0,194,168,0.2); border-radius:6px; }
-  .doc-bulk-btn:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .doc-page { display:flex; flex-direction:column; height:100%; min-height:0; }
+  .doc-page-header { display:flex; align-items:center; justify-content:space-between; padding:0 0 16px; flex-wrap:wrap; gap:12px; flex:none; }
+  .doc-page-title { font-size:22px; font-weight:900; color:var(--navy); letter-spacing:-0.02em; display:flex; align-items:center; gap:10px; }
+  .doc-page-count { font-size:15px; font-weight:700; color:var(--text-soft); background:var(--surface-2); padding:4px 14px; border-radius:20px; border:1px solid var(--border-light); }
+  .doc-new-btn { padding:11px 22px; font-size:14px; font-weight:800; border-radius:10px; border:none; background:var(--grad-navy); color:white; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.25s; box-shadow:0 4px 14px rgba(13,50,112,0.2); }
+  .doc-new-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(13,50,112,0.3); }
+  .doc-kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:16px; flex:none; }
+  .doc-kpi-card { background:var(--surface); border:2px solid var(--border-light); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; transition:all 0.2s; }
+  .doc-kpi-card:hover { border-color:var(--accent); box-shadow:0 4px 16px rgba(0,0,0,0.05); }
+  .doc-kpi-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .doc-kpi-icon.blue { background:#dbeafe; color:#1e3a8a; }
+  .doc-kpi-icon.amber { background:#fef3c7; color:#92400e; }
+  .doc-kpi-icon.purple { background:#f3e8ff; color:#581c87; }
+  .doc-kpi-icon.green { background:#dcfce7; color:#14532d; }
+  .doc-kpi-label { font-size:12px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.3px; }
+  .doc-kpi-value { font-size:22px; font-weight:900; color:var(--navy); letter-spacing:-0.02em; }
+  .doc-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; flex:none; }
+  .doc-search-wrap { position:relative; flex:1; min-width:200px; }
+  .doc-search-input { width:100%; padding:11px 16px 11px 42px; font-size:14px; border:2px solid var(--border-light); border-radius:10px; font-family:inherit; color:var(--text); background:var(--surface); transition:border-color 0.2s; }
+  .doc-search-input:focus { outline:none; border-color:var(--accent); }
+  .doc-search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-soft); }
+  .doc-filters { display:flex; gap:8px; flex-wrap:wrap; }
+  .doc-filter-tab { padding:8px 16px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid var(--border-light); background:var(--surface); color:var(--text-mid); cursor:pointer; transition:all 0.2s; font-family:inherit; white-space:nowrap; }
+  .doc-filter-tab:hover { border-color:var(--accent); color:var(--navy); }
+  .doc-filter-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .doc-bulk-bar { display:flex; align-items:center; gap:10px; padding:10px 18px; margin-bottom:12px; background:linear-gradient(135deg,rgba(0,194,168,0.08),rgba(0,194,168,0.03)); border:2px solid rgba(0,194,168,0.25); border-radius:10px; flex:none; }
+  .doc-bulk-btn { font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+  .doc-bulk-btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+  .doc-list-scroll { flex:1; overflow-y:auto; min-height:0; padding-right:4px; }
+  .doc-list-scroll::-webkit-scrollbar { width:6px; }
+  .doc-list-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:10px; }
+  .doc-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; color:var(--text-soft); }
+  .doc-empty-icon { margin-bottom:12px; opacity:0.4; }
+  .doc-empty-text { font-size:15px; font-weight:600; }
+  @media (max-width: 768px) {
+    .doc-page-title { font-size:18px; }
+    .doc-new-btn { padding:10px 16px; font-size:13px; }
+    .doc-kpi-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+    .doc-kpi-card { padding:10px 14px; }
+    .doc-kpi-value { font-size:18px; }
+    .doc-kpi-icon { width:36px; height:36px; }
+    .doc-toolbar { gap:8px; }
+    .doc-filters { gap:6px; }
+    .doc-filter-tab { padding:7px 12px; font-size:12px; }
+    .doc-grid { grid-template-columns:1fr; gap:10px; }
+    .doc-card { padding:14px 16px; }
+    .doc-card-type { font-size:15px; }
+    .doc-card-amount { font-size:16px; }
+    .doc-card-client { font-size:14px; }
+    .doc-badge { font-size:11px; padding:4px 10px; }
+  }
+  @media (max-width: 480px) {
+    .doc-kpi-row { grid-template-columns:1fr 1fr; }
+    .doc-page-header { flex-direction:column; align-items:stretch; }
+    .doc-new-btn { width:100%; justify-content:center; }
+  }
 </style>
-<div class="crm-panel">
-  <div class="crm-header">
-    <h2>📄 Gestión de Documentos <span class="crm-header-count" id="doc-count">—</span></h2>
-    <div class="crm-header-actions">
-      <button class="crm-action-btn primary" id="doc-new-btn" style="flex:none;">＋ Nuevo Documento</button>
+<div class="doc-page">
+  <div class="doc-page-header">
+    <div class="doc-page-title">
+      <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Gestión de Documentos <span class="doc-page-count" id="doc-count">—</span>
     </div>
+    <button class="doc-new-btn" id="doc-new-btn">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Nuevo Documento
+    </button>
   </div>
-  <div class="crm-kpi-row" id="doc-kpis"></div>
-  <div class="crm-body">
-    <div class="crm-list-pane" style="width:100%;border-right:none;">
-      <div class="crm-search-bar">
-        <div class="crm-search-wrap">
-          <svg class="crm-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input class="crm-search-input" id="doc-search" placeholder="Buscar por número o cliente…" />
-        </div>
-        <div class="crm-search-row2">
-          <div class="crm-filter-tabs" id="doc-tipo-filters"></div>
-          <div class="crm-filter-tabs" id="doc-estado-filters"></div>
-        </div>
-      </div>
-      <div class="crm-list-scroll" id="doc-list">
-        <div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div><div class="crm-empty-text">Cargando…</div></div>
-      </div>
+  <div class="doc-kpi-row" id="doc-kpis"></div>
+  <div class="doc-toolbar">
+    <div class="doc-search-wrap">
+      <svg class="doc-search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input class="doc-search-input" id="doc-search" placeholder="Buscar por número o cliente…" />
     </div>
+    <div class="doc-filters" id="doc-tipo-filters"></div>
+    <div class="doc-filters" id="doc-estado-filters"></div>
+  </div>
+  <div class="doc-list-scroll" id="doc-list">
+    <div class="doc-empty"><div class="doc-empty-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div class="doc-empty-text">Cargando…</div></div>
   </div>
 </div>`;
 
@@ -143,15 +196,15 @@ function renderDocFilters() {
   ];
 
   document.getElementById('doc-tipo-filters').innerHTML = tipos.map(([v, l]) =>
-    `<button class="crm-filter-tab ${docState.tipo === v ? 'active' : ''}" data-tipo="${v}">${l}</button>`
+    `<button class="doc-filter-tab ${docState.tipo === v ? 'active' : ''}" data-tipo="${v}">${l}</button>`
   ).join('');
 
   document.getElementById('doc-estado-filters').innerHTML = estados.map(([v, l]) =>
-    `<button class="crm-filter-tab ${docState.estado === v ? 'active' : ''}" data-estado="${v}">${l}</button>`
+    `<button class="doc-filter-tab ${docState.estado === v ? 'active' : ''}" data-estado="${v}">${l}</button>`
   ).join('');
 
   document.getElementById('doc-tipo-filters').addEventListener('click', (e) => {
-    const btn = e.target.closest('.crm-filter-tab');
+    const btn = e.target.closest('.doc-filter-tab');
     if (!btn) return;
     docState.tipo = btn.dataset.tipo;
     renderDocFilters();
@@ -159,7 +212,7 @@ function renderDocFilters() {
   });
 
   document.getElementById('doc-estado-filters').addEventListener('click', (e) => {
-    const btn = e.target.closest('.crm-filter-tab');
+    const btn = e.target.closest('.doc-filter-tab');
     if (!btn) return;
     docState.estado = btn.dataset.estado;
     renderDocFilters();
@@ -212,21 +265,21 @@ function renderDocKPIs(data) {
   });
 
   kpiBox.innerHTML = `
-    <div class="crm-kpi">
-      <div class="crm-kpi-icon blue"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-      <div><div class="crm-kpi-label">Total</div><div class="crm-kpi-value">${counts.total}</div></div>
+    <div class="doc-kpi-card">
+      <div class="doc-kpi-icon blue"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+      <div><div class="doc-kpi-label">Total</div><div class="doc-kpi-value">${counts.total}</div></div>
     </div>
-    <div class="crm-kpi">
-      <div class="crm-kpi-icon amber"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-      <div><div class="crm-kpi-label">Pendientes</div><div class="crm-kpi-value">${counts.pendiente}</div></div>
+    <div class="doc-kpi-card">
+      <div class="doc-kpi-icon amber"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div><div class="doc-kpi-label">Pendientes</div><div class="doc-kpi-value">${counts.pendiente}</div></div>
     </div>
-    <div class="crm-kpi">
-      <div class="crm-kpi-icon purple"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div>
-      <div><div class="crm-kpi-label">En progreso</div><div class="crm-kpi-value">${counts.en_progreso}</div></div>
+    <div class="doc-kpi-card">
+      <div class="doc-kpi-icon purple"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div>
+      <div><div class="doc-kpi-label">En progreso</div><div class="doc-kpi-value">${counts.en_progreso}</div></div>
     </div>
-    <div class="crm-kpi">
-      <div class="crm-kpi-icon green"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-      <div><div class="crm-kpi-label">Completados</div><div class="crm-kpi-value">${counts.completado}</div></div>
+    <div class="doc-kpi-card">
+      <div class="doc-kpi-icon green"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div><div class="doc-kpi-label">Completados</div><div class="doc-kpi-value">${counts.completado}</div></div>
     </div>`;
 }
 
@@ -235,70 +288,66 @@ function renderListToBox(data) {
   if (!box) return;
 
   if (!data.length) {
-    box.innerHTML = `<div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div><div class="crm-empty-text">Sin resultados</div></div>`; return;
+    box.innerHTML = `<div class="doc-empty"><div class="doc-empty-icon"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div><div class="doc-empty-text">Sin resultados</div></div>`; return;
   }
 
   const allIds = data.map(d => d.id);
   const allSelected = allIds.length > 0 && allIds.every(id => selectedDocs.has(id));
 
-  const thead = `
-    <div class="doc-bulk-bar" style="${selectedDocs.size > 0 ? 'display:flex;' : 'display:none;'}" id="doc-bulk-bar">
-      <span style="font-size:12px;font-weight:700;color:var(--accent-dark);">${selectedDocs.size} seleccionado${selectedDocs.size !== 1 ? 's' : ''}</span>
-      <div style="display:flex;gap:6px;margin-left:auto;">
-        <button class="doc-bulk-btn" id="doc-bulk-delete" style="padding:5px 10px;font-size:10px;font-weight:600;border-radius:4px;border:1px solid #ef4444;background:#ef444411;color:#ef4444;cursor:pointer;">🗑 Eliminar</button>
-        <button class="doc-bulk-btn" id="doc-bulk-cancel" style="padding:5px 10px;font-size:10px;font-weight:600;border-radius:4px;border:1px solid var(--border);background:white;color:var(--text-mid);cursor:pointer;">✕ Cancelar</button>
+  const ESTADO_ICONS = { pendiente:'⏳', en_progreso:'🔄', completado:'✅', facturado:'💰', cancelado:'❌' };
+  const TIPO_ICONS = { OT:'📋', PRO:'⚡', FAC:'🧾', COT:'📄', DEF:'📄' };
+
+  const bulkBar = selectedDocs.size > 0 ? `
+    <div class="doc-bulk-bar" id="doc-bulk-bar">
+      <span style="font-size:14px;font-weight:800;color:var(--accent-dark);">${selectedDocs.size} seleccionado${selectedDocs.size !== 1 ? 's' : ''}</span>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button class="doc-bulk-btn" id="doc-bulk-delete" style="border:2px solid #ef4444;background:#fee2e2;color:#7f1d1d;">🗑 Eliminar</button>
+        <button class="doc-bulk-btn" id="doc-bulk-cancel" style="border:2px solid var(--border);background:var(--surface);color:var(--text-mid);">✕ Cancelar</button>
       </div>
     </div>
-    <div class="doc-table-wrap">
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th style="width:32px;text-align:center;"><input type="checkbox" id="doc-select-all" ${allSelected ? 'checked' : ''} style="cursor:pointer;accent-color:var(--accent);" /></th>
-          <th style="width: 140px;">Tipo / ID</th>
-          <th>Cliente / Proveedor</th>
-          <th style="width: 110px; text-align: center;">Fecha</th>
-          <th style="width: 130px; text-align: right;">Monto</th>
-          <th style="width: 120px; text-align: center;">Estado</th>
-        </tr>
-      </thead>
-      <tbody>
+  ` : '';
+
+  const selectAllHtml = `
+    <div style="display:flex;align-items:center;gap:10px;padding:0 0 12px;">
+      <input type="checkbox" id="doc-select-all" ${allSelected ? 'checked' : ''} style="width:20px;height:20px;cursor:pointer;accent-color:var(--accent);" />
+      <label for="doc-select-all" style="font-size:13px;font-weight:700;color:var(--text-mid);cursor:pointer;">Seleccionar todos</label>
+    </div>
   `;
 
-  const rows = data.map(d => {
+  const cards = data.map(d => {
     const tipo = d.doc_type || 'DEF';
     const cliente = d.clientes?.empresa || d.clientes?.nombre || '—';
     const estado = d.estado || 'pendiente';
-    const badgeClass = `doc-badge ${estado}`;
-
     const isSelected = selectedDocs.has(d.id);
+    const estadoIcon = ESTADO_ICONS[estado] || '❓';
+    const tipoIcon = TIPO_ICONS[tipo] || '📄';
+    const estadoLabel = estado.replace('_', ' ');
+
     return `
-    <tr class="doc-table-row" data-id="${d.id}" style="${isSelected ? 'background:rgba(0,194,168,0.06);' : ''}">
-      <td style="text-align:center;"><input type="checkbox" class="doc-row-check" data-id="${d.id}" ${isSelected ? 'checked' : ''} style="cursor:pointer;accent-color:var(--accent);" /></td>
-      <td>
-        <div style="font-weight:800; color:var(--navy); font-size:12px;">
-          ${tipo} ${d.doc_num ? `<span style="color:var(--text-soft);font-weight:600;font-size:11px;">#${d.doc_num}</span>` : ''}
+    <div class="doc-card ${isSelected ? 'selected' : ''}" data-id="${d.id}" data-estado="${estado}">
+      <div class="doc-card-header">
+        <div class="doc-card-type">
+          <span style="font-size:18px;">${tipoIcon}</span>
+          <span>${tipo}</span>
+          ${d.doc_num ? `<span class="doc-num">#${d.doc_num}</span>` : ''}
         </div>
-      </td>
-      <td>
-        <div style="font-weight:700; font-size:13px; color:var(--text);">
-          ${esc(cliente)}
+        <input type="checkbox" class="doc-card-checkbox doc-row-check" data-id="${d.id}" ${isSelected ? 'checked' : ''} />
+      </div>
+      <div class="doc-card-client">${esc(cliente)}</div>
+      <div class="doc-card-footer">
+        <div>
+          <div class="doc-card-amount">${fmtMoney(d.total)}</div>
+          <div class="doc-card-date">${fmtDate(d.fecha)}</div>
         </div>
-      </td>
-      <td style="color:var(--text-mid); font-weight:500; font-size:11px; text-align:center;">
-        ${fmtDate(d.fecha)}
-      </td>
-      <td style="font-size:14px; font-weight:900; color:var(--navy); text-align:right;">
-        ${fmtMoney(d.total)}
-      </td>
-      <td style="text-align:center;">
-        <span class="${badgeClass}">
-          ${estado.replace('_', ' ')}
+        <span class="doc-badge ${estado}">
+          <span class="badge-icon">${estadoIcon}</span>
+          ${estadoLabel}
         </span>
-      </td>
-    </tr>`;
+      </div>
+    </div>`;
   }).join('');
 
-  box.innerHTML = thead + rows + `</tbody></table></div>`;
+  box.innerHTML = bulkBar + selectAllHtml + `<div class="doc-grid">${cards}</div>`;
 
   // Bind select-all
   const selectAllCb = document.getElementById('doc-select-all');
@@ -348,35 +397,33 @@ function renderListToBox(data) {
     }
   });
 
-  // Agregar eventos de click
-  box.querySelectorAll('.doc-table-row').forEach(row => {
-    row.addEventListener('click', async () => {
-      let nextTr = row.nextElementSibling;
-      if (nextTr && nextTr.classList.contains('doc-accordion-row')) {
-        nextTr.style.display = nextTr.style.display === 'none' ? 'table-row' : 'none';
+  // Agregar eventos de click a las tarjetas
+  box.querySelectorAll('.doc-card').forEach(card => {
+    card.addEventListener('click', async () => {
+      // Si ya hay un acordeon abierto despues de esta tarjeta, togglear
+      let nextEl = card.nextElementSibling;
+      if (nextEl && nextEl.classList.contains('doc-card-expanded')) {
+        nextEl.style.display = nextEl.style.display === 'none' ? 'block' : 'none';
         return;
       }
       
-      const detailsRow = document.createElement('tr');
-      detailsRow.className = 'doc-accordion-row';
-      const detailsCell = document.createElement('td');
-      detailsCell.colSpan = 6;
-      detailsCell.style.padding = '0';
-      detailsRow.appendChild(detailsCell);
+      const expandedDiv = document.createElement('div');
+      expandedDiv.className = 'doc-card-expanded';
+      expandedDiv.style.cssText = 'grid-column:1/-1;background:var(--surface);border:2px solid var(--border-light);border-radius:14px;padding:0;overflow:hidden;animation:slideDown 0.3s ease;';
       
       let detailsDiv = document.createElement('div');
       detailsDiv.className = 'doc-accordion-details';
-      detailsDiv.innerHTML = `<div style="padding:10px;text-align:center;color:var(--text-soft);font-size:11px;">Cargando detalles...</div>`;
+      detailsDiv.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-soft);font-size:14px;">Cargando detalles...</div>`;
       detailsDiv.addEventListener('click', e => e.stopPropagation());
-      detailsCell.appendChild(detailsDiv);
-      row.parentNode.insertBefore(detailsRow, row.nextSibling);
+      expandedDiv.appendChild(detailsDiv);
+      card.parentNode.insertBefore(expandedDiv, card.nextSibling);
 
       try {
         const supabase = await getSupabase();
         const { data, error } = await supabase
           .from('documentos')
           .select('*, clientes(nombre, empresa, telefono, email, direccion), lineas_documento(*)')
-          .eq('id', row.dataset.id)
+          .eq('id', card.dataset.id)
           .single();
         if (error) throw error;
         
@@ -412,8 +459,8 @@ function renderListToBox(data) {
           try {
             await eliminarDocumento(data.id);
             toast('Documento eliminado', 'success');
-            row.remove();
-            detailsRow.remove();
+            card.remove();
+            expandedDiv.remove();
           } catch (err) {
             toast('Error al eliminar: ' + (err.message || err), 'error');
             btnDel.disabled = false;
@@ -485,26 +532,26 @@ function renderAccordionHTML(data) {
   const telStr = data.clientes?.telefono || '—';
   const dirStr = data.clientes?.direccion || '—';
   
-  let itemsHtml = '<div style="color:var(--text-soft);font-size:11px;padding:10px 0;">No hay ítems registrados</div>';
+  let itemsHtml = '<div style="color:var(--text-soft);font-size:14px;padding:16px 0;">No hay ítems registrados</div>';
   const items = data.lineas_documento || data.items || [];
   if (items && items.length) {
     itemsHtml = `
-      <table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:11px;">
+      <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:13px;">
         <thead>
-          <tr style="border-bottom:1px solid var(--border-light); color:var(--text-soft); text-align:left;">
-            <th style="padding:6px 4px;font-weight:600;">Descripción</th>
-            <th style="padding:6px 4px;text-align:center;font-weight:600;width:40px;">Cant.</th>
-            <th style="padding:6px 4px;text-align:right;font-weight:600;width:70px;">Precio</th>
-            <th style="padding:6px 4px;text-align:right;font-weight:600;width:80px;">Total</th>
+          <tr style="border-bottom:2px solid var(--border-light); color:var(--text-soft); text-align:left;">
+            <th style="padding:10px 8px;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.3px;">Descripción</th>
+            <th style="padding:10px 8px;text-align:center;font-weight:700;font-size:12px;width:60px;text-transform:uppercase;">Cant.</th>
+            <th style="padding:10px 8px;text-align:right;font-weight:700;font-size:12px;width:100px;text-transform:uppercase;">Precio</th>
+            <th style="padding:10px 8px;text-align:right;font-weight:700;font-size:12px;width:110px;text-transform:uppercase;">Total</th>
           </tr>
         </thead>
         <tbody>
           ${items.map(it => `
-            <tr style="border-bottom:1px solid rgba(0,0,0,0.03);">
-              <td style="padding:8px 4px; color:var(--text-mid);">${esc(it.descripcion)}</td>
-              <td style="padding:8px 4px; text-align:center; color:var(--text-mid);">${it.cantidad}</td>
-              <td style="padding:8px 4px; text-align:right; color:var(--text-mid);">${fmtMoney(it.precio_unitario)}</td>
-              <td style="padding:8px 4px; text-align:right; font-weight:700; color:var(--navy);">${fmtMoney(it.cantidad * it.precio_unitario)}</td>
+            <tr style="border-bottom:1px solid rgba(0,0,0,0.04);">
+              <td style="padding:12px 8px; color:var(--text);font-weight:600;">${esc(it.descripcion)}</td>
+              <td style="padding:12px 8px; text-align:center; color:var(--text-mid);font-weight:600;">${it.cantidad}</td>
+              <td style="padding:12px 8px; text-align:right; color:var(--text-mid);">${fmtMoney(it.precio_unitario)}</td>
+              <td style="padding:12px 8px; text-align:right; font-weight:800; color:var(--navy);font-size:14px;">${fmtMoney(it.cantidad * it.precio_unitario)}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -513,39 +560,53 @@ function renderAccordionHTML(data) {
   }
 
   return `
-    <div style="border-top:1px dashed var(--border-light); padding-top:16px; display:flex; gap:32px; align-items:flex-start;">
-      <div style="flex:1;">
-        <div style="font-size:10px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Datos del Cliente</div>
-        <div style="font-size:13px; font-weight:800; color:var(--navy); margin-bottom:4px; letter-spacing:-0.01em;">${esc(clienteStr)}</div>
-        <div style="font-size:11px; color:var(--text-mid); margin-bottom:4px;"><span style="color:var(--text-soft);margin-right:4px;">📞</span> ${esc(telStr)}</div>
-        <div style="font-size:11px; color:var(--text-mid);"><span style="color:var(--text-soft);margin-right:4px;">📍</span> ${esc(dirStr)}</div>
-        <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-primary acc-btn-edit" style="padding:5px 12px; font-size:10px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar Documento</button>
-          <button class="btn acc-btn-comp" style="padding:5px 12px; font-size:10px; border:1px solid var(--border); background:white;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg> Ver Comprobante</button>
-          ${data.doc_type !== 'FAC' ? `<button class="btn acc-btn-factura" style="padding:5px 12px; font-size:10px; border:1px solid #6366f1; background:#6366f122; color:#6366f1;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99.5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3-3 3 3 3-3 3 3z"></path></svg> Convertir en Factura</button>` : ''}
-          <button class="btn acc-btn-delete" style="padding:5px 12px; font-size:10px; border:1px solid #ef4444; background:#ef444411; color:#ef4444;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px;vertical-align:-2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar</button>
+    <div style="padding:24px 28px;">
+      <div style="display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; margin-bottom:20px;">
+        <div style="flex:1; min-width:240px;">
+          <div style="font-size:13px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Datos del Cliente</div>
+          <div style="font-size:17px; font-weight:800; color:var(--navy); margin-bottom:8px; letter-spacing:-0.01em;">${esc(clienteStr)}</div>
+          <div style="font-size:14px; color:var(--text-mid); margin-bottom:6px; display:flex; align-items:center; gap:8px;"><span style="font-size:16px;">📞</span> ${esc(telStr)}</div>
+          <div style="font-size:14px; color:var(--text-mid); display:flex; align-items:center; gap:8px;"><span style="font-size:16px;">📍</span> ${esc(dirStr)}</div>
+          <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-primary acc-btn-edit" style="padding:10px 18px; font-size:13px; font-weight:700; border-radius:8px;">✏️ Editar Documento</button>
+            <button class="btn acc-btn-comp" style="padding:10px 18px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid var(--border-light); background:var(--surface); color:var(--navy);">📄 Ver Comprobante</button>
+            ${data.doc_type !== 'FAC' ? `<button class="btn acc-btn-factura" style="padding:10px 18px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid #8b5cf6; background:#f3e8ff; color:#581c87;">🧾 Convertir en Factura</button>` : ''}
+            <button class="btn acc-btn-delete" style="padding:10px 18px; font-size:13px; font-weight:700; border-radius:8px; border:2px solid #ef4444; background:#fee2e2; color:#7f1d1d;">🗑 Eliminar</button>
+          </div>
         </div>
-        <div style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-          <span style="font-size:9px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Hacienda:</span>
-          ${HACIENDA_ESTADOS.map(e => {
-            const isActive = (data.estado_hacienda || 'sin_enviar') === e.value;
-            return `<button class="btn acc-btn-hacienda" data-estado="${e.value}" data-docid="${data.id}" style="padding:3px 8px; font-size:9px; font-weight:700; border-radius:4px; border:1.5px solid ${isActive ? e.color : '#e2e8f0'}; background:${isActive ? e.color + '22' : 'white'}; color:${isActive ? e.color : '#94a3b8'}; cursor:pointer;">${e.label}</button>`;
-          }).join('')}
+      </div>
+
+      <div style="background:var(--surface); border:2px solid var(--border-light); border-radius:12px; padding:16px 20px; margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Detalle de Ítems</div>
+        ${itemsHtml}
+      </div>
+
+      ${(data.doc_type === 'PRO' || data.doc_type === 'FAC') ? `
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+        ${data.doc_type === 'PRO' ? `
+        <div style="background:var(--surface-2); border:2px solid var(--border-light); border-radius:12px; padding:18px 20px;">
+          <div style="font-size:13px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px;">🏛️ Hacienda</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px;">
+            ${HACIENDA_ESTADOS.map(e => {
+              const isActive = (data.estado_hacienda || 'sin_enviar') === e.value;
+              return `<button class="btn acc-btn-hacienda" data-estado="${e.value}" data-docid="${data.id}" style="padding:12px 16px; font-size:13px; font-weight:700; border-radius:10px; border:2px solid ${isActive ? e.color : '#e2e8f0'}; background:${isActive ? e.color + '22' : 'var(--surface)'}; color:${isActive ? e.color : '#94a3b8'}; cursor:pointer; text-align:center;">${e.label}</button>`;
+            }).join('')}
+          </div>
         </div>
+        ` : ''}
         ${data.doc_type === 'FAC' ? `
-        <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-          <span style="font-size:9px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Pago:</span>
-          ${Object.entries(ESTADO_PAGO).map(([value, info]) => {
-            const isActive = (data.estado || 'pendiente') === value;
-            return `<button class="btn acc-btn-pago" data-estado="${value}" data-docid="${data.id}" style="padding:3px 8px; font-size:9px; font-weight:700; border-radius:4px; border:1.5px solid ${isActive ? info.color : '#e2e8f0'}; background:${isActive ? info.color + '22' : 'white'}; color:${isActive ? info.color : '#94a3b8'}; cursor:pointer;">${info.label}</button>`;
-          }).join('')}
+        <div style="background:var(--surface-2); border:2px solid var(--border-light); border-radius:12px; padding:18px 20px;">
+          <div style="font-size:13px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px;">💳 Estado de Pago</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px;">
+            ${Object.entries(ESTADO_PAGO).map(([value, info]) => {
+              const isActive = (data.estado || 'pendiente') === value;
+              return `<button class="btn acc-btn-pago" data-estado="${value}" data-docid="${data.id}" style="padding:12px 16px; font-size:13px; font-weight:700; border-radius:10px; border:2px solid ${isActive ? info.color : '#e2e8f0'}; background:${isActive ? info.color + '22' : 'var(--surface)'}; color:${isActive ? info.color : '#94a3b8'}; cursor:pointer; text-align:center;">${info.label}</button>`;
+            }).join('')}
+          </div>
         </div>
         ` : ''}
       </div>
-      <div style="flex:2; background:var(--surface); border:1px solid var(--border-light); border-radius:8px; padding:12px 16px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:10px; font-weight:800; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Detalle de Ítems</div>
-        ${itemsHtml}
-      </div>
+      ` : ''}
     </div>
   `;
 }
@@ -579,23 +640,25 @@ function renderDocDetail(data, shell) {
       </div>
     </div>
 
+    ${data.doc_type === 'PRO' ? `
     <div class="detail-section">
       <div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.062-.18-2.082-.512-3.04z"></path></svg> Estado Hacienda</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
         ${HACIENDA_ESTADOS.map(e => {
           const isActive = (data.estado_hacienda || 'sin_enviar') === e.value;
-          return `<button class="btn btn-estado-hacienda" data-estado="${e.value}" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid ${isActive ? e.color : '#e2e8f0'};background:${isActive ? e.color + '22' : 'white'};color:${isActive ? e.color : '#64748b'};cursor:pointer;">● ${e.label}</button>`;
+          return `<button class="btn btn-estado-hacienda" data-estado="${e.value}" style="padding:12px 16px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid ${isActive ? e.color : '#e2e8f0'};background:${isActive ? e.color + '22' : 'white'};color:${isActive ? e.color : '#64748b'};cursor:pointer;text-align:center;">${e.label}</button>`;
         }).join('')}
       </div>
     </div>
+    ` : ''}
 
     ${data.doc_type === 'FAC' ? `
     <div class="detail-section">
       <div class="detail-section-title"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg> Estado de Pago</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
         ${Object.entries(ESTADO_PAGO).map(([value, info]) => {
           const isActive = (data.estado || 'pendiente') === value;
-          return `<button class="btn btn-estado-pago" data-estado="${value}" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:2px solid ${isActive ? info.color : '#e2e8f0'};background:${isActive ? info.color + '22' : 'white'};color:${isActive ? info.color : '#64748b'};cursor:pointer;">● ${info.label}</button>`;
+          return `<button class="btn btn-estado-pago" data-estado="${value}" style="padding:12px 16px;font-size:13px;font-weight:700;border-radius:10px;border:2px solid ${isActive ? info.color : '#e2e8f0'};background:${isActive ? info.color + '22' : 'white'};color:${isActive ? info.color : '#64748b'};cursor:pointer;text-align:center;">${info.label}</button>`;
         }).join('')}
       </div>
     </div>

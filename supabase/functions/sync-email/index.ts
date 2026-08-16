@@ -12,13 +12,16 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("APP_SERVICE_KEY") ?? SUPABASE_ANON_KE
 const GMAIL_HOST = "imap.gmail.com";
 const GMAIL_PORT = 993;
 
+// Timeout para toda la operación IMAP (Supabase Edge Functions ~25s en plan free)
+const IMAP_TIMEOUT_MS = 20000;
+let startTime = Date.now();
+
 // IMAP client usando sockets de Deno
 async function imapConnect(user: string, pass: string) {
   const conn = await Deno.connectTls({
     hostname: GMAIL_HOST,
     port: GMAIL_PORT,
   });
-
   // Leer greeting inicial
   const decoder = new TextDecoder();
   const buf = new Uint8Array(65536);
@@ -273,6 +276,7 @@ Deno.serve(async (req) => {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
 
+  startTime = Date.now();
   try {
     // Leer credenciales desde la tabla config usando REST API con anon key
     const configRes = await fetch(`${SUPABASE_URL}/rest/v1/config?select=value&key=eq.gmail_imap`, {
@@ -305,7 +309,7 @@ Deno.serve(async (req) => {
     const lastSyncValue = syncRows?.[0]?.value;
 
     let sinceDate = new Date();
-    sinceDate.setDate(sinceDate.getDate() - 30);
+    sinceDate.setDate(sinceDate.getDate() - 7);
     if (lastSyncValue?.date) {
       const d = new Date(lastSyncValue.date);
       if (!isNaN(d.getTime())) sinceDate = d;
@@ -337,8 +341,8 @@ Deno.serve(async (req) => {
         }
       }
     }
-    // Limitar a los ultimos 20 para no exceder timeout
-    const limitedUids = uids.slice(-50);
+    // Limitar a los ultimos 3 para no exceder timeout de Supabase
+    const limitedUids = uids.slice(-3);
     console.log(`[sync-email] Encontrados ${uids.length} correos, procesando ${limitedUids.length}`);
 
     let savedCount = 0;
@@ -349,6 +353,11 @@ Deno.serve(async (req) => {
     // Procesar cada correo
     const maxUids = limitedUids;
     for (const uid of maxUids) {
+      // Verificar timeout antes de procesar cada correo
+      if (Date.now() - startTime > IMAP_TIMEOUT_MS) {
+        console.log(`[sync-email] Timeout alcanzado, deteniendo procesamiento`);
+        break;
+      }
       try {
         const raw = await fetchMessage(sendCommand, uid);
         console.log(`[sync-email] UID ${uid}: raw length=${raw.length}, has XML=${raw.includes('xml')}, has Clave=${raw.includes('Clave')}`);
