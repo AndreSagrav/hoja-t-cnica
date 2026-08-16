@@ -59,13 +59,14 @@ export async function impuestosDeclaracionesView() {
   async function renderIVATab(container) {
     let selMes = mes; // Default to current month
     let selAnio = anio;
+    let viewMode = 'calc'; // 'calc' | 'replica'
 
     container.innerHTML = `
       <div class="tax-section" style="animation-delay:0.1s">
         <div class="tax-section-header">
           <div class="tax-section-title">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-            Calculadora IVA Mensual
+            ${viewMode === 'replica' ? 'Réplica D-150 — Declaración de IVA' : 'Calculadora IVA Mensual'}
           </div>
           <div style="display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap;">
             <select id="iva-mes" class="tax-select">
@@ -79,6 +80,9 @@ export async function impuestosDeclaracionesView() {
               <input type="number" id="iva-saldo-favor-previo" style="width:100px;border:none;background:transparent;padding:var(--sp-2) 0;box-shadow:none;outline:none;font-weight:600;color:var(--text);" placeholder="0" min="0">
             </div>
             <button class="tax-btn tax-btn-primary" id="btn-calc-iva">Calcular</button>
+            <button class="tax-btn ${viewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d150" style="font-size:var(--fs-xs);">
+              ${viewMode === 'replica' ? '📊 Calculadora' : '📋 Réplica D-150'}
+            </button>
           </div>
         </div>
         <div class="tax-section-body" id="iva-result">
@@ -125,6 +129,11 @@ export async function impuestosDeclaracionesView() {
 
         const calc = calcularIVAMensual(ingresos, gastos, saldoAnterior);
         const mesNombre = MESES[selMes - 1];
+
+        if (viewMode === 'replica') {
+          renderD150Replica(resultDiv, calc, { mes: selMes, anio: selAnio, mesNombre, saldoAnterior, prevMes, prevAnio, ingresos, gastos });
+          return;
+        }
 
         resultDiv.innerHTML = `
           <div style="margin-bottom:var(--sp-3);">
@@ -298,21 +307,189 @@ export async function impuestosDeclaracionesView() {
     }
 
     container.querySelector('#btn-calc-iva')?.addEventListener('click', calcIVA);
+    container.querySelector('#btn-toggle-d150')?.addEventListener('click', () => {
+      viewMode = viewMode === 'replica' ? 'calc' : 'replica';
+      renderIVATab(container);
+    });
     // Auto-calculate on load
     calcIVA();
+  }
+
+  // ─── D-150 REPLICA ────────────────────────────────────────
+
+  function renderD150Replica(resultDiv, calc, ctx) {
+    const { mes, anio, mesNombre, saldoAnterior, prevMes, prevAnio } = ctx;
+    const TARIFAS = ['13', '4', '2', '1', '0'];
+    const ventas = calc.ventasPorTarifa || {};
+    const compras = calc.comprasPorTarifa || {};
+
+    function v(t) { return ventas[t] || { base: 0, iva: 0, total: 0 }; }
+    function c(t) { return compras[t] || { base: 0, iva: 0, total: 0 }; }
+
+    const totalVentasBase = TARIFAS.reduce((s, t) => s + v(t).base, 0);
+    const totalVentasIVA = TARIFAS.reduce((s, t) => s + v(t).iva, 0);
+    const totalVentasBruto = totalVentasBase + totalVentasIVA;
+    const totalComprasBase = TARIFAS.reduce((s, t) => s + c(t).base, 0);
+    const totalComprasIVA = TARIFAS.reduce((s, t) => s + c(t).iva, 0);
+    const totalComprasBruto = totalComprasBase + totalComprasIVA;
+
+    const ivaPagar = calc.ivaPagar || 0;
+    const saldoFavor = calc.saldoFavor || 0;
+
+    resultDiv.innerHTML = `
+      <style>
+        .d150-form { background:#fff; border:2px solid #1a3a6b; border-radius:6px; overflow:hidden; font-family:'Inter',-apple-system,sans-serif; color:#1a1a1a; }
+        .d150-header { background:linear-gradient(180deg,#1a3a6b,#0d3270); color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+        .d150-header h2 { margin:0; font-size:18px; font-weight:700; letter-spacing:0.5px; }
+        .d150-header .d150-periodo { font-size:13px; opacity:0.9; }
+        .d150-body { padding:16px 20px; }
+        .d150-declarante { background:#f0f4fa; border:1px solid #c8d6e5; border-radius:4px; padding:10px 14px; margin-bottom:14px; font-size:13px; display:flex; gap:24px; flex-wrap:wrap; }
+        .d150-declarante span strong { color:#0d3270; }
+        .d150-section { margin-bottom:14px; }
+        .d150-section-title { font-size:14px; font-weight:700; color:#0d3270; border-bottom:2px solid #0d3270; padding-bottom:4px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+        .d150-section-title .dot { width:8px; height:8px; background:#0d3270; border-radius:50%; }
+        .d150-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .d150-table th { background:#e8eef6; color:#0d3270; font-weight:600; padding:7px 10px; text-align:left; border:1px solid #c8d6e5; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; }
+        .d150-table td { padding:7px 10px; border:1px solid #e0e6ed; }
+        .d150-table td.num { text-align:right; font-family:'JetBrains Mono','Consolas',monospace; font-size:12px; }
+        .d150-table tr.subtotal td { font-weight:600; background:#f7f9fc; border-top:2px solid #c8d6e5; }
+        .d150-table tr.total-row td { font-weight:700; background:#e8eef6; border-top:2px solid #0d3270; font-size:14px; }
+        .d150-resumen { background:#f7f9fc; border:1px solid #c8d6e5; border-radius:4px; padding:14px 16px; }
+        .d150-resumen-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; border-bottom:1px dotted #d0d8e4; }
+        .d150-resumen-row:last-child { border-bottom:none; }
+        .d150-resumen-row .label { color:#555; }
+        .d150-resumen-row .value { font-family:'JetBrains Mono','Consolas',monospace; font-weight:600; }
+        .d150-result { margin-top:10px; padding:12px 16px; border-radius:4px; font-weight:700; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
+        .d150-result.pagar { background:#fff3f0; border:2px solid #c0392b; color:#c0392b; }
+        .d150-result.favor { background:#f0fff4; border:2px solid #27ae60; color:#27ae60; }
+        .d150-footer { font-size:11px; color:#888; text-align:center; padding:10px; border-top:1px solid #e0e6ed; }
+      </style>
+      <div class="d150-form">
+        <div class="d150-header">
+          <h2>FORMULARIO D-150</h2>
+          <div class="d150-periodo">Declaración de IVA · ${mesNombre} ${anio}</div>
+        </div>
+        <div class="d150-body">
+          <div class="d150-declarante">
+            <span><strong>Declarante:</strong> BATISTA VARGAS CESAR ANDRES</span>
+            <span><strong>Cédula:</strong> 2-0539-0118</span>
+            <span><strong>Período:</strong> ${mesNombre} ${anio}</span>
+          </div>
+
+          <!-- VENTAS -->
+          <div class="d150-section">
+            <div class="d150-section-title"><span class="dot"></span> VENTAS DEL PERÍODO</div>
+            <table class="d150-table">
+              <thead>
+                <tr><th>Concepto</th><th class="num">Base Imponible</th><th class="num">IVA</th><th class="num">Total</th></tr>
+              </thead>
+              <tbody>
+                ${TARIFAS.filter(t => t !== '0').map(t => `
+                  <tr>
+                    <td>Gravadas al ${t}%</td>
+                    <td class="num">${formatColones(v(t).base)}</td>
+                    <td class="num">${formatColones(v(t).iva)}</td>
+                    <td class="num">${formatColones(v(t).total)}</td>
+                  </tr>
+                `).join('')}
+                <tr>
+                  <td>Exentas (0%)</td>
+                  <td class="num">${formatColones(v('0').base)}</td>
+                  <td class="num">₡0</td>
+                  <td class="num">${formatColones(v('0').base)}</td>
+                </tr>
+                <tr class="subtotal">
+                  <td>TOTAL VENTAS</td>
+                  <td class="num">${formatColones(totalVentasBase)}</td>
+                  <td class="num">${formatColones(totalVentasIVA)}</td>
+                  <td class="num">${formatColones(totalVentasBruto)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- COMPRAS -->
+          <div class="d150-section">
+            <div class="d150-section-title"><span class="dot"></span> COMPRAS DEL PERÍODO</div>
+            <table class="d150-table">
+              <thead>
+                <tr><th>Concepto</th><th class="num">Base Imponible</th><th class="num">IVA</th><th class="num">Total</th></tr>
+              </thead>
+              <tbody>
+                ${TARIFAS.filter(t => t !== '0').map(t => `
+                  <tr>
+                    <td>Gravadas al ${t}%</td>
+                    <td class="num">${formatColones(c(t).base)}</td>
+                    <td class="num">${formatColones(c(t).iva)}</td>
+                    <td class="num">${formatColones(c(t).total)}</td>
+                  </tr>
+                `).join('')}
+                <tr>
+                  <td>Exentas (0%)</td>
+                  <td class="num">${formatColones(c('0').base)}</td>
+                  <td class="num">₡0</td>
+                  <td class="num">${formatColones(c('0').base)}</td>
+                </tr>
+                <tr class="subtotal">
+                  <td>TOTAL COMPRAS</td>
+                  <td class="num">${formatColones(totalComprasBase)}</td>
+                  <td class="num">${formatColones(totalComprasIVA)}</td>
+                  <td class="num">${formatColones(totalComprasBruto)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- RESUMEN -->
+          <div class="d150-section">
+            <div class="d150-section-title"><span class="dot"></span> RESUMEN — DETERMINACIÓN DEL IVA</div>
+            <div class="d150-resumen">
+              <div class="d150-resumen-row">
+                <span class="label">(+) Débito Fiscal (IVA cobrado en ventas)</span>
+                <span class="value" style="color:#27ae60;">${formatColones(calc.debitoFiscal)}</span>
+              </div>
+              <div class="d150-resumen-row">
+                <span class="label">(-) Crédito Fiscal (IVA pagado en compras deducibles)</span>
+                <span class="value" style="color:#c0392b;">${formatColones(calc.creditoFiscal)}</span>
+              </div>
+              ${saldoAnterior > 0 ? `
+              <div class="d150-resumen-row">
+                <span class="label">(-) Saldo a favor período anterior (${MESES[prevMes - 1]})</span>
+                <span class="value" style="color:#c0392b;">${formatColones(saldoAnterior)}</span>
+              </div>
+              ` : ''}
+              ${calc.factorProporcionalidad < 1 ? `
+              <div class="d150-resumen-row">
+                <span class="label" style="font-size:11px;">Factor proporcionalidad: ${(calc.factorProporcionalidad * 100).toFixed(2)}%</span>
+                <span class="value" style="font-size:11px;opacity:0.7;">Crédito ajustado</span>
+              </div>
+              ` : ''}
+              <div class="d150-result ${ivaPagar > 0 ? 'pagar' : 'favor'}">
+                <span>${ivaPagar > 0 ? '💳 IVA A PAGAR' : '✅ SALDO A FAVOR'}</span>
+                <span>${formatColones(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d150-footer">
+          Réplica visual para referencia — Completá estos valores en TRIBU-CR · Fecha límite: 15 de ${MESES[mes % 12]} ${mes === 12 ? anio + 1 : anio}
+        </div>
+      </div>
+    `;
   }
 
   // ─── RENTA TAB ────────────────────────────────────────────
 
   async function renderRentaTab(container) {
     let selAnio = anio - 1; // Previous year by default
+    let viewMode = 'calc'; // 'calc' | 'replica'
 
     container.innerHTML = `
       <div class="tax-section" style="animation-delay:0.1s">
         <div class="tax-section-header">
           <div class="tax-section-title">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Calculadora Renta Anual
+            ${viewMode === 'replica' ? 'Réplica D-101 — Declaración de Renta' : 'Calculadora Renta Anual'}
           </div>
           <div style="display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap;">
             <span style="font-size:var(--fs-sm);color:var(--text-mid);font-weight:var(--fw-medium);">Año fiscal:</span>
@@ -325,6 +502,9 @@ export async function impuestosDeclaracionesView() {
               <span class="tax-toggle-label" style="font-size:var(--fs-sm);color:var(--text-mid);font-weight:var(--fw-medium);">Deducción única 25%</span>
             </label>
             <button class="tax-btn tax-btn-primary" id="btn-calc-renta">Calcular</button>
+            <button class="tax-btn ${viewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d101" style="font-size:var(--fs-xs);">
+              ${viewMode === 'replica' ? '📊 Calculadora' : '📋 Réplica D-101'}
+            </button>
           </div>
         </div>
         <div class="tax-section-body" id="renta-result">
@@ -365,6 +545,11 @@ export async function impuestosDeclaracionesView() {
         });
 
         const parciales = calcularPagosParciales(calc.impuestoNeto, selAnio + 1);
+
+        if (viewMode === 'replica') {
+          renderD101Replica(resultDiv, calc, { selAnio, usarDeduccionUnica });
+          return;
+        }
 
         resultDiv.innerHTML = `
           <div class="tax-result">
@@ -512,7 +697,157 @@ export async function impuestosDeclaracionesView() {
     }
 
     container.querySelector('#btn-calc-renta')?.addEventListener('click', calcRenta);
+    container.querySelector('#btn-toggle-d101')?.addEventListener('click', () => {
+      viewMode = viewMode === 'replica' ? 'calc' : 'replica';
+      renderRentaTab(container);
+    });
     calcRenta();
+  }
+
+  // ─── D-101 REPLICA ────────────────────────────────────────
+
+  function renderD101Replica(resultDiv, calc, ctx) {
+    const { selAnio, usarDeduccionUnica } = ctx;
+    const parciales = calcularPagosParciales(calc.impuestoNeto, selAnio + 1);
+
+    resultDiv.innerHTML = `
+      <style>
+        .d101-form { background:#fff; border:2px solid #1a3a6b; border-radius:6px; overflow:hidden; font-family:'Inter',-apple-system,sans-serif; color:#1a1a1a; }
+        .d101-header { background:linear-gradient(180deg,#5b2c6f,#4a235a); color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+        .d101-header h2 { margin:0; font-size:18px; font-weight:700; letter-spacing:0.5px; }
+        .d101-header .d101-periodo { font-size:13px; opacity:0.9; }
+        .d101-body { padding:16px 20px; }
+        .d101-declarante { background:#f5f0f8; border:1px solid #d5c8e0; border-radius:4px; padding:10px 14px; margin-bottom:14px; font-size:13px; display:flex; gap:24px; flex-wrap:wrap; }
+        .d101-declarante span strong { color:#4a235a; }
+        .d101-section { margin-bottom:14px; }
+        .d101-section-title { font-size:14px; font-weight:700; color:#4a235a; border-bottom:2px solid #4a235a; padding-bottom:4px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+        .d101-section-title .dot { width:8px; height:8px; background:#4a235a; border-radius:50%; }
+        .d101-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .d101-table th { background:#f0e8f6; color:#4a235a; font-weight:600; padding:7px 10px; text-align:left; border:1px solid #d5c8e0; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; }
+        .d101-table td { padding:7px 10px; border:1px solid #e8ddf0; }
+        .d101-table td.num { text-align:right; font-family:'JetBrains Mono','Consolas',monospace; font-size:12px; }
+        .d101-table tr.subtotal td { font-weight:600; background:#faf7fc; border-top:2px solid #d5c8e0; }
+        .d101-resumen { background:#faf7fc; border:1px solid #d5c8e0; border-radius:4px; padding:14px 16px; }
+        .d101-resumen-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; border-bottom:1px dotted #e0d4ec; }
+        .d101-resumen-row:last-child { border-bottom:none; }
+        .d101-resumen-row .label { color:#555; }
+        .d101-resumen-row .value { font-family:'JetBrains Mono','Consolas',monospace; font-weight:600; }
+        .d101-result { margin-top:10px; padding:12px 16px; border-radius:4px; font-weight:700; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
+        .d101-result.pagar { background:#fff3f0; border:2px solid #c0392b; color:#c0392b; }
+        .d101-result.favor { background:#f0fff4; border:2px solid #27ae60; color:#27ae60; }
+        .d101-footer { font-size:11px; color:#888; text-align:center; padding:10px; border-top:1px solid #e0e6ed; }
+        .d101-pagos { margin-top:12px; }
+        .d101-pagos h4 { font-size:13px; color:#4a235a; margin:0 0 8px 0; }
+        .d101-pago-item { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:#f5f0f8; border-radius:4px; margin-bottom:4px; font-size:12px; }
+        .d101-pago-item .cuota { font-weight:600; color:#4a235a; }
+        .d101-pago-item .monto { font-family:'JetBrains Mono','Consolas',monospace; font-weight:600; }
+      </style>
+      <div class="d101-form">
+        <div class="d101-header">
+          <h2>FORMULARIO D-101</h2>
+          <div class="d101-periodo">Declaración de Renta · Año fiscal ${selAnio}</div>
+        </div>
+        <div class="d101-body">
+          <div class="d101-declarante">
+            <span><strong>Declarante:</strong> BATISTA VARGAS CESAR ANDRES</span>
+            <span><strong>Cédula:</strong> 2-0539-0118</span>
+            <span><strong>Actividad:</strong> 9511.0 — Reparación de computadoras</span>
+            <span><strong>Año fiscal:</strong> ${selAnio}</span>
+          </div>
+
+          <!-- INGRESOS Y DEDUCCIONES -->
+          <div class="d101-section">
+            <div class="d101-section-title"><span class="dot"></span> INGRESOS BRUTOS Y DEDUCCIONES</div>
+            <table class="d101-table">
+              <thead>
+                <tr><th>Concepto</th><th class="num">Monto</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Ingresos brutos anuales (netos de IVA)</td>
+                  <td class="num" style="color:#27ae60;">${formatColones(calc.ingresosBrutos)}</td>
+                </tr>
+                <tr>
+                  <td>${calc.usarDeduccionUnica ? 'Deducción única (25% de ingresos brutos)' : 'Gastos deducibles del período'}</td>
+                  <td class="num" style="color:#c0392b;">- ${formatColones(calc.deduccionAplicada)}</td>
+                </tr>
+                <tr class="subtotal">
+                  <td>RENTA NETA GRAVABLE</td>
+                  <td class="num">${formatColones(calc.rentaNeta)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- TRAMOS -->
+          <div class="d101-section">
+            <div class="d101-section-title"><span class="dot"></span> CÁLCULO DEL IMPUESTO POR TRAMOS</div>
+            <table class="d101-table">
+              <thead>
+                <tr><th>Tramo</th><th class="num">Desde</th><th class="num">Hasta</th><th class="num">Tasa</th><th class="num">Impuesto</th></tr>
+              </thead>
+              <tbody>
+                ${calc.desgloseTrmos.map(t => `
+                  <tr>
+                    <td>Tasa ${t.tasa}%</td>
+                    <td class="num">${formatColones(t.desde)}</td>
+                    <td class="num">${t.hasta === Infinity ? 'En adelante' : formatColones(t.hasta)}</td>
+                    <td class="num">${t.tasa}%</td>
+                    <td class="num">${formatColones(t.impuesto)}</td>
+                  </tr>
+                `).join('')}
+                <tr class="subtotal">
+                  <td colspan="4">IMPUESTO BRUTO</td>
+                  <td class="num">${formatColones(calc.impuestoBruto)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- RESUMEN -->
+          <div class="d101-section">
+            <div class="d101-section-title"><span class="dot"></span> RESUMEN — DETERMINACIÓN DEL IMPUESTO</div>
+            <div class="d101-resumen">
+              <div class="d101-resumen-row">
+                <span class="label">Impuesto bruto</span>
+                <span class="value">${formatColones(calc.impuestoBruto)}</span>
+              </div>
+              ${calc.totalCreditos > 0 ? `
+              <div class="d101-resumen-row">
+                <span class="label">(-) Créditos fiscales acumulados</span>
+                <span class="value" style="color:#c0392b;">- ${formatColones(calc.totalCreditos)}</span>
+              </div>
+              ` : ''}
+              <div class="d101-result ${calc.impuestoNeto > 0 ? 'pagar' : 'favor'}">
+                <span>${calc.impuestoNeto > 0 ? '💳 IMPUESTO NETO A PAGAR' : '✅ SALDO A FAVOR'}</span>
+                <span>${formatColones(calc.impuestoNeto)}</span>
+              </div>
+              <div class="d101-resumen-row" style="margin-top:6px;">
+                <span class="label" style="font-size:11px;">Tasa efectiva</span>
+                <span class="value" style="font-size:11px;">${calc.tasaEfectiva.toFixed(2)}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGOS PARCIALES -->
+          ${parciales.totalPagos > 0 ? `
+          <div class="d101-pagos">
+            <h4>📅 Pagos Parciales de Renta ${selAnio + 1}</h4>
+            ${parciales.pagos.map(p => `
+              <div class="d101-pago-item">
+                <span class="cuota">Cuota ${p.mesNombre}</span>
+                <span style="font-size:11px;color:#888;">Vence: ${p.fecha_limite}</span>
+                <span class="monto">${formatColones(p.monto)}</span>
+              </div>
+            `).join('')}
+          </div>
+          ` : ''}
+        </div>
+        <div class="d101-footer">
+          Réplica visual para referencia — Completá estos valores en TRIBU-CR · Fecha límite: 15 de Marzo de ${selAnio + 1}
+        </div>
+      </div>
+    `;
   }
 
   // ─── REPORTES TAB ─────────────────────────────────────────
