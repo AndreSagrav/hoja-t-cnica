@@ -2,16 +2,17 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    # Corre todos los días a la medianoche UTC
-    - cron: '0 0 * * *'
-  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+    - cron: '0 */6 * * *'   # Cada 6 horas
+  workflow_dispatch:
 
 jobs:
-  ping-supabase:
+  keepalive:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
-        # Hace una petición simple para mantener activo el proyecto
+      - name: Ping Supabase
+        env:
+          ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY
         run: |
-          curl -s -X GET 'https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/' || true
-          echo "Ping enviado a Supabase para evitar pausa por inactividad."
+          curl -s -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
+            "https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/fiscal_facturas?select=id&limit=1" \
+            -o /dev/null -w "Keepalive: %{http_code} - %{time_total}s\n"
