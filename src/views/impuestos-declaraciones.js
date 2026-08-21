@@ -553,7 +553,7 @@ export async function impuestosDeclaracionesView() {
     };
     const money = (n) => '₡' + fmt(n);
 
-    // ── Totales desde calc (misma fuente que la calculadora) ──
+    // ── Totales desde calc ───────────────────────────────────
     const ventas = calc.ventasPorTarifa || {};
     const compras = calc.comprasPorTarifa || {};
 
@@ -571,17 +571,7 @@ export async function impuestosDeclaracionesView() {
     const ivaPagar = calc.ivaPagar || 0;
     const saldoFavor = calc.saldoFavor || 0;
 
-    // ── Desglose por tarifa ──────────────────────────────────
-    const tarifasPresentes = new Set([
-      ...Object.keys(ventas).map(Number),
-      ...Object.keys(compras).map(Number)
-    ]);
-    const STD = [13, 4, 4.1, 3, 2, 1, 0.5, 0];
-    const otras = [...tarifasPresentes].filter(t => !STD.includes(Number(t)));
-    const ROWS = [...STD, ...(otras.length ? ['otras'] : [])];
-
-    function v(t) { return ventas[t] || { base: 0, iva: 0, total: 0 }; }
-    function c(t) { return compras[t] || { base: 0, iva: 0, total: 0 }; }
+    // ── Solo tarifas con datos ───────────────────────────────
     function lbl(t) {
       if (t === 0) return '0%';
       if (t === 0.5) return '0,5%';
@@ -589,35 +579,25 @@ export async function impuestosDeclaracionesView() {
       return `${t}%`;
     }
 
-    function accVentas() {
-      return ROWS.map(t => {
-        if (t === 'otras') {
-          const b = otras.reduce((s, tt) => s + (ventas[tt]?.base || 0), 0);
-          const iv = otras.reduce((s, tt) => s + (ventas[tt]?.iva || 0), 0);
-          return `<div class="d150-accordion"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Otras tarifas</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body"><div class="d150-field"><label>Total ventas otras tarifas</label><div class="d150-input">${money(b + iv)}</div></div><div class="d150-field"><label>Monto del impuesto</label><div class="d150-input">${money(iv)}</div></div></div></div>`;
-        }
-        const label = lbl(t), total = v(t).total, iva = v(t).iva;
-        const open = t === 13 ? ' open' : '';
-        const display = t === 13 ? ' style="display:block;"' : '';
-        const extra = t === 13 ? `<div class="d150-field"><label>Monto del impuesto a 13%</label><div class="d150-input">${money(iva)}</div></div>` : '';
-        return `<div class="d150-accordion${open}"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Tarifa ${label}</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body"${display}><div class="d150-field"><label>Total ventas a ${label}</label><div class="d150-input">${money(total)}</div></div>${extra}</div></div>`;
-      }).join('');
-    }
+    // Ventas: solo tarifas con total > 0
+    const tarifasVenta = Object.keys(ventas).map(Number).filter(t => (ventas[t]?.total || 0) > 0).sort((a, b) => b - a);
+    const rowsVentas = tarifasVenta.map(t => {
+      const label = lbl(t), total = ventas[t].total, iva = ventas[t].iva;
+      const extra = t > 0 ? `<div class="d150-field"><label>Monto del impuesto a ${label}</label><div class="d150-input">${money(iva)}</div></div>` : '';
+      return `<div class="d150-accordion open"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Tarifa ${label}</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body" style="display:block"><div class="d150-field"><label>Total ventas a ${label}</label><div class="d150-input">${money(total)}</div></div>${extra}</div></div>`;
+    }).join('');
 
-    function accCompras() {
-      return ROWS.map(t => {
-        if (t === 'otras') {
-          const total = otras.reduce((s, tt) => s + (compras[tt]?.total || 0), 0);
-          const iva = otras.reduce((s, tt) => s + (compras[tt]?.iva || 0), 0);
-          return `<div class="d150-accordion"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Otras tarifas</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body"><div class="d150-field"><label>Total importe compras otras tarifas</label><div class="d150-input">${money(total)}</div></div><div class="d150-field"><label>Impuesto soportado otras tarifas</label><div class="d150-input">${money(iva)}</div></div></div></div>`;
-        }
-        const label = lbl(t), total = c(t).total, iva = c(t).iva;
-        const open = t === 13 ? ' open' : '';
-        const display = t === 13 ? ' style="display:block;"' : '';
-        const extra = t === 13 ? `<div class="d150-field"><label>Impuesto soportado a 13%</label><div class="d150-input">${money(iva)}</div></div>` : '';
-        return `<div class="d150-accordion${open}"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Compras a ${label}</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body"${display}><div class="d150-field"><label>Total importe compras a ${label}</label><div class="d150-input">${money(total)}</div></div>${extra}</div></div>`;
-      }).join('');
-    }
+    // Compras: solo tarifas con total > 0
+    const tarifasCompra = Object.keys(compras).map(Number).filter(t => (compras[t]?.total || 0) > 0).sort((a, b) => b - a);
+    const rowsCompras = tarifasCompra.map(t => {
+      const label = lbl(t), total = compras[t].total, iva = compras[t].iva;
+      const extra = t > 0 ? `<div class="d150-field"><label>Impuesto soportado a ${label}</label><div class="d150-input">${money(iva)}</div></div>` : '';
+      return `<div class="d150-accordion open"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Compras a ${label}</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body" style="display:block"><div class="d150-field"><label>Total importe compras a ${label}</label><div class="d150-input">${money(total)}</div></div>${extra}</div></div>`;
+    }).join('');
+
+    // Compras sin IVA (solo si hay)
+    const bloqueSinIVA = comprasSinIVA > 0 ? `
+      <div class="d150-accordion open"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Compras sin IVA soportado o no acreditable</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body" style="display:block"><div class="d150-field"><label>Total importe compras sin IVA soportado o no acreditable</label><div class="d150-input">${money(comprasSinIVA)}</div></div></div></div>` : '';
 
     resultDiv.innerHTML = `<style>
       .d150-tribu{font-family:'Inter',-apple-system,system-ui,sans-serif;color:#1a1a2e;background:#f7f8fb}
@@ -626,19 +606,9 @@ export async function impuestosDeclaracionesView() {
       .d150-breadcrumb strong{color:#1a1a2e}
       .d150-title{font-size:22px;font-weight:700;color:#2c2c54;margin:0 0 16px}
       .d150-layout{display:flex;gap:18px;align-items:flex-start}
-      .d150-stepper{width:230px;flex-shrink:0;background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-      .d150-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
-      .d150-step:last-child{margin-bottom:0}
-      .d150-step-dot{width:16px;height:16px;border-radius:50%;background:#e2e8f0;border:2px solid #cbd5e1;flex-shrink:0;margin-top:2px}
-      .d150-step.active .d150-step-dot{background:#2c2c54;border-color:#2c2c54}
-      .d150-step.active .d150-step-dot::after{content:'';display:block;width:6px;height:6px;background:#fff;border-radius:50%;margin:3px auto}
-      .d150-step-text{font-size:12px;color:#666;line-height:1.35}
-      .d150-step.active .d150-step-text{font-weight:700;color:#2c2c54}
       .d150-main{flex:1;min-width:0}
       .d150-card{background:#fff;border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-      .d150-card h3{font-size:16px;font-weight:700;color:#2c2c54;margin:0 0 10px}
-      .d150-card p{font-size:13px;color:#555;line-height:1.6;margin:0 0 12px}
-      .d150-card ul{margin:0 0 12px;padding-left:18px;font-size:13px;color:#555;line-height:1.7}
+      .d150-card h3{font-size:16px;font-weight:700;color:#2c2c54;margin:0 0 12px}
       .d150-card .dotted{border-top:1px dashed #cbd5e1;margin:14px 0}
       .d150-accordion{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;overflow:hidden}
       .d150-accordion-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#2c2c54}
@@ -662,50 +632,55 @@ export async function impuestosDeclaracionesView() {
       .d150-resumen-row span:last-child{color:#1a1a2e;font-weight:600;text-align:right}
       .d150-resumen-divider{border-top:1px solid #e2e8f0;margin:12px 0}
       .d150-resumen-total{font-size:13px;font-weight:700}
-      .d150-buttons{display:flex;justify-content:space-between;margin-top:18px}
-      .d150-btn{padding:10px 20px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;border:none;min-width:120px;text-align:center}
-      .d150-btn-prev{background:#fff;border:1.5px solid #2c2c54;color:#2c2c54}
-      .d150-btn-next{background:#2c2c54;color:#fff}
       .d150-nota{font-size:11px;color:#888;margin-top:10px;line-height:1.5}
-      @media(max-width:1024px){.d150-layout{flex-direction:column}.d150-stepper,.d150-resumen{width:100%}}
+      @media(max-width:1024px){.d150-layout{flex-direction:column}.d150-resumen{width:100%}}
     </style>
     <div class="d150-tribu">
       <div class="d150-breadcrumb"><a href="#/dashboard">Inicio</a> / <a href="#/impuestos">Declaraciones</a> / <strong>150 - Impuesto al valor agregado</strong></div>
       <h2 class="d150-title">150 - Impuesto al valor agregado</h2>
       <div class="d150-layout">
-        <div class="d150-stepper">
-          <div class="d150-step active"><div class="d150-step-dot"></div><div class="d150-step-text">Ventas generales</div></div>
-          <div class="d150-step"><div class="d150-step-dot"></div><div class="d150-step-text">Pago diferido del impuesto por ventas a crédito del período a presentar o de períodos anteriores</div></div>
-          <div class="d150-step"><div class="d150-step-dot"></div><div class="d150-step-text">Compras totales</div></div>
-          <div class="d150-step"><div class="d150-step-dot"></div><div class="d150-step-text">Crédito fiscal</div></div>
-          <div class="d150-step"><div class="d150-step-dot"></div><div class="d150-step-text">Cálculo del impuesto</div></div>
-        </div>
         <div class="d150-main">
-          <div class="d150-card"><h3>Crédito fiscal</h3><p>En esta sección del formulario se calcula el crédito fiscal para el IVA de la siguiente forma:</p><ul><li>Si usted vende a una única tarifa reducida y no es con derecho a crédito pleno, la "tarifa de IVA aplicada" es la tarifa menor de entre la tarifa de compras y la tarifa de ventas.</li><li>Si usted vende a una única tarifa que es con derecho a crédito pleno, la "tarifa de IVA aplicada" es la tarifa que ha soportado en sus compras.</li><li>Si usted vende a varias tarifas con derecho a crédito pleno, exentas o no, la "tarifa de IVA aplicada" es la que ha soportado en sus compras.</li></ul><p>La diferencia entre el monto del impuesto soportado y el crédito fiscal para el IVA será el "importe de costo o gasto para utilidades".</p></div>
-          <div class="d150-card"><h3>Compras totales</h3><p>En esta sección incluya el monto de las compras realizadas en este período por cada tarifa. El sistema calculará de forma automática el impuesto soportado en cada una.</p>
-            ${accCompras()}
-            <div class="d150-accordion"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Compras sin IVA soportado o no acreditable</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body"><div class="d150-field"><label>Total importe compras sin IVA soportado o no acreditable</label><div class="d150-input">${money(comprasSinIVA)}</div></div></div></div>
-            <div class="dotted"></div>
-            <div class="d150-row total"><span>Total importe compras</span><span class="value">${money(totalComprasBruto)}</span></div>
-            <div class="d150-row"><span>Total importe compras sin IVA soportado o no acreditable</span><span class="value">${money(comprasSinIVA)}</span></div>
-            <div class="d150-row"><span>Total importe de compras con IVA soportado</span><span class="value">${money(comprasConIVA)}</span></div>
-            <div class="d150-row"><span>Total impuesto soportado</span><span class="value">${money(totalImpuestoSoportado)}</span></div>
-            <div class="d150-row total"><span>Total crédito fiscal del período</span><span class="value">${money(creditoFiscal)}</span></div>
-            <div class="d150-row total"><span>Total importe de gasto para utilidades</span><span class="value">${money(gastoParaUtilidades)}</span></div>
-          </div>
-          <div class="d150-card"><h3>Pago diferido del impuesto por ventas a crédito del período a presentar o de períodos anteriores</h3><p>En este apartado seleccione la opción "Sí lo utilizaré" si desea acogerse al esquema del pago diferido del impuesto por ventas a crédito; o si requiere cancelar el impuesto de períodos anteriores bajo esta modalidad.</p><p style="margin-top:12px"><strong>Opción seleccionada:</strong> No lo utilizaré</p></div>
-          <div class="d150-card"><h3>Ventas generales</h3><p>En esta sección complete el importe de las ventas que ha realizado a cada una de las tarifas. El formulario calculará de forma automática el importe del monto del impuesto para cada una de ellas.</p><p style="font-size:12px;color:#777;margin-top:-6px">Asimismo, si le corresponde, complete las casillas de las ventas sin impuesto que dan derecho a crédito pleno y las ventas sin impuesto que no dan derecho a crédito.</p>
-            ${accVentas()}
-            <div class="d150-accordion"><div class="d150-accordion-head" onclick="this.parentElement.classList.toggle('open')"><span>Otras ventas sin IVA</span><svg class="d150-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></div><div class="d150-accordion-body"><div class="d150-field"><label>Otras ventas sin IVA con derecho a crédito pleno</label><div class="d150-input">${money(0)}</div></div><div class="d150-field"><label>Otras ventas sin IVA sin derecho a crédito</label><div class="d150-input">${money(0)}</div></div><div class="d150-field"><label>Total ventas de bienes de capital exentos sin derecho a crédito</label><div class="d150-input">${money(0)}</div></div></div></div>
+
+          <!-- VENTAS GENERALES -->
+          <div class="d150-card">
+            <h3>Ventas generales</h3>
+            ${rowsVentas || '<p style="color:#888;font-size:13px">Sin ventas en este período</p>'}
             <div class="dotted"></div>
             <div class="d150-row total"><span>Total ventas generales</span><span class="value">${money(totalVentasBruto)}</span></div>
             <div class="d150-row total"><span>Total ventas generales gravadas</span><span class="value">${money(totalVentasBase)}</span></div>
             <div class="d150-row total"><span>Monto del impuesto ventas generales</span><span class="value">${money(totalVentasIVA)}</span></div>
-            <div class="d150-row total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'}"><span>${ivaPagar > 0 ? 'IVA a pagar' : 'Saldo a favor'}</span><span class="value">${money(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span></div>
           </div>
-          <div class="d150-buttons"><button class="d150-btn d150-btn-prev" onclick="alert('Paso anterior (simulado)')">‹ Anterior</button><button class="d150-btn d150-btn-next" onclick="alert('Paso siguiente (simulado)')">Siguiente ›</button></div>
-          <p class="d150-nota">Réplica visual para referencia. Período: ${mesNombre} ${anio}. Completá los valores en TRIBU-CR antes del 15 de ${MESES[mes % 12]} ${mes === 12 ? anio + 1 : anio}.</p>
+
+          <!-- COMPRAS TOTALES -->
+          <div class="d150-card">
+            <h3>Compras totales</h3>
+            ${rowsCompras || '<p style="color:#888;font-size:13px">Sin compras en este período</p>'}
+            ${bloqueSinIVA}
+            <div class="dotted"></div>
+            <div class="d150-row total"><span>Total importe compras</span><span class="value">${money(totalComprasBruto)}</span></div>
+            ${comprasSinIVA > 0 ? `<div class="d150-row"><span>Total importe compras sin IVA soportado o no acreditable</span><span class="value">${money(comprasSinIVA)}</span></div>` : ''}
+            ${comprasConIVA > 0 ? `<div class="d150-row"><span>Total importe de compras con IVA soportado</span><span class="value">${money(comprasConIVA)}</span></div>` : ''}
+            <div class="d150-row"><span>Total impuesto soportado</span><span class="value">${money(totalImpuestoSoportado)}</span></div>
+            <div class="d150-row total"><span>Total crédito fiscal del período</span><span class="value">${money(creditoFiscal)}</span></div>
+            <div class="d150-row total"><span>Total importe de gasto para utilidades</span><span class="value">${money(gastoParaUtilidades)}</span></div>
+          </div>
+
+          <!-- RESULTADO -->
+          <div class="d150-card">
+            <h3>Cálculo del impuesto</h3>
+            <div class="d150-row"><span>Débito fiscal (ventas)</span><span class="value">${money(totalVentasIVA)}</span></div>
+            <div class="d150-row"><span>Crédito fiscal (compras)</span><span class="value">${money(creditoFiscal)}</span></div>
+            <div class="dotted"></div>
+            <div class="d150-row total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'};font-size:16px">
+              <span>${ivaPagar > 0 ? 'IVA a pagar' : 'Saldo a favor'}</span>
+              <span class="value">${money(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span>
+            </div>
+          </div>
+
+          <p class="d150-nota">Réplica visual para referencia. Período: ${mesNombre} ${anio}. Completá estos valores en TRIBU-CR antes del 15 de ${MESES[mes % 12]} ${mes === 12 ? anio + 1 : anio}.</p>
         </div>
+
+        <!-- RESUMEN -->
         <div class="d150-resumen">
           <h4>Resumen</h4>
           <div class="d150-resumen-row"><span>Identificación</span><span>205390118</span></div>
