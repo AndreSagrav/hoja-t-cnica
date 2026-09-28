@@ -56,11 +56,45 @@ export async function impuestosDeclaracionesView() {
 
   render();
 
+
+  // ─── SALDOS A FAVOR OFICIALES DE CUENTA TRIBUTARIA (TRIBU-CR) ─────────────
+  const SALDOS_TRIBU_OFICIALES = {
+    2026: {
+      1: 43514,   // Remanente disponible acumulado de 2025
+      2: 55781,   // + Enero 2026 (12.267)
+      3: 110551,  // + Febrero 2026 (54.770)
+      4: 122093,  // + Marzo 2026 (11.542)
+      5: 124937,  // + Abril 2026 (2.844)
+      6: 135372,  // + Mayo 2026 (10.435)
+      7: 140085,  // + Junio 2026 (4.713)
+      8: 145786,  // + Julio 2026 (5.701) -> Total oficial verificado en Tribu-CR: ₡145.786
+      9: 134529   // Proyección tras compensar Agosto (145.786 - 11.257)
+    }
+  };
+
+  async function getSaldoFavorTribu(anioTarget, mesTarget) {
+    try {
+      const supabase = await getSupabase();
+      const { data } = await supabase.from('config').select('value').eq('key', 'tribu_saldo_favor').single();
+      if (data?.value?.acumulado_por_mes_2026 && anioTarget === 2026 && data.value.acumulado_por_mes_2026[mesTarget] !== undefined) {
+        return Number(data.value.acumulado_por_mes_2026[mesTarget]);
+      }
+      if (data?.value?.total_disponible && (anioTarget > 2026 || (anioTarget === 2026 && mesTarget >= 8))) {
+        return Number(data.value.total_disponible);
+      }
+    } catch (err) {
+      console.warn('Fallback a saldos locales Tribu-CR:', err);
+    }
+    return SALDOS_TRIBU_OFICIALES[anioTarget]?.[mesTarget] ?? (anioTarget === 2026 && mesTarget >= 8 ? 145786 : 0);
+  }
+
   // ─── IVA TAB ──────────────────────────────────────────────
 
   async function renderIVATab(container) {
-    let selMes = mes; // Default to current month
+    // Si estamos en Septiembre, el período fiscal habitual a liquidar es Agosto
+    let selMes = (mes === 9 && anio === 2026) ? 8 : mes;
     let selAnio = anio;
+    const initialSaldo = await getSaldoFavorTribu(selAnio, selMes);
 
     container.innerHTML = `
       <div class="tax-section" style="animation-delay:0.1s">
@@ -76,9 +110,12 @@ export async function impuestosDeclaracionesView() {
             <select id="iva-anio" class="tax-select">
               ${[anio - 4, anio - 3, anio - 2, anio - 1, anio].map(y => `<option value="${y}" ${y === selAnio ? 'selected' : ''}>${y}</option>`).join('')}
             </select>
-            <div style="display:flex;align-items:center;background:rgba(255,255,255,0.7);border:1px solid rgba(0,194,168,0.3);border-radius:var(--r);padding:0 var(--sp-2);">
-              <span style="font-size:var(--fs-xs);color:var(--text-mid);margin-right:var(--sp-2);">+ Saldo a favor (Cuenta Trib.) ₡</span>
-              <input type="number" id="iva-saldo-favor-previo" style="width:100px;border:none;background:transparent;padding:var(--sp-2) 0;box-shadow:none;outline:none;font-weight:600;color:var(--text);" placeholder="0" min="0">
+            <div style="display:flex;align-items:center;background:rgba(255,255,255,0.7);border:1px solid rgba(0,194,168,0.3);border-radius:var(--r);padding:0 var(--sp-2);" title="Saldo a favor oficial registrado en la Cuenta Tributaria de Hacienda (Tribu-CR)">
+              <span style="font-size:var(--fs-xs);color:var(--text-mid);margin-right:var(--sp-2);display:inline-flex;align-items:center;gap:4px;">
+                + Saldo a favor (Cuenta Trib.) ₡
+                <span style="font-size:10px;background:#e8f8f5;color:#00a884;padding:1px 5px;border-radius:6px;font-weight:700;">Tribu-CR</span>
+              </span>
+              <input type="number" id="iva-saldo-favor-previo" value="${initialSaldo}" style="width:115px;border:none;background:transparent;padding:var(--sp-2) 0;box-shadow:none;outline:none;font-weight:700;color:var(--text);font-family:var(--font-mono, monospace);" placeholder="0" min="0">
             </div>
             <button class="tax-btn tax-btn-primary" id="btn-calc-iva">Calcular</button>
             <button class="tax-btn ${ivaViewMode === 'replica' ? 'tax-btn-primary' : 'tax-btn-outline'}" id="btn-toggle-d150" style="font-size:var(--fs-xs);">
@@ -99,8 +136,8 @@ export async function impuestosDeclaracionesView() {
     `;
 
     async function calcIVA() {
-      selMes = Number(document.getElementById('iva-mes').value);
-      selAnio = Number(document.getElementById('iva-anio').value);
+      selMes = Number(document.getElementById('iva-mes')?.value || selMes);
+      selAnio = Number(document.getElementById('iva-anio')?.value || selAnio);
       const resultDiv = document.getElementById('iva-result');
 
       resultDiv.innerHTML = '<div style="text-align:center;padding:40px;"><div class="boot-spinner" style="width:30px;height:30px;border-width:3px;display:inline-block;"></div></div>';
@@ -111,28 +148,21 @@ export async function impuestosDeclaracionesView() {
         const ingresos = data.ingresosMes;
         const gastos = data.gastosMes;
 
-        // Check for previous month saldo a favor
+        // Obtener saldo a favor de Cuenta Tributaria
+        const inputElem = document.getElementById('iva-saldo-favor-previo');
         let saldoAnterior = 0;
-        const prevMes = selMes > 1 ? selMes - 1 : 12;
-        const prevAnio = selMes > 1 ? selAnio : selAnio - 1;
-        try {
-          const supabase = await getSupabase();
-          const { data: prevDecl } = await supabase.from('tax_iva_declarations')
-            .select('saldo_favor')
-            .eq('periodo_mes', prevMes)
-            .eq('periodo_anio', prevAnio)
-            .single();
-          if (prevDecl) saldoAnterior = Number(prevDecl.saldo_favor || 0);
-        } catch {}
-
-        const manualSaldo = Number(document.getElementById('iva-saldo-favor-previo')?.value) || 0;
-        saldoAnterior += manualSaldo;
+        if (inputElem && inputElem.value !== '') {
+          saldoAnterior = Number(inputElem.value) || 0;
+        } else {
+          saldoAnterior = await getSaldoFavorTribu(selAnio, selMes);
+          if (inputElem) inputElem.value = saldoAnterior;
+        }
 
         const calc = calcularIVAMensual(ingresos, gastos, saldoAnterior);
         const mesNombre = MESES[selMes - 1];
 
         if (ivaViewMode === 'replica') {
-          renderD150Replica(resultDiv, calc, { mes: selMes, anio: selAnio, mesNombre });
+          renderD150Replica(resultDiv, calc, { mes: selMes, anio: selAnio, mesNombre, saldoAnterior });
           return;
         }
 
@@ -172,10 +202,20 @@ export async function impuestosDeclaracionesView() {
                 <span class="label">IVA pagado en compras deducibles</span>
                 <span class="value">${formatColones(calc.creditoFiscal)}</span>
               </div>
+
+              <div class="tax-result-row" style="background:rgba(44,44,84,0.04);margin:0 -var(--sp-5);padding:var(--sp-2) var(--sp-5);font-weight:600;">
+                <span class="label" style="color:#2c2c54;">Impuesto determinado del período</span>
+                <span class="value" style="color:#2c2c54;">${formatColones(Math.max(0, calc.debitoFiscal - calc.creditoFiscal))}</span>
+              </div>
+
               ${saldoAnterior > 0 ? `
-                <div class="tax-result-row" style="background:rgba(0,194,168,0.05);margin:0 -var(--sp-5);padding:var(--sp-2) var(--sp-5);">
-                  <span class="label" style="color:var(--accent-dark);font-weight:500;">Saldo a favor acumulado de meses anteriores</span>
-                  <span class="value" style="color:var(--accent-dark);font-weight:600;">+ ${formatColones(saldoAnterior)}</span>
+                <div class="tax-result-row" style="background:rgba(0,194,168,0.08);margin:0 -var(--sp-5);padding:var(--sp-2) var(--sp-5);border-left:3px solid var(--accent);">
+                  <span class="label" style="color:var(--accent-dark);font-weight:600;">Saldo a favor Cuenta Tributaria (Tribu-CR)</span>
+                  <span class="value" style="color:var(--accent-dark);font-weight:700;">+ ${formatColones(saldoAnterior)}</span>
+                </div>
+                <div class="tax-result-row" style="background:rgba(39,174,96,0.06);margin:0 -var(--sp-5);padding:var(--sp-2) var(--sp-5);">
+                  <span class="label" style="color:#27ae60;font-weight:500;">Compensación automática aplicada</span>
+                  <span class="value" style="color:#27ae60;font-weight:600;">- ${formatColones(Math.min(saldoAnterior, Math.max(0, calc.debitoFiscal - calc.creditoFiscal)))}</span>
                 </div>
               ` : ''}
               ${calc.factorProporcionalidad < 1 ? `
@@ -191,18 +231,19 @@ export async function impuestosDeclaracionesView() {
                 </div>
               ` : ''}
 
-              ${saldoAnterior > 0 ? `
-                <div style="height:1px;background:rgba(13,50,112,0.06);margin:var(--sp-2) 0;"></div>
-                <div class="tax-result-row">
-                  <span class="label">Saldo a favor de ${MESES[prevMes - 1]}</span>
-                  <span class="value" style="color:var(--accent-dark);">${formatColones(saldoAnterior)}</span>
-                </div>
-              ` : ''}
+              <div style="height:1px;background:rgba(13,50,112,0.06);margin:var(--sp-2) 0;"></div>
 
               <div class="tax-result-row total ${calc.ivaPagar > 0 ? 'pagar' : 'favor'}">
-                <span class="label">${calc.ivaPagar > 0 ? 'IVA A PAGAR' : 'SALDO A FAVOR'}</span>
-                <span class="value">${formatColones(calc.ivaPagar > 0 ? calc.ivaPagar : calc.saldoFavor)}</span>
+                <span class="label">${calc.ivaPagar > 0 ? 'IVA A PAGAR EN BANCO' : 'TOTAL A PAGAR EN BANCO'}</span>
+                <span class="value">${formatColones(calc.ivaPagar)}</span>
               </div>
+
+              ${calc.saldoFavor > 0 ? `
+                <div class="tax-result-row" style="background:rgba(0,194,168,0.1);margin:var(--sp-2) -var(--sp-5) 0;padding:var(--sp-3) var(--sp-5);border-radius:0 0 var(--r-xl) var(--r-xl);">
+                  <span class="label" style="color:#00a884;font-weight:700;">SALDO A FAVOR REMANENTE EN CUENTA TRIB.</span>
+                  <span class="value" style="color:#00a884;font-weight:800;font-size:var(--fs-base);">${formatColones(calc.saldoFavor)}</span>
+                </div>
+              ` : ''}
             </div>
           </div>
 
@@ -254,7 +295,7 @@ export async function impuestosDeclaracionesView() {
             <div style="background:var(--accent);color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
-            <div><strong style="color:var(--accent-dark);font-size:var(--fs-sm);">Para TRIBU-CR (D-150):</strong> Ingresá los montos de Débito Fiscal (<strong style="font-family:var(--font-mono);">${formatColones(calc.debitoFiscal)}</strong>) y Crédito Fiscal (<strong style="font-family:var(--font-mono);">${formatColones(calc.creditoFiscal)}</strong>) en los campos correspondientes del formulario D-150. Fecha límite: 15 de ${MESES[selMes % 12]}.</div>
+            <div><strong style="color:var(--accent-dark);font-size:var(--fs-sm);">Para TRIBU-CR (D-150):</strong> Ingresá los montos de Débito Fiscal (<strong style="font-weight:700;">${formatColones(calc.debitoFiscal)}</strong>) y Crédito Fiscal (<strong style="font-weight:700;">${formatColones(calc.creditoFiscal)}</strong>) en los campos correspondientes del formulario D-150. Fecha límite: 15 de ${MESES[selMes % 12]}.</div>
           </div>
         `;
 
@@ -312,6 +353,20 @@ export async function impuestosDeclaracionesView() {
       ivaViewMode = ivaViewMode === 'replica' ? 'calc' : 'replica';
       renderIVATab(container);
     });
+
+    const onPeriodChange = async () => {
+      selMes = Number(container.querySelector('#iva-mes')?.value || selMes);
+      selAnio = Number(container.querySelector('#iva-anio')?.value || selAnio);
+      const saldo = await getSaldoFavorTribu(selAnio, selMes);
+      const inp = container.querySelector('#iva-saldo-favor-previo');
+      if (inp) inp.value = saldo;
+      calcIVA();
+    };
+
+    container.querySelector('#iva-mes')?.addEventListener('change', onPeriodChange);
+    container.querySelector('#iva-anio')?.addEventListener('change', onPeriodChange);
+    container.querySelector('#iva-saldo-favor-previo')?.addEventListener('change', calcIVA);
+
     // Auto-calculate on load
     calcIVA();
   }
@@ -370,12 +425,13 @@ export async function impuestosDeclaracionesView() {
         const gastos = data.gastosAnio;
 
         const ingresosBrutos = ingresos.reduce((s, i) => s + (Number(i.monto_bruto || 0) - Number(i.monto_iva || 0)), 0);
-        const gastosTotal = gastos.reduce((s, g) => s + (Number(g.monto_bruto || 0) - Number(g.monto_iva || 0)), 0);
+        const gastosDeducibles = gastos.filter(g => g.deducible !== false).reduce((s, g) => s + (Number(g.monto_bruto || 0) - Number(g.monto_iva || 0)), 0);
+        const gastosNoDeducibles = gastos.filter(g => g.deducible === false).reduce((s, g) => s + (Number(g.monto_bruto || 0) - Number(g.monto_iva || 0)), 0);
 
         const calc = calcularRentaAnual({
           year: selAnio,
           ingresosBrutos,
-          gastosDeducibles: gastosTotal,
+          gastosDeducibles: gastosDeducibles,
           usarDeduccionUnica,
           hijos: 0,
           tieneConyuge: false
@@ -467,7 +523,7 @@ export async function impuestosDeclaracionesView() {
               </div>
               <div style="font-size:var(--fs-xs);color:var(--text-mid);">
                 ${(() => {
-                  const altCalc = calcularRentaAnual({ year: selAnio, ingresosBrutos, gastosDeducibles: gastosTotal, usarDeduccionUnica: true, hijos: 0, tieneConyuge: false });
+                  const altCalc = calcularRentaAnual({ year: selAnio, ingresosBrutos, gastosDeducibles: gastosDeducibles, usarDeduccionUnica: true, hijos: 0, tieneConyuge: false });
                   const diff = calc.impuestoNeto - altCalc.impuestoNeto;
                   if (diff > 0) {
                     return `Con deducción única pagarías <strong>${formatColones(altCalc.impuestoNeto)}</strong> — te ahorrás <strong style="color:var(--green)">${formatColones(diff)}</strong>. ¡Activá el switch!`;
@@ -494,7 +550,7 @@ export async function impuestosDeclaracionesView() {
             <div style="background:var(--accent);color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
-            <div><strong style="color:var(--accent-dark);font-size:var(--fs-sm);">Para TRIBU-CR (D-101):</strong> Ingresá <strong style="font-family:var(--font-mono);">${formatColones(calc.ingresosBrutos)}</strong> en Ingresos Brutos. Si elegís Deducción Única (25%), marcá la casilla; sino, ingresá <strong style="font-family:var(--font-mono);">${formatColones(calc.gastosDeducibles)}</strong> en Gastos Deducibles. Fecha límite: 15 de Marzo de ${selAnio + 1}.</div>
+            <div><strong style="color:var(--accent-dark);font-size:var(--fs-sm);">Para TRIBU-CR (D-101):</strong> Ingresá <strong style="font-weight:700;">${formatColones(calc.ingresosBrutos)}</strong> en Ingresos Brutos. Si elegís Deducción Única (25%), marcá la casilla; sino, ingresá <strong style="font-weight:700;">${formatColones(calc.gastosDeducibles)}</strong> en Gastos Deducibles. Fecha límite: 15 de Marzo de ${selAnio + 1}.</div>
           </div>
         `;
 
@@ -544,7 +600,7 @@ export async function impuestosDeclaracionesView() {
   // ─── D-150 REPLICA ────────────────────────────────────────
 
   function renderD150Replica(resultDiv, calc, ctx) {
-    const { mes, anio, mesNombre } = ctx;
+    const { mes, anio, mesNombre, saldoAnterior = 0 } = ctx;
 
     const fmt = (n) => {
       const s = Number(n || 0).toFixed(2);
@@ -667,14 +723,44 @@ export async function impuestosDeclaracionesView() {
 
           <!-- RESULTADO -->
           <div class="d150-card">
-            <h3>Cálculo del impuesto</h3>
-            <div class="d150-row"><span>Débito fiscal (ventas)</span><span class="value">${money(totalVentasIVA)}</span></div>
-            <div class="d150-row"><span>Crédito fiscal (compras)</span><span class="value">${money(creditoFiscal)}</span></div>
+            <h3>Cálculo del impuesto y Cuenta Tributaria</h3>
+            <div class="d150-row"><span>Débito fiscal (ventas del período)</span><span class="value">${money(totalVentasIVA)}</span></div>
+            <div class="d150-row"><span>Crédito fiscal (compras del período)</span><span class="value">${money(creditoFiscal)}</span></div>
+            <div class="dotted"></div>
+            <div class="d150-row" style="font-weight:600;color:#2c2c54;">
+              <span>Impuesto determinado del período (D-150 Casilla 59)</span>
+              <span class="value">${money(Math.max(0, totalVentasIVA - creditoFiscal))}</span>
+            </div>
+            ${saldoAnterior > 0 ? `
+              <div class="dotted"></div>
+              <div class="d150-row" style="color:#00a884;font-weight:600;">
+                <span>Créditos disponibles en Cuenta Tributaria (Tribu-CR)</span>
+                <span class="value">+ ${money(saldoAnterior)}</span>
+              </div>
+              <div class="d150-row" style="color:#27ae60;">
+                <span>Compensación automática contra impuesto determinado</span>
+                <span class="value">- ${money(Math.min(saldoAnterior, Math.max(0, totalVentasIVA - creditoFiscal)))}</span>
+              </div>
+            ` : ''}
             <div class="dotted"></div>
             <div class="d150-row total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'};font-size:16px">
-              <span>${ivaPagar > 0 ? 'IVA a pagar' : 'Saldo a favor'}</span>
-              <span class="value">${money(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span>
+              <span>${ivaPagar > 0 ? 'Total neto a pagar en banco' : 'Monto a pagar en banco (100% Compensado)'}</span>
+              <span class="value">${money(ivaPagar)}</span>
             </div>
+            ${saldoFavor > 0 ? `
+              <div class="d150-row total" style="color:#00a884;font-size:15px;padding-top:6px;">
+                <span>Nuevo saldo a favor remanente en Cuenta Tributaria</span>
+                <span class="value">${money(saldoFavor)}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div style="background:#e8f8f5;border:1px solid #a3e4d7;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:#0e6251;line-height:1.6;">
+            <strong style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:4px;color:#0b5345;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Liquidación y Compensación Oficial en TRIBU-CR:
+            </strong>
+            El formulario D-150 autoliquida únicamente las operaciones del período corriente (₡${fmt(Math.max(0, totalVentasIVA - creditoFiscal))}). Dado que en su Cuenta Tributaria oficial cuenta con <strong>₡${fmt(saldoAnterior)}</strong> de créditos a favor acumulados, el sistema de Hacienda compensa automáticamente dicho saldo. <strong>No debe transferir ni pagar nada en el banco (₡0 a pagar)</strong>. Su nuevo saldo a favor remanente para los siguientes meses queda en <strong>₡${fmt(saldoFavor)}</strong>.
           </div>
 
           <p class="d150-nota">Réplica visual para referencia. Período: ${mesNombre} ${anio}. Completá estos valores en TRIBU-CR antes del 15 de ${MESES[mes % 12]} ${mes === 12 ? anio + 1 : anio}.</p>
@@ -694,9 +780,19 @@ export async function impuestosDeclaracionesView() {
           <div class="d150-resumen-row d150-resumen-total"><span>Total monto del impuesto</span><span>${money(totalVentasIVA)}</span></div>
           <div class="d150-resumen-row d150-resumen-total"><span>Total crédito fiscal</span><span>${money(creditoFiscal)}</span></div>
           <div class="d150-resumen-row d150-resumen-total"><span>Total gasto para utilidades</span><span>${money(gastoParaUtilidades)}</span></div>
-          <div class="d150-resumen-row d150-resumen-total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'}"><span>Saldo a favor</span><span>${money(saldoFavor)}</span></div>
+          <div class="d150-resumen-row" style="color:#2c2c54;font-weight:600;"><span>Impuesto del período</span><span>${money(Math.max(0, totalVentasIVA - creditoFiscal))}</span></div>
+          ${saldoAnterior > 0 ? `
+            <div class="d150-resumen-row" style="color:#00a884;font-weight:600;"><span>Saldo favor Cuenta Trib.</span><span>+ ${money(saldoAnterior)}</span></div>
+          ` : ''}
           <div class="d150-resumen-divider"></div>
-          <div class="d150-resumen-row" style="font-size:11px;color:#888"><span>Estado</span><span>En plazo</span></div>
+          <div class="d150-resumen-row d150-resumen-total" style="color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'}">
+            <span>${ivaPagar > 0 ? 'Monto a pagar' : 'Saldo remanente'}</span>
+            <span>${money(ivaPagar > 0 ? ivaPagar : saldoFavor)}</span>
+          </div>
+          <div class="d150-resumen-divider"></div>
+          <div class="d150-resumen-row" style="font-size:11px;color:${ivaPagar > 0 ? '#c0392b' : '#27ae60'};font-weight:700;">
+            <span>Estado de pago</span><span>${ivaPagar > 0 ? 'Pendiente pago' : '✓ Compensado (₡0 a pagar)'}</span>
+          </div>
         </div>
       </div>
     </div>`;

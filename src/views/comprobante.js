@@ -1,3 +1,4 @@
+import { shadeColor } from '../lib/color-extractor.js';
 // ============================================================
 // COMPROBANTE — Diseño V2 (mismo que vista previa del wizard)
 // Carga datos de Supabase y renderiza con el estilo visual V2
@@ -54,26 +55,73 @@ function formatDate(dateStr) {
   } catch { return dateStr; }
 }
 
-// ── CSS V2 (extraído del wizard) ─────────────────────────────
-const V2_CSS = `
+// ── CSS Dinámico del Comprobante (Colores, Tipografía y Estilo de Marca) ────────
+export function getComprobanteCSS(branding = null) {
+  let b = branding;
+  if (!b) {
+    try {
+      const raw = localStorage.getItem('innovio_branding');
+      if (raw) b = JSON.parse(raw);
+    } catch {}
+  }
+  const prim = b?.colores?.primario || '#0b244e';
+  const sec = b?.colores?.secundario || '#114188';
+  const acento = b?.colores?.acento || '#16a34a';
+  const font = b?.tipografia || 'Inter';
+  const estilo = b?.plantillaEstilo || 'primario';
+
+  let headerBg = `linear-gradient(135deg, ${prim} 0%, ${sec} 100%)`;
+  let headerTextColor = '#ffffff';
+  let headerBorderBottom = `3px solid ${acento || prim}`;
+  let docTypeBorder = '1px solid rgba(255,255,255,0.3)';
+  let docTypeColor = '#e2e8f0';
+  let docNumberColor = '#ffffff';
+  let contactColor = '#cbd5e1';
+  let grandTotalColor = prim;
+
+  if (estilo === 'contraste') { // Moderno Bicolor (Fondo Blanco Limpio / Eco)
+    headerBg = '#ffffff';
+    headerTextColor = '#1e293b';
+    headerBorderBottom = `3px solid ${prim}`;
+    docTypeBorder = `1px solid ${prim}`;
+    docTypeColor = prim;
+    docNumberColor = prim;
+    contactColor = '#64748b';
+    grandTotalColor = prim;
+  } else if (estilo === 'secundario' || estilo === 'minimalista') { // Contraste de Marca con color secundario del logo
+    const secDeep = typeof shadeColor === 'function' ? shadeColor(sec, -30) : sec;
+    headerBg = `linear-gradient(135deg, ${sec} 0%, ${secDeep} 100%)`;
+    headerTextColor = '#ffffff';
+    headerBorderBottom = `3px solid ${prim}`;
+    docTypeBorder = '1px solid rgba(255,255,255,0.3)';
+    docTypeColor = '#e2e8f0';
+    docNumberColor = '#ffffff';
+    contactColor = '#cbd5e1';
+    grandTotalColor = prim;
+  }
+
+  const logoH = b?.logoSize ? Math.min(Math.max(Math.round(b.logoSize * 0.7), 40), 130) : 60;
+
+  return `
   :root {
-    --brand-blue: #0b244e;
-    --brand-blue-light: #114188;
+    --brand-blue: ${prim};
+    --brand-blue-light: ${sec};
     --text-main: #2d3748;
     --text-muted: #718096;
     --text-light: #a0aec0;
     --border-color: #e2e8f0;
     --green: #16a34a;
     --red: #dc2626;
+    --doc-font: '${font}', 'Segoe UI', sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  .comp-v2-page { background: #e6eaf0; font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 13px; color: var(--text-main); line-height: 1.5; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
-  .a4-sheet { background: #fff; width: 100%; max-width: 850px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); font-size: 13px; color: var(--text-main); position: relative; }
+  .comp-v2-page { background: #e6eaf0; font-family: var(--doc-font); font-size: 13px; color: var(--text-main); line-height: 1.5; min-height: 100vh; padding: 20px; display: flex; justify-content: center; }
+  .a4-sheet { background: #fff; width: 100%; max-width: 850px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); font-size: 13px; font-family: var(--doc-font); color: var(--text-main); position: relative; }
 
   /* Header */
   .header {
-    background: linear-gradient(135deg, #0b244e 0%, #0d3266 40%, #114188 100%);
-    color: #fff;
+    background: ${headerBg};
+    color: ${headerTextColor};
     padding: 24px 40px;
     position: relative;
     overflow: hidden;
@@ -84,21 +132,21 @@ const V2_CSS = `
   }
   .header::after {
     content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px;
-    background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.5) 50%, transparent 100%); z-index: 2;
+    background: ${headerBorderBottom}; z-index: 2;
   }
   .header-content { position: relative; z-index: 3; display: flex; width: 100%; justify-content: space-between; align-items: flex-start; gap: 30px; }
   .header-left { display: flex; flex-direction: column; gap: 8px; }
   .logo-container { display: flex; align-items: center; }
-  .logo-container img { height: 60px; width: auto; max-width: 260px; object-fit: contain; filter: drop-shadow(0 3px 10px rgba(0,0,0,0.2)); }
-  .contact-info { display: flex; flex-wrap: wrap; align-items: center; gap: 0; font-size: 11px; color: #cbd5e1; font-weight: 500; letter-spacing: 0.3px; }
+  .logo-container img { height: ${logoH}px; width: auto; max-width: 280px; object-fit: contain; filter: drop-shadow(0 3px 10px rgba(0,0,0,0.15)); }
+  .contact-info { display: flex; flex-wrap: wrap; align-items: center; gap: 0; font-size: 11px; color: ${contactColor}; font-weight: 500; letter-spacing: 0.3px; }
   .contact-info .ci-item { display: flex; align-items: center; gap: 5px; padding: 0 14px; }
   .contact-info .ci-item:first-child { padding-left: 0; }
-  .contact-info .ci-sep { width: 1px; height: 12px; background: rgba(255,255,255,0.2); }
+  .contact-info .ci-sep { width: 1px; height: 12px; background: rgba(0,0,0,0.15); }
 
   .header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 200px; }
-  .doc-type { border: 1px solid rgba(255,255,255,0.25); padding: 5px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #e2e8f0; }
-  .doc-number { font-size: 22px; font-weight: 800; line-height: 1.1; color: #fff; letter-spacing: 0.5px; }
-  .doc-date { font-size: 11px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px; }
+  .doc-type { border: ${docTypeBorder}; padding: 5px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: ${docTypeColor}; }
+  .doc-number { font-size: 22px; font-weight: 800; line-height: 1.1; color: ${docNumberColor}; letter-spacing: 0.5px; }
+  .doc-date { font-size: 11px; color: ${contactColor}; font-weight: 500; letter-spacing: 0.5px; }
 
   /* Content Body */
   .content-body { padding: 20px 40px; }
@@ -144,7 +192,7 @@ const V2_CSS = `
   .totals-area { display: flex; justify-content: flex-end; margin-top: 10px; }
   .totals-box { width: 300px; }
   .total-line { display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted); font-size: 13px; }
-  .total-line.grand { font-size: 18px; font-weight: 800; color: var(--brand-blue); border-top: 2px solid var(--brand-blue); padding-top: 8px; margin-top: 4px; }
+  .total-line.grand { font-size: 18px; font-weight: 800; color: ${grandTotalColor}; border-top: 2px solid ${grandTotalColor}; padding-top: 8px; margin-top: 4px; }
 
   .signatures { display: flex; justify-content: flex-start; margin-top: 30px; padding: 0 40px; }
   .sig-block { width: 220px; text-align: center; }
@@ -160,7 +208,6 @@ const V2_CSS = `
     .a4-sheet { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; }
     .comp-fab-group { display: none !important; }
     .comp-v2-page { padding: 0; }
-    /* Forzar layout desktop al imprimir (A4 ~764px activa el breakpoint 768px) */
     .header { padding: 24px 40px !important; }
     .header-content { flex-direction: row !important; gap: 30px !important; justify-content: space-between !important; }
     .header-right { align-items: flex-end !important; text-align: right !important; min-width: 200px !important; }
@@ -180,10 +227,20 @@ const V2_CSS = `
     .tarea-group { grid-template-columns: repeat(2, 1fr); }
     .totals-box { width: 100%; }
   }
-`;
+  `;
+}
 
-// ── Generar HTML del comprobante V2 ──────────────────────────
-function buildComprobanteHTML(d) {
+// ── Generar HTML del comprobante V2 Oficial con Branding Dinámico ──────────
+export function buildComprobanteHTML(d, branding = null) {
+  let b = branding;
+  if (!b) {
+    try {
+      const raw = localStorage.getItem('innovio_branding');
+      if (raw) b = JSON.parse(raw);
+    } catch {}
+  }
+  const logoUrl = b?.logoUrl || LOGO_DATA_URL;
+  const logoH = b?.logoSize ? Math.min(Math.max(Math.round(b.logoSize * 0.7), 40), 130) : 60;
   const currencyCode = d.currency?.code || 'CRC';
   const sym = currencyCode === 'CRC' ? '₡' : '$';
   const isOrden = (d.docType || '').toUpperCase().includes('ORDEN');
@@ -248,7 +305,6 @@ function buildComprobanteHTML(d) {
     </tr>`;
   }).join('');
 
-
   // Totales
   const totals = calcTotals({
     lines: lines.map(l => ({
@@ -271,9 +327,8 @@ function buildComprobanteHTML(d) {
   // Fecha
   const docDateStr = d.date || new Date().toISOString().split('T')[0];
 
-  // Botones flotantes — siempre visibles
   return `
-    <style>${V2_CSS}</style>
+    <style>${getComprobanteCSS(b)}</style>
 
     <!-- BOTONES FLOTANTES -->
     <div class="comp-fab-group">
@@ -292,7 +347,7 @@ function buildComprobanteHTML(d) {
           <div class="header-content">
             <div class="header-left">
               <div class="logo-container">
-                <img src="${LOGO_DATA_URL}" alt="INNOVIO" />
+                <img src="${logoUrl}" style="height:${logoH}px;width:auto;max-width:280px;object-fit:contain;" alt="INNOVIO" />
               </div>
               <div class="contact-info">
                 <span class="ci-item">📍 Cartago, La Unión</span>
@@ -358,45 +413,30 @@ function buildComprobanteHTML(d) {
               ${d.diagnosis ? `${d.problem ? '<br>' : ''}<strong>Diagnóstico:</strong> ${esc(d.diagnosis)}` : ''}
               ${d.observations ? `${(d.problem||d.diagnosis) ? '<br>' : ''}<strong>Observaciones:</strong> ${esc(d.observations)}` : ''}
             </div>
-          ` : `
-            <div class="writable-box">
-              Espacio para notas, diagnóstico u observaciones del técnico...
-            </div>
-          `}
-          ` : `
-          <!-- CONDICIONES Y OBSERVACIONES (cotización) -->
-          <div class="section-title-wrap">
-            <div class="section-title">CONDICIONES Y OBSERVACIONES</div>
-            <div class="section-line"></div>
-          </div>
-          ${d.observations ? `
-            <div class="text-box">
-              ${esc(d.observations).replace(/\n/g, '<br>')}
-            </div>
-          ` : `
-            <div class="writable-box">
-              Espacio para condiciones y observaciones...
-            </div>
-          `}
-          `}
-
-          <!-- TABLA DE TARIFAS -->
-          ${linesHTML ? `
-            <table class="tariff-table">
-              <thead>
-                <tr>
-                  <th style="width:80px">Código</th>
-                  <th>Descripción</th>
-                  <th style="width:75px">Unidad</th>
-                  <th class="right" style="width:60px">Cant.</th>
-                  <th class="right" style="width:110px">Precio Unit.</th>
-                  <th class="right" style="width:115px">Total</th>
-                </tr>
-              </thead>
-              <tbody>${linesHTML}</tbody>
-            </table>
+          ` : '<div class="writable-box">Espacio para notas del técnico…</div>'}
           ` : ''}
 
+          <!-- REPUESTOS Y SERVICIOS -->
+          <div class="section-title-wrap">
+            <div class="section-title">REPUESTOS Y SERVICIOS</div>
+            <div class="section-line"></div>
+          </div>
+
+          ${linesHTML ? `
+          <table class="tariff-table">
+            <thead>
+              <tr>
+                <th style="width:70px;">CÓDIGO</th>
+                <th>DESCRIPCIÓN</th>
+                <th style="width:70px;">UNIDAD</th>
+                <th class="right" style="width:50px;">CANT</th>
+                <th class="right" style="width:90px;">PRECIO</th>
+                <th class="right" style="width:90px;">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>${linesHTML}</tbody>
+          </table>
+          ` : '<div class="writable-box">Espacio para repuestos y servicios…</div>'}
 
           <!-- TIEMPO LABORADO (solo OT) -->
           ${isOrden && laborTxt ? `
@@ -463,6 +503,45 @@ function buildComprobanteHTML(d) {
     </div><!-- /comp-v2-page -->
   `;
 }
+
+// Datos de muestra oficiales para la previsualización en Configuración
+export const SAMPLE_COMPROBANTE_DATA = {
+  docType: 'ORDEN DE TRABAJO',
+  docNum: 'OT-0042',
+  date: '2026-09-27',
+  clientName: 'José Joaquín Ugarte',
+  clientCompany: 'Suministros y Servicios Integrales S.A.',
+  clientCedula: '3-101-654321',
+  clientPhone: '(506) 8888-8888',
+  clientEmail: 'jugarte@suministros.cr',
+  equipos: [{
+    DISPOSITIVO: 'Computadora Portátil',
+    FABRICANTE: 'Dell',
+    MODELO: 'Inspiron 15 3000',
+    'S.O.': 'Windows 11 Pro'
+  }],
+  workItems: [
+    { descripcion: 'Limpieza interna y cambio de pasta térmica', realizada: true },
+    { descripcion: 'Instalación y clonación a SSD', realizada: true },
+    { descripcion: 'Mantenimiento preventivo general y optimización', realizada: true },
+    { descripcion: 'Pruebas de temperatura y estrés superadas', realizada: true }
+  ],
+  problem: 'Equipo se recalienta y se apaga al trabajar',
+  diagnosis: 'Pasta térmica cristalizada y polvo acumulado en disipador',
+  observations: 'Se realiza mantenimiento térmico y pruebas satisfactorias de 48 hrs.',
+  timeIn: '08:30',
+  timeOut: '17:00',
+  lines: [
+    { codigo: 'SRV-01', descripcion: 'Mantenimiento Preventivo y Térmico', unidad: 'Servicio', cantidad: 1, precio: 25000 },
+    { codigo: 'REP-02', descripcion: 'Disco Sólido Kingston SSD 480GB', unidad: 'Unidad', cantidad: 1, precio: 18500 }
+  ],
+  discount: { enabled: false, value: 0 },
+  iva: { enabled: true, value: 13 },
+  currency: { code: 'CRC', symbol: '₡' },
+  contact: { address: 'Cartago, La Unión', phone: '(506) 6277 7500', email: 'innoviocr@outlook.es' },
+  cuentas: [],
+  sinpe: null
+};
 
 // ── Bind eventos FAB ────────────────────────────────────────
 function bindCompEvents(container, data) {

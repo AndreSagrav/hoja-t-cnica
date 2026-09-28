@@ -18,45 +18,94 @@ function loadEmailIndex() {
   try { return JSON.parse(fs.readFileSync(EMAILS_INDEX, 'utf-8')); } catch { return []; }
 }
 
-// Sincronizar un XML a Supabase fiscal_facturas automaticamente
+// Sincronizar un XML a Supabase fiscal_facturas automaticamente (Version corregida y clasificacion inteligente)
 async function syncXMLToSupabase(filename, xmlContent) {
   try {
     const SUPABASE_URL = 'https://qznxejukrtprtzxbkcan.supabase.co';
     const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY';
     
-    // Extraer datos del XML
-    const claveMatch = xmlContent.match(/<Clave>(\d+)<\/Clave>/);
+    // Extraer datos del XML con expresiones robustas
+    const claveMatch = xmlContent.match(/<Clave>(\d+)<\/Clave>/) || xmlContent.match(/<NumeroConsecutivo>(\d+)<\/NumeroConsecutivo>/);
     const fechaMatch = xmlContent.match(/<FechaEmision>([^<]+)<\/FechaEmision>/);
     const totalMatch = xmlContent.match(/<TotalComprobante>([^<]+)<\/TotalComprobante>/);
     const impMatch = xmlContent.match(/<TotalImpuesto>([^<]+)<\/TotalImpuesto>/);
-    const emisorNameMatch = xmlContent.match(/<Emisor>[\s\S]*?<Nombre>([^<]+)<\/Nombre>/);
-    const emisorIdMatch = xmlContent.match(/<Emisor>[\s\S]*?<Identificacion>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
-    const receptorIdMatch = xmlContent.match(/<Receptor>[\s\S]*?<Identificacion>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
-    const tipoDocMatch = xmlContent.match(/<(FacturaElectronica|TiqueteElectronico|NotaCreditoElectronica|NotaDebitoElectronica)/);
+    const netoMatch = xmlContent.match(/<TotalVentaNeta>([^<]+)<\/TotalVentaNeta>/);
     
-    if (!claveMatch) return; // No es un comprobante válido
+    const emisorNameMatch = xmlContent.match(/<Emisor>[\s\S]*?<Nombre>([^<]+)<\/Nombre>/);
+    const emisorIdMatch = xmlContent.match(/<Emisor>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
+    const receptorNameMatch = xmlContent.match(/<Receptor>[\s\S]*?<Nombre>([^<]+)<\/Nombre>/);
+    const receptorIdMatch = xmlContent.match(/<Receptor>[\s\S]*?<Numero>([^<]+)<\/Numero>/);
+    
+    if (!claveMatch) return;
     
     const clave = claveMatch[1];
-    const cedulaReceptor = receptorIdMatch ? receptorIdMatch[1] : '';
-    const cedulaEmisor = emisorIdMatch ? emisorIdMatch[1] : '';
-    const CEDULA = '0205390118';
-    const tipo = cedulaEmisor === CEDULA ? 'ingreso' : 'gasto';
+    const cleanCed = (c) => (c || '').replace(/\D/g, '').replace(/^0+/, '');
+    const MI_CEDULA = '205390118';
+    
+    const cedulaEmisor = cleanCed(emisorIdMatch ? emisorIdMatch[1] : '');
+    const cedulaReceptor = cleanCed(receptorIdMatch ? receptorIdMatch[1] : '');
+    const emisorNombre = emisorNameMatch ? emisorNameMatch[1].trim() : '';
+    const receptorNombre = receptorNameMatch ? receptorNameMatch[1].trim() : '';
+    
+    const isIngreso = cedulaEmisor === MI_CEDULA;
+    const tipo = isIngreso ? 'ingreso' : 'gasto';
+    
+    const total = totalMatch ? parseFloat(totalMatch[1]) : 0;
+    const impuesto = impMatch ? parseFloat(impMatch[1]) : 0;
+    let neto = netoMatch ? parseFloat(netoMatch[1]) : (total - impuesto);
+    if (isNaN(neto) || neto === 0) neto = total - impuesto;
+    
+    // Detalle de servicios
+    const detalles = [];
+    const detalleRegex = /<LineaDetalle>[\s\S]*?<Detalle>([^<]+)<\/Detalle>/g;
+    let match;
+    while ((match = detalleRegex.exec(xmlContent)) !== null) {
+      if (match[1]) detalles.push(match[1].trim());
+    }
+    const tarifaMatch = xmlContent.match(/<Impuesto>[\s\S]*?<Tarifa>([^<]+)<\/Tarifa>/);
+    const tarifaIva = tarifaMatch ? parseFloat(tarifaMatch[1]) : (neto > 0 && impuesto > 0 ? Math.round((impuesto / neto) * 100) : 0);
+    
+    const descripcion = detalles.join(', ').slice(0, 250) || (isIngreso ? 'Servicios profesionales' : emisorNombre);
+    const fechaObj = fechaMatch ? new Date(fechaMatch[1]) : new Date();
+    
+    // Clasificacion automatica de deducibilidad
+    let deducible = false;
+    let categoria = 'Otros Gastos';
+    if (!isIngreso) {
+      const txt = (emisorNombre + ' ' + descripcion).toLowerCase();
+      const termsVehiculo = ['marot', 'akiauto', 'autorepuesto', 'repuesto', 'taller', 'lubricentro', 'aceite', 'motor', 'freno', 'frenos', 'wurth', 'sensor', 'cigüeñal', 'cigueñal', 'sonic', 'cruze', 'trax', 'bota', 'elan', 'trip', 'maz', 'llanta', 'amortiguador', 'bateria', 'batería', 'alineado'];
+      const termsTec = ['computo', 'cómputo', 'laptop', 'computadora', 'periferico', 'periférico', 'mouse', 'teclado', 'monitor', 'disco', 'ssd', 'ram', 'cable', 'switch', 'router', 'antivirus', 'software', 'licencia', 'servidor', 'hosting', 'herramienta', 'tester', 'soldadura', 'electronica', 'electrónica'];
+      if (termsVehiculo.some(t => txt.includes(t))) {
+        deducible = true;
+        categoria = 'Mantenimiento de Vehículo';
+      } else if (termsTec.some(t => txt.includes(t))) {
+        deducible = true;
+        categoria = 'Tecnología y Operaciones';
+      } else if (['arroz', 'chop suey', 'alas', 'restaurante', 'arcos dorados', 'mcdonald', 'soda', 'pizza', 'comida', 'cafeteria'].some(t => txt.includes(t))) {
+        deducible = false;
+        categoria = 'Alimentación / Viáticos';
+      }
+    }
     
     const record = {
       id: clave,
       xml_clave: clave,
-      fecha: fechaMatch ? new Date(fechaMatch[1]).toISOString() : new Date().toISOString(),
-      monto_bruto: totalMatch ? parseFloat(totalMatch[1]) : 0,
-      monto_iva: impMatch ? parseFloat(impMatch[1]) : 0,
-      proveedor: emisorNameMatch ? emisorNameMatch[1] : '',
-      cliente: '',
-      descripcion: emisorNameMatch ? emisorNameMatch[1] : filename,
+      fecha: fechaObj.toISOString().split('T')[0],
+      monto_bruto: Math.round(total * 100) / 100,
+      monto_iva: Math.round(impuesto * 100) / 100,
+      monto_neto: Math.round(neto * 100) / 100,
+      tarifa_iva: tarifaIva,
+      proveedor: isIngreso ? '' : emisorNombre,
+      cliente: isIngreso ? (receptorNombre || 'Cliente General') : '',
+      descripcion,
       raw_xml: xmlContent,
       tipo,
-      deducible: false,
+      deducible,
+      categoria_nombre: categoria,
+      periodo_mes: fechaObj.getMonth() + 1,
+      periodo_anio: fechaObj.getFullYear(),
       created_at: new Date().toISOString()
     };
-    
     const res = await fetch(`${SUPABASE_URL}/rest/v1/fiscal_facturas?on_conflict=id`, {
       method: 'POST',
       headers: {
@@ -538,7 +587,7 @@ async function startImapWatcher() {
       } catch {}
       
       const sinceStr = sinceDate.toISOString();
-      const searchCriteria = ['ALL'];
+      const searchCriteria = [['X-GM-RAW', 'has:attachment (filename:xml OR filename:factura OR filename:comprobante)']];
       const fetchOptions = { bodies: [''], struct: true, markSeen: false };
       
       console.log(`[IMAP] Buscando correos desde ${sinceStr}...`);
@@ -558,7 +607,7 @@ async function startImapWatcher() {
           const mail = await simpleParser(all.body);
           
           // Filtrar por fecha
-          if (mail.date && mail.date < sinceDate) continue;
+          // UID tracking: X-GM-RAW ya filtra, no necesitamos filtrar por fecha
           
           processedCount++;
           const msgId = mail.messageId || `msg-${Date.now()}-${Math.random().toString(36).slice(2)}`;

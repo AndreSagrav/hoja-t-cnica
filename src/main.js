@@ -1,8 +1,11 @@
+import { getBranding } from './data/configuracion.js';
 import { initAuth, isLoggedIn, onAuthChange } from './lib/auth.js';
 import { getSupabase, withTimeout } from './lib/supabase.js';
 import { createRouter } from './lib/router.js';
 import { loginView } from './views/login.js';
 import { dashboardView } from './views/dashboard.js';
+import { agendaView } from './views/agenda.js';
+import { configuracionView } from './views/configuracion.js';
 import { documentosListView, documentoDetalleView } from './views/documentos.jsx';
 import { clientesListView, clienteDetalleView } from './views/clientes.js';
 import { serviciosView } from './views/servicios.js';
@@ -25,10 +28,15 @@ const lazy = (loader) => async (...args) => {
 const router = createRouter({
   '/login':                       () => loginView({ onSuccess: () => router.go('/dashboard') }),
   '/dashboard':                   dashboardView,
-  '/documentos':                  documentosListView,
+  '/documentos':                  () => documentosListView(),
+  '/agenda':                      agendaView,
+  '/configuracion':               configuracionView,
   '/documentos/nuevo':            () => wizardNuevoView({ kind: 'orden' }),
   '/documentos/nuevo/:kind':      ({ kind }) => wizardNuevoView({ kind }),
-  '/documentos/:id':              documentoDetalleView,
+  '/documentos/:id':              (params) => {
+    if (!params || !params.id || params.id === 'undefined') return documentosListView();
+    return documentoDetalleView(params);
+  },
   '/documentos/:id/editar':       editorEditarView,
   '/documentos/:id/comprobante':  comprobanteDocumentoView,
   '/comprobante/preview':         comprobantePreviewView,
@@ -53,31 +61,35 @@ router.beforeEach(({ path }) => {
 });
 
 (async function bootstrap() {
-  try { document.body.setAttribute('data-app-mounted', '1'); } catch {}
+  try { document.body.setAttribute('data-app-mounted', '1'); console.log('[BOOT] Bootstrap started'); getBranding(); } catch {}
 
   try {
-    await initAuth();
-    // Pre-cargar tareas en segundo plano
+    console.log('[BOOT] Calling initAuth...'); await initAuth(); console.log('[BOOT] initAuth done, isLoggedIn:', isLoggedIn());
     initTareasData().catch(err => console.warn('Failed pre-loading tasks:', err));
   } catch (e) {
     console.error('Auth init error:', e);
   }
 
-  // Force login view on fresh load / refresh
-  window.location.hash = '/login';
-
   onAuthChange((user) => {
-    if (user) router.go('/dashboard');
+    if (user) {
+      if (window.location.hash === '#/login' || !window.location.hash) {
+        router.go('/dashboard');
+      }
+    } else {
+      router.go('/login');
+    }
   });
-  router.start();
-  router.go('/login');
 
+  console.log('[BOOT] Starting router, hash:', window.location.hash); router.start(); console.log('[BOOT] Router started');
 
+  // Si la ruta actual es vacía o es login pero ya estamos autenticados, ir a dashboard
+  const currentPath = window.location.hash ? window.location.hash.slice(1) : '';
+  if (!currentPath || currentPath === '/' || (currentPath === '/login' && isLoggedIn())) {
+    router.go('/dashboard');
+  }
 
   // ── Keep-Alive Heartbeat ─────────────────────────────────
-  // Ping Supabase every 4 mins to keep session & DB warm
   let keepAliveTimer = null;
-
   async function pingKeepAlive() {
     if (!isLoggedIn() || document.visibilityState === 'hidden') return;
     try {

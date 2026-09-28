@@ -273,7 +273,7 @@ function showForm(item) {
         <div class="field"><label class="field-label">Serie / IMEI</label><input id="if-serie" class="input" value="${esc(item?.serie||"")}" /></div>
         <div class="field"><label class="field-label">Stock actual</label><input id="if-stock" type="number" class="input" value="${item?.stock??0}" min="0" /></div>
         
-        <div class="field"><label class="field-label">Precio de Costo ₡</label><input id="if-costo" type="number" class="input" value="${item?.costo||""}" min="0" /></div>
+        <div class="field"><label class="field-label">Precio de Costo ₡</label><input id="if-costo" type="number" class="input" value="${item?.precio_base || item?.costo || ""}" min="0" /></div>
         <div class="field" style="display:none;"></div> <!-- Filler para alinear -->
         
         <div class="field"><label class="field-label">Margen Residencial (%)</label><input id="if-margen-res" type="number" class="input" value="${item?.margen_residencial||""}" /></div>

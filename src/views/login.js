@@ -3,6 +3,12 @@ import { toast } from '../lib/utils.js';
 import { signInDemo, signIn } from '../lib/auth.js';
 
 export function loginView() {
+  let branding = null;
+  try {
+    const raw = localStorage.getItem('innovio_branding');
+    if (raw) branding = JSON.parse(raw);
+  } catch {}
+  const activeLogo = (branding && branding.logoUrl) ? branding.logoUrl : LOGO_DATA_URL;
   const root = document.getElementById('app');
 
   root.innerHTML = `
@@ -24,7 +30,7 @@ export function loginView() {
         
         <div style="display:flex;justify-content:center;margin-bottom:36px;">
           <div style="background:linear-gradient(135deg,#0b244e 0%,#0d3266 50%,#0f3d8a 100%);border-radius:16px;padding:18px 28px;box-shadow:0 8px 28px rgba(11,36,78,0.18);">
-            <img src="${LOGO_DATA_URL}" alt="INNOVIO" style="max-width:170px;height:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.15));" />
+            <img src="${activeLogo}" alt="INNOVIO" style="max-width:170px;height:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.15));" />
           </div>
         </div>
 

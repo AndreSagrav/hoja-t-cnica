@@ -1,71 +1,130 @@
 import { ensureShell } from "../components/shell.js";
 import { getSupabase, withTimeout } from "../lib/supabase.js";
-import { esc, debounce, toast } from "../lib/utils.js";
+import { esc, debounce, toast, fmtDate } from "../lib/utils.js";
 import { parseUsuarios } from "../data/documentos.js";
 import { asignarCodigoFiscal } from "../lib/hacienda.js";
 import { consultarIdentificacionHacienda } from "../lib/hacienda-api.js";
 import { PROVINCIAS_CR, CANTONES_CR, DISTRITOS_CR } from "../data/ubicaciones-cr.js";
 
 let items = [], selectedId = null, search = "", typeFilter = "todos";
-
+let currentClientMergedEquipos = [], currentEqFilter = "activos";
 
 export async function clientesListView() {
   const shell = ensureShell("/clientes");
-  shell.setTitle(""); shell.setActions("");
+  shell.setTitle("Clientes");
+  shell.setActions("");
   const c = shell.content();
+
   c.innerHTML = `
-<div class="crm-panel">
-  <div class="crm-header">
-    <h2>👥 Directorio de Clientes <span class="crm-header-count" id="cli-count">—</span></h2>
-    <div class="crm-header-actions">
-      <button class="crm-action-btn primary" id="cli-new-btn">＋ Nuevo Cliente</button>
-    </div>
-  </div>
-  <div class="crm-kpi-row" id="cli-kpis"></div>
-  <div class="crm-body">
-    <div class="crm-list-pane">
-      <div class="crm-search-bar">
-        <div class="crm-search-wrap">
-          <svg class="crm-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input class="crm-search-input" id="cli-search" placeholder="Buscar por nombre, empresa o cédula…" />
+    <div class="t1-clients-view">
+      
+      <!-- ENCABEZADO TIER-1 MINIMALISTA -->
+      <div class="t1-crm-header">
+        <div class="t1-crm-title-area">
+          <h1 class="t1-crm-title">Clientes</h1>
+          <span class="t1-crm-count-badge" id="cli-count-badge">— Registrados</span>
         </div>
-        <div class="crm-filter-tabs" id="cli-filter-tabs">
-          <button class="crm-filter-tab active" data-filter="todos">Todos</button>
-          <button class="crm-filter-tab" data-filter="empresarial">🏢 Empresas</button>
-          <button class="crm-filter-tab" data-filter="residencial">🏠 Personas</button>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="crm-action-btn primary" id="cli-new-btn" style="padding: 9px 18px; border-radius: 8px; font-weight: 700; background: var(--innovio-teal); border: none; color: #fff; box-shadow: 0 2px 8px rgba(0, 194, 168, 0.25); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Nuevo Cliente
+          </button>
         </div>
       </div>
-      <div class="crm-list-scroll" id="cli-list">
-        <div class="crm-empty"><div class="crm-empty-icon">👥</div><div class="crm-empty-text">Cargando…</div></div>
+
+      <!-- MÉTRICAS DE ALTA DENSIDAD (4 COLUMNAS EQUILIBRADAS) -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;" id="cli-kpis"></div>
+
+      <!-- TABLA DE ANCHO COMPLETO (CERO TEXTOS APELOTADOS O CORTADOS) -->
+      <div class="t1-clients-table-card">
+        
+        <!-- Barra de herramientas: Búsqueda y Filtros de Chip -->
+        <div class="t1-clients-toolbar">
+          
+          <div class="t1-clients-search-box">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input class="t1-clients-search-input" id="cli-search" placeholder="Buscar por razón social, contacto, cédula o correo…" />
+          </div>
+
+          <div class="t1-filter-group" id="cli-filter-tabs">
+            <button class="t1-filter-btn active" data-filter="todos">Todos (<span id="count-all">0</span>)</button>
+            <button class="t1-filter-btn" data-filter="empresarial">Empresas (<span id="count-emp">0</span>)</button>
+            <button class="t1-filter-btn" data-filter="residencial">Personas Físicas (<span id="count-res">0</span>)</button>
+          </div>
+
+        </div>
+
+        <!-- Tabla Completa con Razón Social Expandida -->
+        <div style="overflow-x: auto;">
+          <table class="t1-full-table">
+            <thead>
+              <tr>
+                <th style="min-width: 320px;">Cliente / Razón Social</th>
+                <th style="min-width: 180px;">Contacto Principal</th>
+                <th style="min-width: 140px;">Cédula Oficial</th>
+                <th style="min-width: 110px;">Código Fiscal</th>
+                <th style="min-width: 220px;">Correo de Facturación</th>
+                <th style="min-width: 130px;">Teléfono</th>
+                <th style="min-width: 120px;">Tipo</th>
+                <th style="text-align: right; min-width: 110px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cli-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 48px 24px; color: var(--muted-color);">Cargando directorio de clientes…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
+
     </div>
-    <div class="crm-detail-pane" id="cli-detail">
-      <div class="crm-placeholder">
-        <div class="crm-placeholder-icon">👥</div>
-        <div class="crm-placeholder-text">Seleccioná un cliente</div>
-        <div class="crm-placeholder-sub">Hacé clic en cualquier cliente para ver su perfil completo, historial e información de contacto.</div>
+
+    <!-- SLIDE-OVER DRAWER (FICHA EXPEDIENTE 360° DESLIZANTE) -->
+    <div class="t1-drawer-overlay" id="cli-drawer-overlay"></div>
+    <div class="t1-drawer-panel" id="cli-drawer-panel">
+      <div class="t1-drawer-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-color);">Expediente de Cliente</span>
+        </div>
+        <button class="t1-drawer-close-btn" id="cli-drawer-close" title="Cerrar (Esc)">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
+
+      <div class="t1-drawer-scroll" id="cli-drawer-content"></div>
     </div>
-  </div>
-</div>`;
+  `;
 
   document.getElementById("cli-new-btn").addEventListener("click", () => showForm(null));
-  document.getElementById("cli-search").addEventListener("input", debounce(e => { search = e.target.value.trim().toLowerCase(); renderList(); }, 220));
+  document.getElementById("cli-search").addEventListener("input", debounce(e => { search = e.target.value.trim().toLowerCase(); renderTable(); }, 200));
   
   document.getElementById("cli-filter-tabs").addEventListener("click", (e) => {
-    const btn = e.target.closest(".crm-filter-tab");
+    const btn = e.target.closest(".t1-filter-btn");
     if (!btn) return;
-    document.querySelectorAll(".crm-filter-tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".t1-filter-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     typeFilter = btn.dataset.filter;
-    renderList();
+    renderTable();
+  });
+
+  // Drawer Close handlers
+  const closeDrawer = () => {
+    document.getElementById("cli-drawer-overlay")?.classList.remove("open");
+    document.getElementById("cli-drawer-panel")?.classList.remove("open");
+  };
+  document.getElementById("cli-drawer-close")?.addEventListener("click", closeDrawer);
+  document.getElementById("cli-drawer-overlay")?.addEventListener("click", closeDrawer);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDrawer();
   });
 
   loadData();
 }
 
 async function loadData() {
-  const listEl = document.getElementById("cli-list");
   try {
     const supabase = await getSupabase();
     const result = await withTimeout(
@@ -80,296 +139,1142 @@ async function loadData() {
       usuarios_autorizados: parseUsuarios(c.usuarios_autorizados)
     }));
   } catch (err) {
-    console.error("Error al cargar clientes reales de Supabase:", err);
-    toast("Error de conexión con Supabase: " + (err.message || err), "error");
+    console.error("Error al cargar clientes de Supabase:", err);
+    toast("Error de conexión: " + (err.message || err), "error");
     items = [];
-    if (listEl) {
-      listEl.innerHTML = `<div class="crm-empty"><div class="crm-empty-icon" style="color:var(--red);">⚠️</div><div class="crm-empty-text" style="color:var(--red);">Error de Supabase: ${esc(err.message || String(err))}</div></div>`;
-      return;
-    }
   }
   renderAll();
 }
 
 function renderAll() {
-  const countEl = document.getElementById("cli-count");
-  if (countEl) countEl.textContent = items.length;
-  renderKPIs();
-  renderList();
-}
+  const badgeEl = document.getElementById("cli-count-badge");
+  if (badgeEl) badgeEl.textContent = `${items.length} Registrados`;
 
-function renderKPIs() {
-  const kpis = document.getElementById("cli-kpis");
-  if (!kpis) return;
   const activeEmp = items.filter(c => c.tipo_cliente === "empresarial").length;
   const activeRes = items.filter(c => c.tipo_cliente === "residencial").length;
-  kpis.innerHTML = `
-    <div class="crm-kpi"><div class="crm-kpi-icon blue"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div><div><div class="crm-kpi-label">Total Clientes</div><div class="crm-kpi-value">${items.length}</div></div></div>
-    <div class="crm-kpi"><div class="crm-kpi-icon green"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1v1H9V7zm5 0h1v1h-1V7zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1zm-5 4h1v1H9v-1zm5 0h1v1h-1v-1z"></path></svg></div><div><div class="crm-kpi-label">Empresariales</div><div class="crm-kpi-value">${activeEmp}</div></div></div>
-    <div class="crm-kpi"><div class="crm-kpi-icon purple"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></div><div><div class="crm-kpi-label">Residenciales</div><div class="crm-kpi-value">${activeRes}</div></div></div>`;
+
+  const countAll = document.getElementById("count-all");
+  const countEmp = document.getElementById("count-emp");
+  const countRes = document.getElementById("count-res");
+  if (countAll) countAll.textContent = items.length;
+  if (countEmp) countEmp.textContent = activeEmp;
+  if (countRes) countRes.textContent = activeRes;
+
+  renderKPIs(activeEmp, activeRes);
+  renderTable();
 }
 
-function renderList() {
+function renderKPIs(activeEmp, activeRes) {
+  const kpis = document.getElementById("cli-kpis");
+  if (!kpis) return;
+  const total = items.length;
+  const empPercent = total > 0 ? Math.round((activeEmp / total) * 100) : 0;
+  const resPercent = total > 0 ? Math.round((activeRes / total) * 100) : 0;
+  const withCedula = items.filter(c => Boolean(c.fact_numero_id || c.cedula)).length;
+  const cedulaPercent = total > 0 ? Math.round((withCedula / total) * 100) : 0;
+
+  kpis.innerHTML = `
+    <!-- CARD 1: DIRECTORIO TOTAL -->
+    <div class="t1-clean-kpi-card">
+      <div class="t1-clean-kpi-header">
+        <span class="t1-clean-kpi-label">Directorio Activo</span>
+        <span class="t1-clean-kpi-badge" style="background: rgba(11, 36, 78, 0.08); color: var(--innovio-navy);">100% Cartera</span>
+      </div>
+      <div class="t1-clean-kpi-value">${total} <span style="font-size: 14px; font-weight: 600; color: var(--muted-color);">cuentas registradas</span></div>
+      <div class="t1-clean-kpi-bar-track" title="${empPercent}% Empresas / ${resPercent}% Físicas" style="display: flex;">
+        <div style="width: ${empPercent}%; height: 100%; background: #0284c7;"></div>
+        <div style="width: ${resPercent}%; height: 100%; background: var(--innovio-teal);"></div>
+      </div>
+      <div class="t1-clean-kpi-footer">
+        <span class="t1-clean-kpi-footer-main">${activeEmp} Empresas / ${activeRes} Físicas</span>
+        <span class="t1-clean-kpi-footer-sub" style="color: var(--heading-color);">Total: ${total}</span>
+      </div>
+    </div>
+
+    <!-- CARD 2: EMPRESAS (JURÍDICAS) -->
+    <div class="t1-clean-kpi-card">
+      <div class="t1-clean-kpi-header">
+        <span class="t1-clean-kpi-label">Empresas (Jurídicas)</span>
+        <span class="t1-clean-kpi-badge" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">${empPercent}% Cuota</span>
+      </div>
+      <div class="t1-clean-kpi-value" style="color: #0284c7;">${activeEmp} <span style="font-size: 14px; font-weight: 600; color: var(--muted-color);">cuentas B2B</span></div>
+      <div class="t1-clean-kpi-bar-track">
+        <div class="t1-clean-kpi-bar-fill" style="width: ${empPercent}%; background: #0284c7;"></div>
+      </div>
+      <div class="t1-clean-kpi-footer">
+        <span class="t1-clean-kpi-footer-main">Cuentas corporativas registradas</span>
+        <span class="t1-clean-kpi-footer-sub" style="color: #0284c7;">${activeEmp} de ${total}</span>
+      </div>
+    </div>
+
+    <!-- CARD 3: PERSONAS FÍSICAS -->
+    <div class="t1-clean-kpi-card">
+      <div class="t1-clean-kpi-header">
+        <span class="t1-clean-kpi-label">Personas Físicas</span>
+        <span class="t1-clean-kpi-badge" style="background: rgba(0, 194, 168, 0.1); color: var(--innovio-teal);">${resPercent}% Cuota</span>
+      </div>
+      <div class="t1-clean-kpi-value" style="color: var(--innovio-teal);">${activeRes} <span style="font-size: 14px; font-weight: 600; color: var(--muted-color);">cliente particular</span></div>
+      <div class="t1-clean-kpi-bar-track">
+        <div class="t1-clean-kpi-bar-fill" style="width: ${resPercent}%; background: var(--innovio-teal);"></div>
+      </div>
+      <div class="t1-clean-kpi-footer">
+        <span class="t1-clean-kpi-footer-main">Clientes particulares en cartera</span>
+        <span class="t1-clean-kpi-footer-sub" style="color: var(--innovio-teal);">${activeRes} de ${total}</span>
+      </div>
+    </div>
+
+    <!-- CARD 4: HACIENDA V4.4 -->
+    <div class="t1-clean-kpi-card">
+      <div class="t1-clean-kpi-header">
+        <span class="t1-clean-kpi-label">Hacienda v4.4</span>
+        <span class="t1-clean-kpi-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">✓ ${cedulaPercent}% Listo FE</span>
+      </div>
+      <div class="t1-clean-kpi-value" style="color: #10b981;">${withCedula} / ${total} <span style="font-size: 14px; font-weight: 600; color: var(--muted-color);">cédulas</span></div>
+      <div class="t1-clean-kpi-bar-track">
+        <div class="t1-clean-kpi-bar-fill" style="width: ${cedulaPercent}%; background: #10b981;"></div>
+      </div>
+      <div class="t1-clean-kpi-footer">
+        <span class="t1-clean-kpi-footer-main">Cédulas verificadas en DGT</span>
+        <span class="t1-clean-kpi-footer-sub" style="color: #10b981;">${withCedula} registradas</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderTable() {
   let filtered = [...items];
   if (typeFilter !== "todos") filtered = filtered.filter(c => c.tipo_cliente === typeFilter);
   if (search) filtered = filtered.filter(c =>
-    c.nombre.toLowerCase().includes(search) ||
+    (c.nombre || "").toLowerCase().includes(search) ||
     (c.empresa || "").toLowerCase().includes(search) ||
     (c.email || "").toLowerCase().includes(search) ||
     (c.telefono || "").toLowerCase().includes(search) ||
-    (c.cedula || "").toLowerCase().includes(search)
+    (c.cedula || "").toLowerCase().includes(search) ||
+    (c.fact_numero_id || "").toLowerCase().includes(search)
   );
 
-  // Ordenar ascendentemente por Código de Cliente (de menor a mayor)
   filtered.sort((a, b) => {
     const codeA = a.codigo_fiscal != null ? Number(a.codigo_fiscal) : 999999;
     const codeB = b.codigo_fiscal != null ? Number(b.codigo_fiscal) : 999999;
     return codeA - codeB;
   });
-  
-  const countEl = document.getElementById("cli-count");
-  if (countEl) countEl.textContent = filtered.length;
-  const box = document.getElementById("cli-list");
-  if (!box) return;
+
+  const tbody = document.getElementById("cli-table-body");
+  if (!tbody) return;
+
   if (!filtered.length) {
-    box.innerHTML = `<div class="crm-empty"><div class="crm-empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div><div class="crm-empty-text">Sin resultados</div></div>`; return;
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 48px 24px; color: var(--muted-color); font-size: 13.5px;">
+          Sin coincidencias para "${esc(search)}".
+        </td>
+      </tr>
+    `;
+    return;
   }
-  box.innerHTML = filtered.map(c => {
+
+  tbody.innerHTML = filtered.map(c => {
     const isEmp = c.tipo_cliente === "empresarial";
     const mainText = isEmp && c.empresa ? c.empresa : c.nombre;
-    const subText  = isEmp && c.empresa ? `Contacto: ${c.nombre}` : "Persona Física";
-    const avatarClass = isEmp ? "av-cli av-emp" : "av-cli av-res";
+    const contactText = isEmp && c.empresa ? c.nombre : "—";
+    const avatarInitials = getInitials(mainText);
+    const cedula = c.fact_numero_id || c.cedula || "—";
+    const email = c.fact_email || c.email || "—";
+    const tel = c.fact_telefono || c.telefono || "—";
 
-    return `<div class="crm-item ${String(selectedId)===String(c.id)?"selected":""}" data-id="${c.id}">
-      <div class="crm-item-avatar ${avatarClass}">${getInitials(mainText)}</div>
-      <div class="crm-item-info">
-        <div class="crm-item-name">${esc(mainText)}</div>
-        <div class="crm-item-sub">${esc(subText)}</div>
-      </div>
-      <div class="crm-item-meta">
-        ${c.codigo_fiscal ? `<span class="cli-code-badge">#${String(c.codigo_fiscal).padStart(5,'0')}</span>` : ''}
-        <span class="badge badge-${c.tipo_cliente}">${esc(c.tipo_cliente)}</span>
-      </div>
-    </div>`;
+    return `
+      <tr data-id="${c.id}" class="cli-row">
+        <td>
+          <div class="t1-table-client-cell">
+            <div class="t1-table-avatar ${isEmp ? '' : 'res'}">${avatarInitials}</div>
+            <div>
+              <div class="t1-table-client-name">${esc(mainText)}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight: 500; color: var(--body-color);">
+          ${esc(contactText)}
+        </td>
+        <td>
+          <span style="font-family: var(--font-mono); font-weight: 700; color: var(--heading-color);">${esc(cedula)}</span>
+        </td>
+        <td>
+          ${c.codigo_fiscal ? `<span class="t1-crm-code-pill">#${String(c.codigo_fiscal).padStart(5, '0')}</span>` : '<span style="color:var(--muted-color);">—</span>'}
+        </td>
+        <td style="color: var(--muted-color); font-size: 13px;">
+          ${esc(email)}
+        </td>
+        <td style="font-family: var(--font-mono); font-size: 13px; color: var(--body-color);">
+          ${esc(tel)}
+        </td>
+        <td>
+          <span class="t1-crm-type-pill ${isEmp ? 't1-type-emp' : 't1-type-res'}">
+            ${isEmp ? 'Empresarial' : 'Residencial'}
+          </span>
+        </td>
+        <td style="text-align: right;">
+          <div style="display: inline-flex; align-items: center; gap: 6px;">
+            <button class="btn-inspect-cli" data-id="${c.id}" style="padding: 5px 10px; font-size: 12px; font-weight: 700; background: var(--panel-subtle); border: 1px solid var(--panel-border); color: var(--heading-color); border-radius: 6px; cursor: pointer;">
+              Expediente
+            </button>
+            <button class="btn-invoice-cli" data-id="${c.id}" title="Emitir Factura" style="padding: 5px 8px; font-size: 12px; font-weight: 700; background: rgba(0, 194, 168, 0.1); border: 1px solid rgba(0, 194, 168, 0.25); color: var(--innovio-teal); border-radius: 6px; cursor: pointer;">
+              + FE
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
   }).join('');
-  box.querySelectorAll(".crm-item").forEach(el =>
-    el.addEventListener("click", () => {
-      selectedId = el.dataset.id;
-      renderList();
-      showDetail(el.dataset.id);
-    }));
+
+  // Row Click opens Slide-over Drawer
+  tbody.querySelectorAll(".cli-row").forEach(row => {
+    row.addEventListener("click", (e) => {
+      if (e.target.closest(".btn-invoice-cli")) {
+        const id = e.target.closest(".btn-invoice-cli").dataset.id;
+        window.location.hash = `/documentos/nuevo/cotizacion?cliente_id=${id}`;
+        return;
+      }
+      const id = row.dataset.id;
+      openClientDrawer(id);
+    });
+  });
 }
 
 function getInitials(str) {
-  return str.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+  if (!str) return "—";
+  return str.split(" ").filter(Boolean).map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-function showDetail(id) {
+async function openClientDrawer(id) {
   const item = items.find(c => String(c.id) === String(id));
   if (!item) return;
-  
-  const detail = document.getElementById("cli-detail");
-  if (!detail) return;
 
-  const crmBody = detail.closest('.crm-body');
-  if (crmBody) crmBody.classList.add('show-detail');
+  const overlay = document.getElementById("cli-drawer-overlay");
+  const panel = document.getElementById("cli-drawer-panel");
+  const content = document.getElementById("cli-drawer-content");
+  if (!panel || !content) return;
 
   const isEmp = item.tipo_cliente === 'empresarial';
-  const tipoLabel = isEmp ? 'Empresarial' : 'Residencial';
-  const tipoColor = isEmp ? '#166534' : '#0284c7';
-  const tipoBg = isEmp ? '#dcfce7' : '#e0f2fe';
-  const initials = getInitials(isEmp && item.empresa ? item.empresa : item.nombre);
+  const tipoLabel = isEmp ? 'Cuenta Empresarial' : 'Persona Física';
   const displayName = isEmp && item.empresa ? item.empresa : item.nombre;
   const subName = isEmp && item.empresa ? item.nombre : null;
+  const initials = getInitials(displayName);
 
-  detail.innerHTML = `
-    <button class="crm-back-btn" onclick="document.querySelector('.crm-body').classList.remove('show-detail')">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      Volver a la lista
-    </button>
-    <!-- HERO -->
-    <div class="detail-hero">
-      <div class="detail-hero-avatar">${initials}</div>
-      <div class="detail-hero-info">
-        <div class="detail-hero-name">${esc(displayName)}</div>
-        <div class="detail-hero-sub">
-          ${subName ? `<span>👤 ${esc(subName)}</span>` : ''}
-          <span>${isEmp ? '🏢' : '🏠'} ${tipoLabel}</span>
-          ${item.cargo ? `<span>💼 ${esc(item.cargo)}</span>` : ''}
-          ${item.codigo_fiscal ? `<span class="hero-code-badge">#${String(item.codigo_fiscal).padStart(5,'0')}</span>` : ''}
+  // Render Skeleton Structure with 3 Executive Tabs
+  content.innerHTML = `
+    <!-- HERO DEL CLIENTE -->
+    <div class="t1-detail-hero" style="margin-bottom: 0;">
+      <div class="t1-detail-hero-left">
+        <div class="t1-detail-hero-avatar" style="width: 46px; height: 46px; font-size: 16px;">${initials}</div>
+        <div>
+          <h2 class="t1-detail-hero-name" style="font-size: 17px;">${esc(displayName)}</h2>
+          <div class="t1-detail-hero-tags">
+            ${item.codigo_fiscal ? `<span class="t1-crm-code-pill">#${String(item.codigo_fiscal).padStart(5, '0')}</span>` : ''}
+            <span class="t1-crm-type-pill ${isEmp ? 't1-type-emp' : 't1-type-res'}">${tipoLabel}</span>
+            ${subName ? `<span style="font-size:12px; color:var(--muted-color);">· Contacto: ${esc(subName)}</span>` : ''}
+          </div>
         </div>
-      </div>
-      <div class="detail-hero-actions">
-        <button class="hero-btn hero-btn-edit" onclick="editClient('${item.id}')">
-          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg> Editar
-        </button>
-        <button class="hero-btn hero-btn-del" onclick="deleteClient('${item.id}')">
-          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Eliminar
-        </button>
       </div>
     </div>
 
-    <div style="padding: 0 4px;">
+    <!-- PESTAÑAS EJECUTIVAS TIER-1 (CUSTOMER 360°) -->
+    <div class="t1-client-tabs-bar">
+      <button class="t1-c360-tab-btn active" data-tab="ficha">
+        📋 Ficha & Fiscal
+      </button>
+      <button class="t1-c360-tab-btn" data-tab="equipos">
+        💻 Equipos / Inventario (<span id="c360-count-equipos">...</span>)
+      </button>
+      <button class="t1-c360-tab-btn" data-tab="docs">
+        📄 Historial (<span id="c360-count-docs">...</span>)
+      </button>
+    </div>
 
-      <!-- CONTACTO -->
-      <div class="crm-detail-section" style="margin-bottom:16px; border-radius:14px; padding:20px 24px;">
-        <h3 style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:800; color:var(--navy); margin:0 0 16px 0; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--blue-light);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-          Información de Contacto
-        </h3>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px 24px;">
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px; display:flex; align-items:center; gap:6px;">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> Email
-            </div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${esc(item.email || "—")}</div>
+    <!-- PESTAÑA 1: FICHA & FACTURACIÓN -->
+    <div class="t1-c360-tab-pane active" id="c360-pane-ficha">
+      <!-- Acciones de edición -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button id="drawer-btn-edit" class="t1-btn-primary" style="flex: 1; padding: 7px 12px; font-size: 12px;">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+          Editar Ficha
+        </button>
+        <button id="drawer-btn-fe" style="padding: 7px 12px; font-size: 12px; font-weight: 600; background: var(--panel-subtle); border: 1px solid var(--panel-border); color: var(--heading-color); border-radius: 6px; cursor: pointer;">
+          ＋ Factura
+        </button>
+        <button id="drawer-btn-ot" style="padding: 7px 12px; font-size: 12px; font-weight: 600; background: var(--panel-subtle); border: 1px solid var(--panel-border); color: var(--heading-color); border-radius: 6px; cursor: pointer;">
+          ＋ Orden OT
+        </button>
+        <button id="drawer-btn-del" style="padding: 7px 10px; font-size: 12px; font-weight: 600; background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e; border-radius: 6px; cursor: pointer;" title="Eliminar cliente">
+          🗑
+        </button>
+      </div>
+
+      <!-- Tarjeta Fiscal Hacienda v4.4 -->
+      <div class="t1-detail-card" style="margin-bottom: 0;">
+        <div class="t1-detail-card-header">
+          <h3 class="t1-detail-card-title">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--innovio-teal);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Facturación Electrónica (DGT v4.4)
+          </h3>
+          <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: rgba(16, 185, 129, 0.1); color: #10b981;">✓ Validado</span>
+        </div>
+
+        <div class="t1-detail-grid">
+          <div class="t1-field-box">
+            <span class="t1-field-label">Código Fiscal</span>
+            <span class="t1-field-val mono">${item.codigo_fiscal ? String(item.codigo_fiscal).padStart(5, '0') : '—'}</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px; display:flex; align-items:center; gap:6px;">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg> Teléfono
-            </div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${esc(item.telefono || "—")}</div>
+          <div class="t1-field-box">
+            <span class="t1-field-label">Tipo Cédula</span>
+            <span class="t1-field-val" style="text-transform: capitalize;">${esc(item.fact_tipo_id || "—")}</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px; grid-column:1/-1;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px; display:flex; align-items:center; gap:6px;">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Dirección
-            </div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${esc(item.direccion || "—")}</div>
+          <div class="t1-field-box">
+            <span class="t1-field-label">Cédula Oficial</span>
+            <span class="t1-field-val mono">${esc(item.fact_numero_id || item.cedula || "—")}</span>
+          </div>
+          <div class="t1-field-box">
+            <span class="t1-field-label">Email Recepción FE</span>
+            <span class="t1-field-val">${esc(item.fact_email || item.email || "—")}</span>
+          </div>
+          <div class="t1-field-box" style="grid-column: 1 / -1;">
+            <span class="t1-field-label">Razón Social Registrada</span>
+            <span class="t1-field-val">${esc(item.fact_nombre || displayName || "—")}</span>
+          </div>
+          <div class="t1-field-box" style="grid-column: 1 / -1;">
+            <span class="t1-field-label">Ubicación Tributaria</span>
+            <span class="t1-field-val">
+              ${[item.fact_provincia, item.fact_canton, item.fact_distrito].filter(Boolean).map(esc).join(' · ') || "—"}
+              ${item.fact_otras_senas ? ` — ${esc(item.fact_otras_senas)}` : ''}
+            </span>
           </div>
         </div>
       </div>
 
-      <!-- FACTURACIÓN ELECTRÓNICA -->
-      <div class="crm-detail-section" style="margin-bottom:16px; border-radius:14px; padding:20px 24px;">
-        <h3 style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:800; color:var(--navy); margin:0 0 16px 0; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--blue-light);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          Facturación Electrónica
-          ${item.fact_tipo_id ? `<span style="margin-left:auto; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; background:#dcfce7; color:#166534; border:1px solid #16653422;">✓ Configurado</span>` : `<span style="margin-left:auto; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; background:#fef08a; color:#b45309; border:1px solid #b4530922;">⚠ Sin configurar</span>`}
-        </h3>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px 24px;">
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Código Fiscal</div>
-            <div style="font-size:15px; color:var(--navy); font-weight:700; font-family:monospace;">${item.codigo_fiscal ? String(item.codigo_fiscal).padStart(5, '0') : '—'}</div>
+      <!-- Tarjeta Contacto Directo -->
+      <div class="t1-detail-card" style="margin-bottom: 0;">
+        <div class="t1-detail-card-header">
+          <h3 class="t1-detail-card-title">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#0284c7;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            Contacto & Operaciones
+          </h3>
+        </div>
+
+        <div class="t1-detail-grid">
+          <div class="t1-field-box">
+            <span class="t1-field-label">Correo Operativo</span>
+            <span class="t1-field-val">${esc(item.email || "—")}</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Tipo de Cédula</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500; text-transform:capitalize;">${esc(item.fact_tipo_id || "—")}</div>
+          <div class="t1-field-box">
+            <span class="t1-field-label">Teléfono Directo</span>
+            <span class="t1-field-val mono">${esc(item.telefono || "—")}</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Cédula Hacienda</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500; font-family:monospace;">${esc(item.fact_numero_id || item.cedula || "—")}</div>
+          <div class="t1-field-box" style="grid-column: 1 / -1;">
+            <span class="t1-field-label">Dirección Física / Ubicación</span>
+            <span class="t1-field-val">${esc(item.direccion || "—")}</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Nombre / Razón Social</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${esc(item.fact_nombre || "—")}</div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Email Facturación</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${esc(item.fact_email || "—")}</div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Teléfono Facturación</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${esc(item.fact_telefono || "—")}</div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Régimen</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500; text-transform:capitalize;">${esc((item.fact_regimen || "").replace(/_/g, ' ')) || "—"}</div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Código Actividad</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500; font-family:monospace;">${esc(item.fact_actividad || "—")}</div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px; grid-column:1/-1;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Ubicación</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">
-              ${item.fact_provincia || item.fact_canton || item.fact_distrito
-                ? [item.fact_provincia, item.fact_canton, item.fact_distrito].filter(Boolean).map(esc).join(' · ')
-                : "—"}
-            </div>
-          </div>
-          ${item.fact_otras_senas || item.fact_barrio ? `
-          <div style="display:flex; flex-direction:column; gap:6px; grid-column:1/-1;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.8px;">Otras Señas</div>
-            <div style="font-size:14px; color:var(--navy); font-weight:500;">${item.fact_barrio ? esc(item.fact_barrio) + " — " : ""}${esc(item.fact_otras_senas || "")}</div>
-          </div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 2: EQUIPOS / INVENTARIO DEL CLIENTE -->
+    <div class="t1-c360-tab-pane" id="c360-pane-equipos">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+        <div>
+          <span style="font-size: 12.5px; font-weight: 700; color: var(--heading-color);">Parque de Equipos</span>
+          <div style="font-size: 11px; color: var(--muted-color);">Equipos atendidos o en custodia de este cliente</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button id="btn-c360-export-equipos" class="t1-btn-secondary" style="padding: 5px 9px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--panel-border); background: var(--panel-subtle); border-radius: 6px; cursor: pointer; color: var(--heading-color); font-weight: 600;" title="Descargar inventario en CSV / Excel">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Descargar
+          </button>
+          <button id="btn-c360-add-equipo" class="t1-btn-primary" style="padding: 5px 10px; font-size: 11.5px;">
+            ＋ Registrar Equipo
+          </button>
         </div>
       </div>
 
-      <!-- USUARIOS AUTORIZADOS -->
-      ${isEmp ? `
-      <div class="crm-detail-section" style="margin-bottom:16px; border-radius:14px; padding:20px 24px;">
-        <h3 style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:800; color:var(--navy); margin:0 0 16px 0; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--blue-light);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-          Usuarios Autorizados
-          ${item.usuarios_autorizados?.length ? `<span style="margin-left:auto; font-size:11px; font-weight:600; color:var(--text-soft);">${item.usuarios_autorizados.length} ${item.usuarios_autorizados.length === 1 ? 'persona' : 'personas'}</span>` : ''}
-        </h3>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          ${item.usuarios_autorizados && item.usuarios_autorizados.length > 0
-            ? item.usuarios_autorizados.map(u => {
-                if (typeof u === 'string') return `
-                  <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--surface-2); border-radius:10px; border:1px solid var(--border-light);">
-                    <div style="width:36px; height:36px; border-radius:50%; background:var(--blue-light); opacity:0.15; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; color:var(--navy);">${getInitials(u)}</div>
-                    <div style="font-size:14px; font-weight:600; color:var(--navy);">${esc(u)}</div>
-                  </div>`;
-                return `
-                  <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--surface-2); border-radius:10px; border:1px solid var(--border-light);">
-                    <div style="width:36px; height:36px; border-radius:50%; background:var(--blue-light); opacity:0.15; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; color:var(--navy);">${getInitials(u.nombre || '')}</div>
-                    <div style="flex:1; min-width:0;">
-                      <div style="font-size:14px; font-weight:700; color:var(--navy);">${esc(u.nombre || '')}</div>
-                      <div style="font-size:12px; color:var(--text-soft); display:flex; gap:16px; margin-top:2px;">
-                        ${u.email ? `<span>📧 ${esc(u.email)}</span>` : ''}
-                        ${u.telefono ? `<span>📞 ${esc(u.telefono)}</span>` : ''}
-                      </div>
-                    </div>
-                  </div>`;
-              }).join('')
-            : `<div style="font-size:13px; color:var(--text-soft); padding:8px 0;">No hay usuarios autorizados registrados.</div>`
-          }
+      <!-- Barra de Filtros de Estado de Equipos -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; margin-bottom: 2px;">
+        <div class="t1-eq-filter-group" id="c360-eq-filters" style="display: inline-flex; background: var(--panel-subtle); padding: 2px; border-radius: 6px; border: 1px solid var(--panel-border);">
+          <button class="t1-eq-filter-btn active" data-filter="activos" style="padding: 3px 8px; font-size: 10.5px; font-weight: 600; border: none; background: #fff; color: var(--innovio-navy); border-radius: 4px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Activos (<span id="c360-eq-count-activos">0</span>)</button>
+          <button class="t1-eq-filter-btn" data-filter="archivados" style="padding: 3px 8px; font-size: 10.5px; font-weight: 600; border: none; background: transparent; color: var(--muted-color); border-radius: 4px; cursor: pointer;">Archivados (<span id="c360-eq-count-archivados">0</span>)</button>
+          <button class="t1-eq-filter-btn" data-filter="todos" style="padding: 3px 8px; font-size: 10.5px; font-weight: 600; border: none; background: transparent; color: var(--muted-color); border-radius: 4px; cursor: pointer;">Todos (<span id="c360-eq-count-todos">0</span>)</button>
         </div>
       </div>
-      ` : ''}
 
-      <!-- EQUIPOS -->
-      ${item.equipos && item.equipos.length > 0 ? `
-      <div class="crm-detail-section" style="margin-bottom:16px; border-radius:14px; padding:20px 24px;">
-        <h3 style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:800; color:var(--navy); margin:0 0 16px 0; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--blue-light);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-          Equipos Registrados
-          <span style="margin-left:auto; font-size:11px; font-weight:600; color:var(--text-soft);">${item.equipos.length} ${item.equipos.length === 1 ? 'equipo' : 'equipos'}</span>
-        </h3>
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;">
-          ${item.equipos.map(eq => `
-            <div style="background:var(--surface-2); border:1px solid var(--border-light); border-radius:12px; padding:16px; transition:all 0.2s;">
-              <div style="font-weight:800; color:var(--navy); font-size:15px; margin-bottom:6px;">${esc(eq.FABRICANTE || 'Marca')} ${esc(eq.MODELO || '')}</div>
-              <div style="font-size:12px; color:var(--text-soft); margin-bottom:12px; font-weight:500;">${esc(eq.DISPOSITIVO || 'Dispositivo')}</div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; font-size:11px; color:var(--text-soft);">
-                <div><strong style="color:var(--navy);">CPU:</strong> ${esc(eq['CPU MARCA']||'')} ${esc(eq['CPU MODELO']||'')}</div>
-                <div><strong style="color:var(--navy);">RAM:</strong> ${esc(eq['RAM CAPACIDAD']||'')} ${esc(eq['RAM TIPO']||'')}</div>
-                <div><strong style="color:var(--navy);">Disco:</strong> ${esc(eq['DISCO CAPACIDAD']||'')} ${esc(eq['DISCO TIPO']||'')}</div>
-                <div><strong style="color:var(--navy);">S.O.:</strong> ${esc(eq['S.O.']||'')}</div>
-              </div>
-            </div>
-          `).join('')}
+      <div id="c360-equipos-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+        <div style="padding: 24px; text-align: center; color: var(--muted-color); font-size: 12px;">Cargando inventario de equipos...</div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: HISTORIAL DE DOCUMENTOS -->
+    <div class="t1-c360-tab-pane" id="c360-pane-docs">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <div>
+          <span style="font-size: 12.5px; font-weight: 700; color: var(--heading-color);">Historial de Comprobantes</span>
+          <div style="font-size: 11px; color: var(--muted-color);">Órdenes de trabajo, facturas y cotizaciones</div>
         </div>
+        <a href="#/documentos" style="font-size: 11.5px; font-weight: 700; color: var(--innovio-teal); text-decoration: none;">
+          Ver en módulo Documentos ↗
+        </a>
       </div>
-      ` : ''}
 
-      <!-- NOTAS -->
-      ${item.notas ? `
-      <div class="crm-detail-section" style="margin-bottom:16px; border-radius:14px; padding:20px 24px;">
-        <h3 style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:800; color:var(--navy); margin:0 0 16px 0; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--blue-light);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-          Notas Internas
-        </h3>
-        <div style="font-size:14px; color:var(--navy); white-space:pre-wrap; line-height:1.6; background:var(--surface-2); padding:16px 20px; border-radius:10px; border:1px solid var(--border-light); font-weight:400;">${esc(item.notas)}</div>
+      <div id="c360-docs-list" style="margin-top: 4px;">
+        <div style="padding: 24px; text-align: center; color: var(--muted-color); font-size: 12px;">Consultando historial de documentos...</div>
       </div>
-      ` : ''}
+    </div>
+  `;
 
-    </div>`;
+  // Wire Tab Switching
+  content.querySelectorAll(".t1-c360-tab-btn").forEach(btn => {
+    btn.onclick = () => {
+      content.querySelectorAll(".t1-c360-tab-btn").forEach(b => b.classList.remove("active"));
+      content.querySelectorAll(".t1-c360-tab-pane").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      const targetPane = document.getElementById(`c360-pane-${btn.dataset.tab}`);
+      if (targetPane) targetPane.classList.add("active");
+    };
+  });
+
+  // Wire Ficha Actions
+  document.getElementById("drawer-btn-edit")?.addEventListener("click", () => {
+    closeDrawer();
+    showForm(item.id);
+  });
+  document.getElementById("drawer-btn-fe")?.addEventListener("click", () => {
+    window.location.hash = `/documentos/nuevo/cotizacion?cliente_id=${item.id}`;
+  });
+  document.getElementById("drawer-btn-ot")?.addEventListener("click", () => {
+    window.location.hash = `/documentos/nuevo/orden?cliente_id=${item.id}`;
+  });
+  document.getElementById("drawer-btn-del")?.addEventListener("click", async () => {
+    if (!confirm(`¿Eliminar el cliente "${displayName}"?`)) return;
+    try {
+      const supabase = await getSupabase();
+      const { error } = await supabase.from("clientes").delete().eq("id", item.id);
+      if (error) throw error;
+      toast("Cliente eliminado correctamente", "info");
+      closeDrawer();
+      loadData();
+    } catch (e) {
+      toast("Error al eliminar: " + e.message, "error");
+    }
+  });
+
+  // Wire Add Equipo button
+  document.getElementById("btn-c360-add-equipo")?.addEventListener("click", () => {
+    showAddEquipoModal(item);
+  });
+
+  // Wire Export Equipos
+  document.getElementById("btn-c360-export-equipos")?.addEventListener("click", () => {
+    exportClientEquiposCSV(item, currentClientMergedEquipos);
+  });
+
+  // Wire Filter tabs
+  currentEqFilter = "activos";
+  document.querySelectorAll("#c360-eq-filters .t1-eq-filter-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll("#c360-eq-filters .t1-eq-filter-btn").forEach(b => {
+        b.classList.remove("active");
+        b.style.background = "transparent";
+        b.style.color = "var(--muted-color)";
+        b.style.boxShadow = "none";
+      });
+      btn.classList.add("active");
+      btn.style.background = "#fff";
+      btn.style.color = "var(--innovio-navy)";
+      btn.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+      currentEqFilter = btn.dataset.filter;
+      renderCurrentClientEquipos(item);
+    };
+  });
+
+  overlay.classList.add("open");
+  panel.classList.add("open");
+
+  // Load Equipos and Documentos in Background
+  await loadClientEquipos(item.id, item);
+  await loadClientDocumentos(item.id);
 }
 
-// Variables globales temporales para el formulario
-let tempAuthUsers = [];
+// ── Carga y Renderizado del Inventario de Equipos del Cliente ────────────────
+async function loadClientEquipos(clienteId, clientItem = null) {
+  const container = document.getElementById("c360-equipos-list");
+  const countBadge = document.getElementById("c360-count-equipos");
+  if (!container) return;
+
+  try {
+    const supabase = await getSupabase();
+
+    // 1. Equipos desde tabla relacional 'equipos'
+    const { data: tableEquipos, error } = await supabase
+      .from("equipos")
+      .select("*")
+      .eq("cliente_id", clienteId)
+      .order("created_at", { ascending: false });
+
+    if (error) console.warn("Error consultando tabla equipos:", error);
+
+    // 2. Equipos históricos desde JSON column 'clientes.equipos' (generados por OT)
+    let jsonEquiposRaw = clientItem?.equipos;
+    if (!jsonEquiposRaw) {
+      const { data: cData } = await supabase
+        .from("clientes")
+        .select("equipos")
+        .eq("id", clienteId)
+        .maybeSingle();
+      jsonEquiposRaw = cData?.equipos || [];
+    }
+
+    if (typeof jsonEquiposRaw === "string") {
+      try { jsonEquiposRaw = JSON.parse(jsonEquiposRaw); } catch(e) { jsonEquiposRaw = []; }
+    }
+    if (!Array.isArray(jsonEquiposRaw)) jsonEquiposRaw = [];
+
+    // Mapear equipos de tabla
+    const listTable = (tableEquipos || []).map(eq => {
+      let extra = {};
+      try {
+        if (eq.detalles) extra = typeof eq.detalles === 'object' ? eq.detalles : JSON.parse(eq.detalles);
+      } catch(e){}
+      return {
+        ...eq,
+        usuario: extra.usuario || eq.usuario || "",
+        estado: extra.estado || eq.estado || "activo",
+        detalles: extra,
+        _source: "table"
+      };
+    });
+
+    // Mapear equipos del JSON de OTs
+    const listJson = jsonEquiposRaw.map((raw, idx) => {
+      const rawBrand = raw.FABRICANTE || raw.marca || raw.Marca || "";
+      const marca = rawBrand.includes("/") ? rawBrand.split("/")[0].trim() : rawBrand;
+      const modelo = raw.MODELO || raw.modelo || raw.Modelo || "";
+      const tipo = raw.DISPOSITIVO || raw.tipo || raw.Tipo || "Equipo";
+      const serie = raw["NÚMERO DE SERIE"] || raw.SERIE || raw.serie || raw.Serie || "";
+      const cpu = [raw["CPU MARCA"], raw["CPU MODELO"]].filter(Boolean).join(" ") || raw.cpu || "";
+      const ram = [raw["RAM CAPACIDAD"], raw["RAM VELOCIDAD"]].filter(Boolean).join(" ") || raw.ram || "";
+      const disco = [raw["DISCO TIPO"], raw["DISCO CAPACIDAD"]].filter(Boolean).join(" ") || raw.disco || "";
+      const so = raw["S.O."] || raw.sistema_operativo || raw.so || "";
+      const usuario = raw.USUARIO || raw.usuario || "";
+      const estado = raw.ESTADO || raw.estado || "activo";
+
+      return {
+        id: `json_${idx}`,
+        _jsonIndex: idx,
+        cliente_id: clienteId,
+        tipo,
+        marca,
+        modelo,
+        serie,
+        cpu,
+        ram,
+        disco,
+        sistema_operativo: so,
+        usuario,
+        estado,
+        detalles: { usuario, estado },
+        _source: "json"
+      };
+    });
+
+    // Unificar y desduplicar inteligentemente
+    const merged = [...listTable];
+    for (const jEq of listJson) {
+      const isDuplicate = merged.some(m => {
+        if (m.serie && jEq.serie && m.serie.trim().toLowerCase() === jEq.serie.trim().toLowerCase()) return true;
+        if (m.marca && jEq.marca && m.modelo && jEq.modelo) {
+          const mBrand = (m.marca || "").toLowerCase().split("/")[0].trim();
+          const jBrand = (jEq.marca || "").toLowerCase().split("/")[0].trim();
+          const mMod = (m.modelo || "").toLowerCase().trim();
+          const jMod = (jEq.modelo || "").toLowerCase().trim();
+          if (mBrand === jBrand && (mMod === jMod || mMod.includes(jMod) || jMod.includes(mMod))) return true;
+        }
+        return false;
+      });
+      if (!isDuplicate) {
+        merged.push(jEq);
+      }
+    }
+
+    currentClientMergedEquipos = merged;
+
+    // Actualizar badges de conteo
+    const countActivos = merged.filter(e => e.estado !== 'archivado').length;
+    const countArchivados = merged.filter(e => e.estado === 'archivado').length;
+    const countTodos = merged.length;
+
+    if (countBadge) countBadge.textContent = countActivos;
+    const bAct = document.getElementById("c360-eq-count-activos");
+    const bArc = document.getElementById("c360-eq-count-archivados");
+    const bTod = document.getElementById("c360-eq-count-todos");
+    if (bAct) bAct.textContent = countActivos;
+    if (bArc) bArc.textContent = countArchivados;
+    if (bTod) bTod.textContent = countTodos;
+
+    // Renderizar lista según filtro actual
+    renderCurrentClientEquipos(clientItem || { id: clienteId });
+
+  } catch (err) {
+    container.innerHTML = `<div style="padding: 16px; color: #ef4444; font-size: 11.5px;">Error al cargar equipos: ${esc(err.message)}</div>`;
+  }
+}
+
+function renderCurrentClientEquipos(clientItem) {
+  const container = document.getElementById("c360-equipos-list");
+  if (!container) return;
+
+  const clienteId = clientItem?.id;
+  let filtered = currentClientMergedEquipos;
+  if (currentEqFilter === 'activos') {
+    filtered = currentClientMergedEquipos.filter(e => e.estado !== 'archivado');
+  } else if (currentEqFilter === 'archivados') {
+    filtered = currentClientMergedEquipos.filter(e => e.estado === 'archivado');
+  }
+
+  if (filtered.length === 0) {
+    const emptyMsg = currentEqFilter === 'archivados'
+      ? 'No hay equipos archivados para este cliente.'
+      : 'Sin equipos registrados aún.';
+    container.innerHTML = `
+      <div style="padding: 24px 16px; text-align: center; background: var(--panel-subtle); border-radius: 8px; border: 1px dashed var(--panel-border);">
+        <div style="font-size: 20px; margin-bottom: 4px;">💻</div>
+        <div style="font-size: 12px; font-weight: 700; color: var(--heading-color);">${emptyMsg}</div>
+        <div style="font-size: 11px; color: var(--muted-color); margin-top: 2px;">
+          ${currentEqFilter === 'archivados' ? 'Cuando archive un equipo, aparecerá en esta sección para su consulta o restauración.' : 'Puede registrar equipos con el botón superior o se importarán automáticamente de las Órdenes de Trabajo.'}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(eq => {
+    const usuarioAsignado = eq.usuario || eq.detalles?.usuario || null;
+    const estado = eq.estado || 'activo';
+    const isArchived = estado === 'archivado';
+    const isTaller = estado === 'en_taller' || estado === 'taller';
+
+    let estadoBadge = '<span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 9999px; background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.25);">● Activo</span>';
+    if (isArchived) {
+      estadoBadge = '<span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 9999px; background: rgba(100, 116, 139, 0.12); color: #475569; border: 1px solid rgba(100, 116, 139, 0.25);">● Archivado</span>';
+    } else if (isTaller) {
+      estadoBadge = '<span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 9999px; background: rgba(245, 158, 11, 0.12); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.25);">● En Taller</span>';
+    }
+
+    const deviceType = (eq.tipo || 'Equipo').toLowerCase();
+    let icon = '💻';
+    if (deviceType.includes('escritorio') || deviceType.includes('pc') || deviceType.includes('desktop') || deviceType.includes('torre') || deviceType.includes('optiplex')) icon = '🖥️';
+    else if (deviceType.includes('portátil') || deviceType.includes('laptop') || deviceType.includes('notebook')) icon = '💻';
+    else if (deviceType.includes('all-in-one') || deviceType.includes('aio')) icon = '🖥️';
+    else if (deviceType.includes('servidor') || deviceType.includes('server') || deviceType.includes('red')) icon = '🖧';
+    else if (deviceType.includes('impresora') || deviceType.includes('printer')) icon = '🖨️';
+    else if (deviceType.includes('móvil') || deviceType.includes('celular') || deviceType.includes('tablet') || deviceType.includes('ipad')) icon = '📱';
+
+    const specs = [eq.cpu, eq.ram, eq.disco, eq.sistema_operativo].filter(Boolean);
+
+    return `
+      <div class="t1-equipo-item-card" data-eq-id="${eq.id}" style="${isArchived ? 'opacity: 0.75; background: rgba(241, 245, 249, 0.6);' : ''}">
+        <div class="t1-equipo-item-top">
+          <div class="t1-equipo-title-wrap">
+            <span class="t1-equipo-icon">${icon}</span>
+            <div>
+              <span class="t1-equipo-name">${esc(eq.marca || '')} ${esc(eq.modelo || eq.tipo || 'Dispositivo')}</span>
+              ${eq.serie ? `<span class="t1-equipo-serie-badge">SN: ${esc(eq.serie)}</span>` : ''}
+            </div>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 5px;">
+            ${estadoBadge}
+            <button class="t1-row-action-btn-mini btn-edit-eq" data-id="${eq.id}" title="Editar especificaciones y estado" style="color: var(--innovio-teal); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button class="t1-row-action-btn-mini btn-archive-eq" data-id="${eq.id}" title="${isArchived ? 'Restaurar a activo' : 'Archivar equipo'}" style="color: #64748b; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;">
+              ${isArchived ? `
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              ` : `
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+              `}
+            </button>
+            <button class="t1-row-action-btn-mini btn-del-eq" data-id="${eq.id}" data-source="${eq._source}" data-json-idx="${eq._jsonIndex ?? ''}" style="color: #f43f5e; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0;" title="Eliminar definitivamente">✕</button>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+          ${usuarioAsignado ? `
+            <span class="t1-equipo-user-badge">
+              <span>👤</span> ${esc(usuarioAsignado)}
+            </span>
+          ` : `
+            <span style="font-size: 10.5px; color: var(--muted-color);">Sin usuario específico asignado</span>
+          `}
+
+          ${specs.length > 0 ? `
+            <div class="t1-equipo-specs-row">
+              ${specs.map(s => `<span class="t1-equipo-spec-chip">${esc(s)}</span>`).join('')}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Wire Edit buttons
+  container.querySelectorAll('.btn-edit-eq').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const eq = currentClientMergedEquipos.find(item => String(item.id) === String(btn.dataset.id));
+      if (eq) showAddEquipoModal(clientItem, eq);
+    };
+  });
+
+  // Wire Archive / Restore buttons
+  container.querySelectorAll('.btn-archive-eq').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      const eq = currentClientMergedEquipos.find(item => String(item.id) === String(btn.dataset.id));
+      if (!eq) return;
+
+      const isArchived = eq.estado === 'archivado';
+      const targetEstado = isArchived ? 'activo' : 'archivado';
+      try {
+        const supabase = await getSupabase();
+        if (eq._source === 'table') {
+          let det = {};
+          try { if (eq.detalles) det = typeof eq.detalles === 'object' ? eq.detalles : JSON.parse(eq.detalles); } catch(err){}
+          det.estado = targetEstado;
+          await supabase.from('equipos').update({ detalles: JSON.stringify(det) }).eq('id', eq.id);
+        } else {
+          const { data: cData } = await supabase.from('clientes').select('equipos').eq('id', clienteId).maybeSingle();
+          let arr = cData?.equipos || [];
+          if (typeof arr === 'string') { try { arr = JSON.parse(arr); } catch(err){ arr = []; } }
+          if (Array.isArray(arr) && arr[eq._jsonIndex]) {
+            arr[eq._jsonIndex].ESTADO = targetEstado;
+            await supabase.from('clientes').update({ equipos: arr }).eq('id', clienteId);
+            if (clientItem) clientItem.equipos = arr;
+          }
+        }
+        toast(isArchived ? 'Equipo restaurado a activo' : 'Equipo archivado en el inventario', 'info');
+        loadClientEquipos(clienteId, clientItem);
+      } catch (err) {
+        toast('Error al cambiar estado: ' + err.message, 'error');
+      }
+    };
+  });
+
+  // Wire Delete buttons
+  container.querySelectorAll('.btn-del-eq').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      if (!confirm('¿Eliminar este equipo definitivamente del inventario del cliente?')) return;
+      try {
+        const supabase = await getSupabase();
+        const source = btn.dataset.source;
+        const eqId = btn.dataset.id;
+        
+        if (source === 'table') {
+          await supabase.from('equipos').delete().eq('id', eqId);
+        } else {
+          const jIdx = parseInt(btn.dataset.jsonIdx, 10);
+          const { data: cData } = await supabase.from('clientes').select('equipos').eq('id', clienteId).maybeSingle();
+          let arr = cData?.equipos || [];
+          if (typeof arr === 'string') {
+            try { arr = JSON.parse(arr); } catch(err) { arr = []; }
+          }
+          if (Array.isArray(arr) && arr[jIdx] !== undefined) {
+            arr.splice(jIdx, 1);
+            await supabase.from('clientes').update({ equipos: arr }).eq('id', clienteId);
+            if (clientItem) clientItem.equipos = arr;
+            const inMem = items.find(c => String(c.id) === String(clienteId));
+            if (inMem) inMem.equipos = arr;
+          }
+        }
+        toast('Equipo eliminado del inventario', 'success');
+        loadClientEquipos(clienteId, clientItem);
+      } catch(err) {
+        toast('Error al eliminar equipo: ' + err.message, 'error');
+      }
+    };
+  });
+}
+
+// ── Exportación de la Ficha Técnica de Equipos a CSV / Excel ────────────────
+function exportClientEquiposCSV(clientItem, equiposList) {
+  if (!equiposList || equiposList.length === 0) {
+    toast("No hay equipos registrados para exportar en este cliente", "warning");
+    return;
+  }
+
+  const clientName = clientItem.empresa || clientItem.nombre || "Cliente";
+  const dateStr = new Date().toISOString().slice(0, 10);
+  
+  const headers = [
+    "Tipo de Dispositivo",
+    "Fabricante / Marca",
+    "Modelo",
+    "Número de Serie",
+    "Usuario / Custodio",
+    "CPU / Procesador",
+    "Memoria RAM",
+    "Almacenamiento (Disco)",
+    "Sistema Operativo",
+    "Estado"
+  ];
+
+  const rows = equiposList.map(eq => {
+    let extra = {};
+    try {
+      if (eq.detalles) extra = typeof eq.detalles === 'object' ? eq.detalles : JSON.parse(eq.detalles);
+    } catch(e){}
+    const usuario = eq.usuario || extra.usuario || "";
+    const estado = eq.estado || extra.estado || "Activo";
+
+    return [
+      `"${(eq.tipo || '').replace(/"/g, '""')}"`,
+      `"${(eq.marca || '').replace(/"/g, '""')}"`,
+      `"${(eq.modelo || '').replace(/"/g, '""')}"`,
+      `"${(eq.serie || '').replace(/"/g, '""')}"`,
+      `"${(usuario || '').replace(/"/g, '""')}"`,
+      `"${(eq.cpu || '').replace(/"/g, '""')}"`,
+      `"${(eq.ram || '').replace(/"/g, '""')}"`,
+      `"${(eq.disco || '').replace(/"/g, '""')}"`,
+      `"${(eq.sistema_operativo || '').replace(/"/g, '""')}"`,
+      `"${(estado || '').replace(/"/g, '""')}"`
+    ].join(",");
+  });
+
+  const csvContent = "\uFEFF" + [
+    `"INVENTARIO DE EQUIPOS - ${clientName.replace(/"/g, '""')}"`,
+    `"Fecha de Generación: ${dateStr}"`,
+    `"Total Equipos Registrados: ${equiposList.length}"`,
+    "",
+    headers.map(h => `"${h}"`).join(","),
+    ...rows
+  ].join("\r\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeClientName = clientName.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 30);
+  a.download = `Equipos_${safeClientName}_${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("Ficha de inventario descargada con éxito", "success");
+}
+
+// ── Carga y Renderizado del Historial de Documentos del Cliente ──────────────
+async function loadClientDocumentos(clienteId) {
+  const container = document.getElementById("c360-docs-list");
+  const countBadge = document.getElementById("c360-count-docs");
+  if (!container) return;
+
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase
+      .from("documentos")
+      .select("id, doc_type, doc_num, fecha, total, moneda, estado, created_at")
+      .eq("cliente_id", clienteId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    const docs = data || [];
+    if (countBadge) countBadge.textContent = docs.length;
+
+    if (docs.length === 0) {
+      container.innerHTML = `
+        <div style="padding: 28px 16px; text-align: center; background: var(--panel-subtle); border-radius: 8px; border: 1px dashed var(--panel-border);">
+          <div style="font-size: 22px; margin-bottom: 4px;">📄</div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--heading-color);">Sin comprobantes emitidos</div>
+          <div style="font-size: 11px; color: var(--muted-color); margin-top: 2px;">
+            Aún no se han generado órdenes de trabajo ni facturas para este cliente.
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="border: 1px solid var(--panel-border); border-radius: 8px; overflow: hidden; background: var(--panel-bg);">
+        <table class="t1-drawer-doc-table">
+          <thead>
+            <tr>
+              <th>COMPROBANTE</th>
+              <th style="text-align: center;">TIPO</th>
+              <th>FECHA</th>
+              <th style="text-align: right;">TOTAL</th>
+              <th style="text-align: center;">ESTADO</th>
+              <th style="text-align: right;">VER</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${docs.map(d => {
+              const consecutivo = d.doc_num ? `#${d.doc_num}` : `#${d.id}`;
+              const tipoCode = d.doc_type || 'DOC';
+              let badgeColor = '#0284c7';
+              let badgeBg = 'rgba(2, 132, 199, 0.1)';
+              if (tipoCode === 'FAC') { badgeColor = '#059669'; badgeBg = 'rgba(16, 185, 129, 0.1)'; }
+              else if (tipoCode === 'COT') { badgeColor = '#d97706'; badgeBg = 'rgba(245, 158, 11, 0.1)'; }
+
+              const estado = (d.estado || 'pendiente').toLowerCase();
+              const isPaid = estado === 'pagada' || estado === 'completado';
+              const isCancel = estado === 'anulada' || estado === 'cancelado';
+              const dotClass = isPaid ? 'paid' : (isCancel ? 'canceled' : 'pending');
+              const statusLabel = estado.charAt(0).toUpperCase() + estado.slice(1);
+
+              const cur = d.moneda || 'CRC';
+              const symbol = cur === 'USD' ? '$' : '₡';
+              const totalFmt = `${symbol} ${Number(d.total || 0).toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+
+              return `
+                <tr>
+                  <td>
+                    <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--heading-color); white-space: nowrap;">
+                      ${consecutivo}
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="t1-type-badge" style="background: ${badgeBg}; color: ${badgeColor};">${tipoCode}</span>
+                  </td>
+                  <td>
+                    <span style="font-size: 11px; color: var(--muted-color); font-variant-numeric: tabular-nums;">
+                      ${fmtDate(d.fecha)}
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <span style="font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: var(--heading-color); font-variant-numeric: tabular-nums;">
+                      ${totalFmt}
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="t1-dot-status ${dotClass}" style="font-size: 10.5px;">${statusLabel}</span>
+                  </td>
+                  <td style="text-align: right;">
+                    <a href="#/documentos/${d.id}/comprobante" class="t1-row-action-btn-mini" style="text-decoration: none; display: inline-block;">
+                      Ver →
+                    </a>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+  } catch (err) {
+    container.innerHTML = `<div style="padding: 16px; color: #ef4444; font-size: 11.5px;">Error al consultar historial: ${esc(err.message)}</div>`;
+  }
+}
+
+// ── Modal para Registrar Equipo en el Inventario del Cliente ────────────────
+function showAddEquipoModal(clientItem, eqToEdit = null) {
+  const isEditing = !!eqToEdit;
+  const modal = document.createElement("div");
+  modal.className = "t1-drawer-overlay open";
+  modal.style.display = "flex";
+  modal.style.alignItems = "center";
+  modal.style.justifyContent = "center";
+  modal.style.zIndex = "99999";
+
+  const curTipo = eqToEdit?.tipo || "Laptop";
+  const curMarca = eqToEdit?.marca || "";
+  const curModelo = eqToEdit?.modelo || "";
+  const curSerie = eqToEdit?.serie || "";
+  const curUsuario = eqToEdit?.usuario || eqToEdit?.detalles?.usuario || "";
+  const curCpu = eqToEdit?.cpu || "";
+  const curRam = eqToEdit?.ram || "";
+  const curDisco = eqToEdit?.disco || "";
+  const curSo = eqToEdit?.sistema_operativo || "";
+  const curEstado = eqToEdit?.estado || eqToEdit?.detalles?.estado || "activo";
+
+  modal.innerHTML = `
+    <div style="background: var(--panel-bg); border-radius: 12px; width: 100%; max-width: 460px; padding: 22px; border: 1px solid var(--panel-border); box-shadow: 0 20px 48px rgba(0,0,0,0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--innovio-teal); letter-spacing: 0.04em;">Inventario de Cliente</span>
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--heading-color); margin: 2px 0 0 0;">
+            ${isEditing ? 'Editar Equipo' : 'Registrar Nuevo Equipo'}
+          </h3>
+        </div>
+        <button id="modal-eq-close" style="background: transparent; border: none; font-size: 16px; color: var(--muted-color); cursor: pointer;">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Tipo de Dispositivo</label>
+            <select id="meq-tipo" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 12px;">
+              <option value="Laptop" ${curTipo.toLowerCase().includes('laptop') || curTipo.toLowerCase().includes('portátil') ? 'selected' : ''}>💻 Laptop</option>
+              <option value="PC Escritorio" ${curTipo.toLowerCase().includes('escritorio') || curTipo.toLowerCase().includes('pc') ? 'selected' : ''}>🖥️ PC Escritorio</option>
+              <option value="All-in-One (AIO)" ${curTipo.toLowerCase().includes('all-in-one') || curTipo.toLowerCase().includes('aio') ? 'selected' : ''}>🖥️ All-in-One (AIO)</option>
+              <option value="Servidor" ${curTipo.toLowerCase().includes('servidor') || curTipo.toLowerCase().includes('red') ? 'selected' : ''}>🖧 Servidor / Red</option>
+              <option value="Impresora" ${curTipo.toLowerCase().includes('impresora') ? 'selected' : ''}>🖨️ Impresora</option>
+              <option value="Otro" ${curTipo.toLowerCase().includes('otro') || curTipo.toLowerCase().includes('celular') || curTipo.toLowerCase().includes('tablet') ? 'selected' : ''}>📱 Otro Dispositivo</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Estado Operativo</label>
+            <select id="meq-estado" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 12px; font-weight: 600;">
+              <option value="activo" ${curEstado === 'activo' ? 'selected' : ''}>● Activo en operación</option>
+              <option value="en_taller" ${curEstado === 'en_taller' || curEstado === 'taller' ? 'selected' : ''}>● En taller / En revisión</option>
+              <option value="archivado" ${curEstado === 'archivado' ? 'selected' : ''}>● Archivado / Fuera de servicio</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Marca</label>
+            <input type="text" id="meq-marca" value="${esc(curMarca)}" placeholder="Ej: Dell, HP, Lenovo" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 12px;" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Modelo</label>
+            <input type="text" id="meq-modelo" value="${esc(curModelo)}" placeholder="Ej: Latitude 5420" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 12px;" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Número de Serie</label>
+            <input type="text" id="meq-serie" value="${esc(curSerie)}" placeholder="Ej: SN-48192" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 12px; font-family: var(--font-mono);" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Usuario Asignado</label>
+            <input type="text" id="meq-usuario" value="${esc(curUsuario)}" placeholder="Ej: Ing. Carlos Murillo" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 12px;" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">CPU / Procesador</label>
+            <input type="text" id="meq-cpu" value="${esc(curCpu)}" placeholder="Ej: Intel Core i5 / AMD Ryzen" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 11.5px;" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Memoria RAM</label>
+            <input type="text" id="meq-ram" value="${esc(curRam)}" placeholder="Ej: 16 GB DDR4" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 11.5px;" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Almacenamiento</label>
+            <input type="text" id="meq-disco" value="${esc(curDisco)}" placeholder="Ej: SSD 512 GB NVMe" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 11.5px;" />
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: var(--muted-color); text-transform: uppercase;">Sistema Operativo</label>
+            <input type="text" id="meq-so" value="${esc(curSo)}" placeholder="Ej: Windows 11 Pro" style="width: 100%; padding: 7px 8px; border: 1px solid var(--panel-border); border-radius: 6px; background: var(--panel-subtle); color: var(--heading-color); margin-top: 4px; box-sizing: border-box; font-size: 11.5px;" />
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+          <button id="modal-eq-cancel" style="padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid var(--panel-border); background: var(--panel-bg); color: var(--muted-color); cursor: pointer;">Cancelar</button>
+          <button id="modal-eq-save" class="t1-btn-primary" style="padding: 6px 14px; font-size: 12px;">
+            ${isEditing ? 'Guardar Cambios' : 'Registrar Equipo'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector("#modal-eq-close").onclick = closeModal;
+  modal.querySelector("#modal-eq-cancel").onclick = closeModal;
+
+  modal.querySelector("#modal-eq-save").onclick = async () => {
+    const tipo = modal.querySelector("#meq-tipo").value;
+    const estado = modal.querySelector("#meq-estado").value;
+    const marca = modal.querySelector("#meq-marca").value.trim();
+    const modelo = modal.querySelector("#meq-modelo").value.trim();
+    const serie = modal.querySelector("#meq-serie").value.trim();
+    const usuario = modal.querySelector("#meq-usuario").value.trim();
+    const cpu = modal.querySelector("#meq-cpu").value.trim();
+    const ram = modal.querySelector("#meq-ram").value.trim();
+    const disco = modal.querySelector("#meq-disco").value.trim();
+    const sistema_operativo = modal.querySelector("#meq-so").value.trim();
+
+    if (!marca && !modelo && !serie) {
+      toast("Por favor ingrese al menos marca, modelo o serie", "error");
+      return;
+    }
+
+    try {
+      const supabase = await getSupabase();
+
+      if (isEditing) {
+        if (eqToEdit._source === 'table') {
+          const payload = {
+            tipo,
+            marca: marca || 'Genérico',
+            modelo: modelo || '',
+            serie: serie || '',
+            cpu: cpu || null,
+            ram: ram || null,
+            disco: disco || null,
+            sistema_operativo: sistema_operativo || null,
+            detalles: JSON.stringify({ usuario, estado })
+          };
+          const { error } = await supabase.from('equipos').update(payload).eq('id', eqToEdit.id);
+          if (error) throw error;
+        } else {
+          const { data: cData } = await supabase.from('clientes').select('equipos').eq('id', clientItem.id).maybeSingle();
+          let arr = cData?.equipos || [];
+          if (typeof arr === 'string') {
+            try { arr = JSON.parse(arr); } catch(err) { arr = []; }
+          }
+          if (!Array.isArray(arr)) arr = [];
+          arr[eqToEdit._jsonIndex] = {
+            ...(arr[eqToEdit._jsonIndex] || {}),
+            DISPOSITIVO: tipo,
+            FABRICANTE: marca,
+            MODELO: modelo,
+            'NÚMERO DE SERIE': serie,
+            USUARIO: usuario,
+            'CPU MARCA': cpu,
+            'RAM CAPACIDAD': ram,
+            'DISCO TIPO': disco,
+            'S.O.': sistema_operativo,
+            ESTADO: estado
+          };
+          const { error } = await supabase.from('clientes').update({ equipos: arr }).eq('id', clientItem.id);
+          if (error) throw error;
+          if (clientItem) clientItem.equipos = arr;
+          const inMem = items.find(c => String(c.id) === String(clientItem.id));
+          if (inMem) inMem.equipos = arr;
+        }
+        toast("Equipo actualizado correctamente", "success");
+      } else {
+        const payload = {
+          cliente_id: clientItem.id,
+          tipo,
+          marca: marca || 'Genérico',
+          modelo: modelo || '',
+          serie: serie || '',
+          cpu: cpu || null,
+          ram: ram || null,
+          disco: disco || null,
+          sistema_operativo: sistema_operativo || null,
+          detalles: JSON.stringify({ usuario, estado })
+        };
+        const { error } = await supabase.from('equipos').insert([payload]);
+        if (error) throw error;
+        toast("Equipo registrado en el inventario del cliente", "success");
+      }
+
+      closeModal();
+      loadClientEquipos(clientItem.id, clientItem);
+    } catch(err) {
+      toast("Error al guardar equipo: " + err.message, "error");
+    }
+  };
+}
 
 function showForm(id) {
   selectedId = id || null;

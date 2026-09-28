@@ -1,6 +1,6 @@
 // ============================================================
-// INNOVIO Tax Module — Gastos View (Premium Redesign)
-// Expense management powered by local XML data
+// INNOVIO Tax Module — Gastos View (Executive Premium Edition)
+// Expense & fiscal credit management with local & cloud XML sync
 // ============================================================
 
 import { ensureShell } from '../components/shell.js';
@@ -11,10 +11,10 @@ import { toast } from '../lib/utils.js';
 
 export async function impuestosGastosView() {
   const shell = ensureShell('/impuestos/gastos');
-  shell.setTitle('Gastos');
+  shell.setTitle('Gastos y Facturas de Compras');
   shell.setActions(`
-    <button class="bf-btn bf-btn-primary" id="btn-subir-xml-gasto" style="height:34px;padding:0 16px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;border:none;font-family:var(--font);background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;box-shadow:0 2px 8px rgba(192,57,43,0.25);">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <button class="bf-btn bf-btn-primary" id="btn-subir-xml-gasto" style="height:36px;padding:0 18px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;border:none;font-family:var(--font);background:linear-gradient(135deg,#ef4444,#dc2626);color:white;box-shadow:0 3px 12px rgba(239,68,68,0.28);transition:all 0.2s;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Subir XML
     </button>
   `);
@@ -60,60 +60,182 @@ export async function impuestosGastosView() {
 
     content.innerHTML = `
       <style>
-        .gst-container { padding: 16px 20px; max-width: 1280px; }
+        .gst-container { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
         
-        /* KPI row */
-        .gst-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
-        .gst-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; position: relative; overflow: hidden; transition: all 0.2s var(--ease-out); }
-        .gst-kpi:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-        .gst-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-        .gst-kpi:nth-child(1)::before { background: linear-gradient(90deg, #c0392b, #e74c3c); }
-        .gst-kpi:nth-child(2)::before { background: var(--grad-accent); }
-        .gst-kpi:nth-child(3)::before { background: var(--grad-navy); }
-        .gst-kpi:nth-child(4)::before { background: linear-gradient(90deg, #1b5e20, #4caf50); }
-        .gst-kpi-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-soft); margin-bottom: 4px; }
-        .gst-kpi-value { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
-        .gst-kpi:nth-child(1) .gst-kpi-value { color: #c0392b; }
-        .gst-kpi:nth-child(4) .gst-kpi-value { color: #1b5e20; }
-        .gst-kpi-sub { font-size: 9px; color: var(--text-soft); margin-top: 3px; }
+        /* KPI Cards */
+        .gst-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+        .gst-kpi { 
+          background: var(--surface, #ffffff); 
+          border: 1px solid var(--border, #e5e7eb); 
+          border-radius: 12px; 
+          padding: 16px 18px; 
+          position: relative; 
+          overflow: hidden; 
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s; 
+        }
+        .gst-kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+        .gst-kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3.5px; }
+        .gst-kpi:nth-child(1)::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .gst-kpi:nth-child(2)::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .gst-kpi:nth-child(3)::before { background: linear-gradient(90deg, #6366f1, #4f46e5); }
+        .gst-kpi:nth-child(4)::before { background: linear-gradient(90deg, #10b981, #059669); }
+        
+        .gst-kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.75px; color: var(--text-soft, #6b7280); margin-bottom: 6px; }
+        .gst-kpi-value { font-size: 22px; font-weight: 800; color: var(--text, #111827); letter-spacing: -0.5px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+        .gst-kpi:nth-child(1) .gst-kpi-value { color: #dc2626; }
+        .gst-kpi:nth-child(4) .gst-kpi-value { color: #059669; }
+        .gst-kpi-sub { font-size: 11px; color: var(--text-soft, #6b7280); margin-top: 5px; font-weight: 500; }
         
         /* Toolbar */
-        .gst-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-        .gst-select { height: 32px; padding: 0 10px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--surface); font-size: 11px; font-family: var(--font); color: var(--text); cursor: pointer; outline: none; transition: all 0.2s; }
-        .gst-select:focus { border-color: var(--accent); box-shadow: var(--focus); }
-        .gst-search-wrap { flex: 1; position: relative; min-width: 160px; }
-        .gst-search { width: 100%; height: 32px; padding: 0 12px 0 32px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--surface); font-size: 11px; font-family: var(--font); color: var(--text); outline: none; transition: all 0.2s; }
-        .gst-search:focus { border-color: var(--accent); box-shadow: var(--focus); }
-        .gst-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-soft); pointer-events: none; }
-        .gst-count { font-size: 10px; color: var(--text-soft); font-weight: 600; white-space: nowrap; }
+        .gst-toolbar { 
+          display: flex; 
+          align-items: center; 
+          gap: 12px; 
+          margin-bottom: 16px; 
+          background: var(--surface, #ffffff);
+          padding: 10px 14px;
+          border-radius: 12px;
+          border: 1px solid var(--border, #e5e7eb);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+          flex-wrap: wrap; 
+        }
+        .gst-select { 
+          height: 36px; 
+          padding: 0 12px; 
+          border-radius: 8px; 
+          border: 1px solid var(--border, #d1d5db); 
+          background: var(--surface, #ffffff); 
+          font-size: 12px; 
+          font-weight: 600;
+          font-family: var(--font); 
+          color: var(--text, #1f2937); 
+          cursor: pointer; 
+          outline: none; 
+          transition: all 0.2s; 
+        }
+        .gst-select:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+        .gst-search-wrap { flex: 1; position: relative; min-width: 220px; }
+        .gst-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; display: flex; align-items: center; }
+        .gst-search { 
+          width: 100%; 
+          height: 36px; 
+          padding: 0 14px 0 36px; 
+          border-radius: 8px; 
+          border: 1px solid var(--border, #d1d5db); 
+          background: var(--surface, #ffffff); 
+          font-size: 12px; 
+          font-family: var(--font); 
+          color: var(--text, #1f2937); 
+          outline: none; 
+          transition: all 0.2s; 
+        }
+        .gst-search:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+        .gst-count { font-size: 12px; color: var(--text-soft, #6b7280); font-weight: 600; white-space: nowrap; padding-right: 4px; }
         
-        /* Table */
-        .gst-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow-x: auto; }
+        /* Table Wrap */
+        .gst-table-wrap { 
+          background: var(--surface, #ffffff); 
+          border: 1px solid var(--border, #e5e7eb); 
+          border-radius: 12px; 
+          overflow-x: auto; 
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
         .gst-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .gst-table thead th { padding: 8px 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-soft); background: var(--surface-2); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        .gst-table thead th { 
+          padding: 12px 16px; 
+          font-size: 11px; 
+          font-weight: 700; 
+          text-transform: uppercase; 
+          letter-spacing: 0.6px; 
+          color: var(--text-soft, #4b5563); 
+          background: #f9fafb; 
+          text-align: left; 
+          border-bottom: 1px solid var(--border, #e5e7eb); 
+          white-space: nowrap; 
+        }
         .gst-table thead th.col-r { text-align: right; }
-        .gst-table tbody tr { transition: background 0.15s; }
-        .gst-table tbody tr:hover { background: rgba(192,57,43,0.03); }
-        .gst-table tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border-light); }
-        .gst-table td { padding: 8px 12px; font-size: 12px; color: var(--text); vertical-align: middle; }
+        .gst-table tbody tr { transition: background 0.15s ease; }
+        .gst-table tbody tr:hover { background: rgba(239,68,68,0.03); }
+        .gst-table tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border-light, #f3f4f6); }
+        .gst-table td { padding: 14px 16px; font-size: 13px; color: var(--text, #1f2937); vertical-align: top; }
         .gst-table td.col-r { text-align: right; }
         
-        .gst-entity { font-weight: 600; color: var(--text); display: block; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .gst-desc { font-size: 10px; color: var(--text-soft); display: block; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-        .gst-amount { font-size: 13px; font-weight: 800; color: #c0392b; letter-spacing: -0.3px; }
-        .gst-iva-sm { font-size: 10px; color: var(--text-soft); display: block; margin-top: 1px; }
-        .gst-tipo-doc { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; background: var(--bg-subtle); color: var(--text-mid); }
-        .gst-deducible { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 20px; font-size: 9px; font-weight: 700; }
-        .gst-deducible.si { background: rgba(27,94,32,0.08); color: #1b5e20; }
-        .gst-deducible.no { background: rgba(192,57,43,0.08); color: #c0392b; }
+        /* Dedicated Columns without text truncation */
+        .gst-vendor-cell { font-weight: 600; color: var(--text, #111827); line-height: 1.4; word-break: break-word; min-width: 190px; max-width: 300px; }
+        .gst-desc-cell { font-size: 12px; color: var(--text-mid, #4b5563); line-height: 1.45; word-break: break-word; min-width: 220px; max-width: 420px; }
+        .gst-tipo-doc { 
+          display: inline-block;
+          padding: 3px 8px; 
+          border-radius: 6px; 
+          font-size: 10px; 
+          font-weight: 700; 
+          letter-spacing: 0.5px; 
+          background: #f3f4f6; 
+          color: #374151; 
+          border: 1px solid #e5e7eb;
+        }
+        .gst-iva-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 700;
+          background: #eff6ff;
+          color: #1d4ed8;
+          border: 1px solid #dbeafe;
+          white-space: nowrap;
+        }
+        .gst-deducible-btn { 
+          display: inline-flex; 
+          align-items: center; 
+          gap: 4px; 
+          padding: 3px 10px; 
+          border-radius: 20px; 
+          font-size: 11px; 
+          font-weight: 700; 
+          cursor: pointer;
+          border: 1px solid transparent;
+          transition: all 0.2s;
+        }
+        .gst-deducible-btn.si { background: #ecfdf5; color: #047857; border-color: #d1fae5; }
+        .gst-deducible-btn.si:hover { background: #d1fae5; }
+        .gst-deducible-btn.no { background: #fef2f2; color: #b91c1c; border-color: #fee2e2; }
+        .gst-deducible-btn.no:hover { background: #fee2e2; }
         
-        /* Empty */
-        .gst-empty { text-align: center; padding: 40px 20px; }
-        .gst-empty-icon { width: 48px; height: 48px; border-radius: var(--r-lg); background: linear-gradient(135deg, rgba(192,57,43,0.08), rgba(192,57,43,0.16)); display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px; }
-        .gst-empty h3 { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
-        .gst-empty p { font-size: 11px; color: var(--text-soft); margin: 0 0 16px; max-width: 320px; margin-left: auto; margin-right: auto; }
-        .gst-empty-btn { height: 34px; padding: 0 20px; border-radius: var(--r-md); font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-mid); font-family: var(--font); transition: all 0.2s; }
-        .gst-empty-btn:hover { border-color: #c0392b; color: #c0392b; background: rgba(192,57,43,0.04); }
+        .gst-amount { font-size: 14px; font-weight: 800; color: #dc2626; letter-spacing: -0.3px; font-variant-numeric: tabular-nums; }
+        .gst-num { font-variant-numeric: tabular-nums; font-weight: 500; }
+        
+        /* Empty State */
+        .gst-empty { text-align: center; padding: 56px 20px; }
+        .gst-empty-icon { 
+          width: 56px; 
+          height: 56px; 
+          border-radius: 16px; 
+          background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.2)); 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          font-size: 26px; 
+          margin: 0 auto 14px; 
+          color: #dc2626;
+        }
+        .gst-empty h3 { font-size: 16px; font-weight: 700; color: var(--text, #111827); margin: 0 0 6px; }
+        .gst-empty p { font-size: 13px; color: var(--text-soft, #6b7280); margin: 0 0 20px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+        .gst-empty-btn { 
+          height: 38px; 
+          padding: 0 22px; 
+          border-radius: 8px; 
+          font-size: 12px; 
+          font-weight: 600; 
+          cursor: pointer; 
+          border: 1px solid var(--border, #d1d5db); 
+          background: var(--surface, #ffffff); 
+          color: var(--text, #374151); 
+          font-family: var(--font); 
+          transition: all 0.2s; 
+        }
+        .gst-empty-btn:hover { border-color: #ef4444; color: #dc2626; background: #fef2f2; }
         
         @media (max-width: 900px) {
           .gst-kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -128,24 +250,24 @@ export async function impuestosGastosView() {
         <!-- KPI Cards -->
         <div class="gst-kpi-row">
           <div class="gst-kpi">
-            <div class="gst-kpi-label">Total Gastos</div>
-            <div class="gst-kpi-value">−${formatColones(totalBruto)}</div>
-            <div class="gst-kpi-sub">${gastos.length} comprobante${gastos.length !== 1 ? 's' : ''}</div>
+            <div class="gst-kpi-label">Total Gastos Bruto</div>
+            <div class="gst-kpi-value">${formatColones(totalBruto)}</div>
+            <div class="gst-kpi-sub">${gastos.length} comprobante${gastos.length !== 1 ? 's' : ''} registrados</div>
           </div>
           <div class="gst-kpi">
-            <div class="gst-kpi-label">IVA Pagado</div>
+            <div class="gst-kpi-label">IVA Pagado Total</div>
             <div class="gst-kpi-value">${formatColones(totalIVA)}</div>
             <div class="gst-kpi-sub">Crédito fiscal potencial</div>
           </div>
           <div class="gst-kpi">
             <div class="gst-kpi-label">Compras Netas</div>
             <div class="gst-kpi-value">${formatColones(totalNeto)}</div>
-            <div class="gst-kpi-sub">Sin IVA · ${filterMes === 0 ? 'Todo el año' : MESES[filterMes - 1]} ${filterAnio}</div>
+            <div class="gst-kpi-sub">Base imponible sin IVA</div>
           </div>
           <div class="gst-kpi">
-            <div class="gst-kpi-label">IVA Deducible</div>
+            <div class="gst-kpi-label">IVA Crédito Deducible</div>
             <div class="gst-kpi-value">${formatColones(ivaDeducible)}</div>
-            <div class="gst-kpi-sub">${deducibles.length} gasto${deducibles.length !== 1 ? 's' : ''} deducible${deducibles.length !== 1 ? 's' : ''}</div>
+            <div class="gst-kpi-sub">${deducibles.length} compras deducibles</div>
           </div>
         </div>
 
@@ -156,76 +278,89 @@ export async function impuestosGastosView() {
             ${MESES.map((m, i) => `<option value="${i + 1}" ${i + 1 === filterMes ? 'selected' : ''}>${m}</option>`).join('')}
           </select>
           <select id="filter-anio" class="gst-select">
-            ${[anio - 1, anio, anio + 1].map(y => `<option value="${y}" ${y === filterAnio ? 'selected' : ''}>${y}</option>`).join('')}
+            ${[anio - 3, anio - 2, anio - 1, anio, anio + 1].map(y => `<option value="${y}" ${y === filterAnio ? 'selected' : ''}>${y}</option>`).join('')}
           </select>
           <div class="gst-search-wrap">
-            <span class="gst-search-icon">🔍</span>
-            <input type="text" class="gst-search" id="gst-search" autocomplete="off" spellcheck="false" placeholder="Buscar proveedor, descripción, monto...">
+            <span class="gst-search-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </span>
+            <input type="text" class="gst-search" id="gst-search" autocomplete="off" spellcheck="false" placeholder="Buscar por proveedor, descripción de compra, monto o clave...">
           </div>
-          <span class="gst-count">${filtered.length} de ${gastos.length}</span>
+          <span class="gst-count">${filtered.length} de ${gastos.length} comprobantes</span>
         </div>
 
         <!-- Content -->
         ${filtered.length === 0 ? `
           <div class="gst-empty">
-            <div class="gst-empty-icon">💸</div>
-            <h3>${gastos.length === 0 ? (filterMes === 0 ? 'Sin gastos en ' + filterAnio : 'Sin gastos en ' + MESES[filterMes - 1]) : 'Sin resultados'}</h3>
+            <div class="gst-empty-icon">🧾</div>
+            <h3>${gastos.length === 0 ? (filterMes === 0 ? 'Sin gastos registrados en ' + filterAnio : 'Sin gastos en ' + MESES[filterMes - 1] + ' ' + filterAnio) : 'Sin resultados para la búsqueda'}</h3>
             <p>${gastos.length === 0 
-              ? 'Las facturas de compras que recibás aparecerán aquí automáticamente cuando las importe el sistema desde tu correo.'
-              : 'Probá con otro término de búsqueda.'}</p>
-            ${gastos.length === 0 ? `<button class="gst-empty-btn" id="btn-change-month">← Probar otro mes</button>` : ''}
+              ? 'Las facturas electrónicas de compras recibidas de tus proveedores aparecerán aquí detalladas automáticamente con su desglose.'
+              : 'Probá con otro término de búsqueda o proveedor.'}</p>
+            ${gastos.length === 0 ? `<button class="gst-empty-btn" id="btn-change-month">← Ver mes anterior</button>` : ''}
           </div>
         ` : `
           <div class="gst-table-wrap">
             <table class="gst-table">
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th>Doc</th>
-                  <th>Proveedor / Descripción</th>
-                  <th>IVA%</th>
-                  <th>Deducible</th>
-                  <th class="col-r">Neto</th>
-                  <th class="col-r">IVA</th>
-                  <th class="col-r">Total</th>
+                  <th style="width:90px;">Fecha</th>
+                  <th style="width:70px;">Doc</th>
+                  <th>Proveedor (Emisor)</th>
+                  <th>Detalle de Compra / Concepto</th>
+                  <th style="width:80px;text-align:center;">IVA %</th>
+                  <th style="width:95px;text-align:center;">Deducible</th>
+                  <th class="col-r" style="width:130px;">Neto</th>
+                  <th class="col-r" style="width:110px;">IVA</th>
+                  <th class="col-r" style="width:140px;">Total</th>
                 </tr>
               </thead>
               <tbody>
                 ${filtered.map(g => {
-                  const fecha = g.fecha ? new Date(g.fecha).toLocaleDateString('es-CR', { day: '2-digit', month: 'short' }) : '—';
+                  const fecha = g.fecha ? new Date(g.fecha).toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
                   const ded = g.deducible !== false;
+                  const proveedor = g.proveedor || 'Proveedor General';
+                  const descripcion = g.descripcion || 'Compra de bienes o servicios';
                   return `
                     <tr>
-                      <td style="white-space:nowrap;color:var(--text-mid);font-size:11px;">${fecha}</td>
+                      <td style="white-space:nowrap;color:var(--text-soft,#6b7280);font-size:12px;font-weight:600;">${fecha}</td>
                       <td><span class="gst-tipo-doc">FE</span></td>
                       <td>
-                        <span class="gst-entity">${esc(g.proveedor || g.descripcion || '—')}</span>
-                        ${g.proveedor && g.descripcion ? `<span class="gst-desc">${esc(g.descripcion)}</span>` : ''}
+                        <div class="gst-vendor-cell">${esc(proveedor)}</div>
                       </td>
-                      <td style="font-size:11px;color:var(--text-mid);">${g.tarifa_iva}%</td>
                       <td>
-                        <button class="gst-deducible ${ded ? 'si' : 'no'}" data-id="${g.id}" data-deducible="${ded}" style="cursor:pointer;border:none;outline:none;" title="Clic para alternar">
+                        <div class="gst-desc-cell">${esc(descripcion)}</div>
+                      </td>
+                      <td style="text-align:center;">
+                        <span class="gst-iva-badge">${g.tarifa_iva || 13}%</span>
+                      </td>
+                      <td style="text-align:center;">
+                        <button class="gst-deducible-btn ${ded ? 'si' : 'no'}" data-id="${g.id}" data-deducible="${ded}" title="Clic para alternar deducibilidad fiscal">
                           ${ded ? '✓ Sí' : '✗ No'}
                         </button>
                       </td>
-                      <td class="col-r" style="font-size:12px;color:var(--text-mid);">${formatColones(g.monto_neto)}</td>
-                      <td class="col-r" style="font-size:12px;color:var(--accent-dark);">${formatColones(g.monto_iva)}</td>
                       <td class="col-r">
-                        <span class="gst-amount">−${formatColones(g.monto_bruto)}</span>
+                        <span class="gst-num" style="color:var(--text,#374151);font-weight:600;">${formatColones(g.monto_neto)}</span>
+                      </td>
+                      <td class="col-r">
+                        <span class="gst-num" style="color:#f59e0b;font-weight:600;">${formatColones(g.monto_iva)}</span>
+                      </td>
+                      <td class="col-r">
+                        <span class="gst-amount">${formatColones(g.monto_bruto)}</span>
                       </td>
                     </tr>
                   `;
                 }).join('')}
               </tbody>
               <tfoot>
-                <tr style="background:var(--surface-2);border-top:2px solid var(--border);">
-                  <td colspan="5" style="padding:12px 14px;font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.5px;">
-                    Totales ${filterMes === 0 ? filterAnio : MESES[filterMes - 1] + ' ' + filterAnio}
+                <tr style="background:#f9fafb;border-top:2px solid var(--border,#e5e7eb);">
+                  <td colspan="6" style="padding:14px 16px;font-size:12px;font-weight:800;color:var(--text,#1f2937);text-transform:uppercase;letter-spacing:0.75px;">
+                    Totales ${filterMes === 0 ? 'Año ' + filterAnio : MESES[filterMes - 1] + ' ' + filterAnio}
                   </td>
-                  <td class="col-r" style="padding:12px 14px;font-size:12px;font-weight:700;color:var(--text);">${formatColones(totalNeto)}</td>
-                  <td class="col-r" style="padding:12px 14px;font-size:12px;font-weight:700;color:var(--accent-dark);">${formatColones(totalIVA)}</td>
-                  <td class="col-r" style="padding:12px 14px;">
-                    <span style="font-size:15px;font-weight:800;color:#c0392b;">−${formatColones(totalBruto)}</span>
+                  <td class="col-r" style="padding:14px 16px;font-size:13px;font-weight:700;color:var(--text,#1f2937);">${formatColones(totalNeto)}</td>
+                  <td class="col-r" style="padding:14px 16px;font-size:13px;font-weight:700;color:#f59e0b;">${formatColones(totalIVA)}</td>
+                  <td class="col-r" style="padding:14px 16px;">
+                    <span style="font-size:16px;font-weight:800;color:#dc2626;">${formatColones(totalBruto)}</span>
                   </td>
                 </tr>
               </tfoot>
@@ -254,22 +389,24 @@ export async function impuestosGastosView() {
       loadData();
     });
 
-    // Toggle Deducible
-    content.querySelectorAll('.gst-deducible').forEach(btn => {
+    // Deducible toggle
+    content.querySelectorAll('.gst-deducible-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const id = e.currentTarget.dataset.id;
-        const current = e.currentTarget.dataset.deducible === 'true';
+        const id = btn.dataset.id;
+        const current = btn.dataset.deducible === 'true';
         const next = !current;
+        btn.disabled = true;
+        btn.className = `gst-deducible-btn ${next ? 'si' : 'no'}`;
+        btn.textContent = next ? '✓ Sí' : '✗ No';
+        btn.dataset.deducible = String(next);
         
-        // Optimistic UI update
-        e.currentTarget.dataset.deducible = String(next);
-        e.currentTarget.className = `gst-deducible ${next ? 'si' : 'no'}`;
-        e.currentTarget.innerHTML = next ? '✓ Sí' : '✗ No';
-        toast(next ? 'Marcado como gasto deducible' : 'Marcado como gasto personal (no deducible)', 'info');
-        
-        // Background sync and full re-render
+        // Update in memory
+        const g = gastos.find(item => item.id === id);
+        if (g) g.deducible = next;
+
         await updateTaxMetadata(id, { deducible: next });
-        loadData(true);
+        btn.disabled = false;
+        render();
       });
     });
   }
@@ -291,7 +428,7 @@ export async function impuestosGastosView() {
             body: JSON.stringify({ filename: file.name, content: xmlContent })
           });
           count++;
-        } catch {
+        } catch (err) {
           toast(`Error: ${file.name}`, 'error');
         }
       }

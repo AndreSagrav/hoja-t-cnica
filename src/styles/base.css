@@ -6,6 +6,7 @@
 /* ── RESET ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html {
+  scrollbar-gutter: stable;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
