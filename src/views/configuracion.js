@@ -321,7 +321,6 @@ async function renderBrandingTab(box) {
   if (!branding.plantillaEstilo) branding.plantillaEstilo = 'primario';
   if (!Array.isArray(branding.muestrasExtraidas)) branding.muestrasExtraidas = [];
 
-  let activeDocFormatTab = branding.formatoComprobante || 'carta';
 
   // Extraer esquemas iniciales basados en los colores guardados
   let schemes = generateSchemes(branding.colores || { primario: '#00c2a8', secundario: '#0d3270', acento: '#10b981' });
@@ -533,26 +532,26 @@ async function renderBrandingTab(box) {
         </div>
       </div>
 
-      <!-- SECCIÓN 5: COMPROBANTES Y FACTURACIÓN (CARTA, MEDIA PÁGINA Y POS - 3 OPCIONES REALES CADA UNO) -->
+      <!-- SECCIÓN 5: ESTILO Y FORMATO DEL COMPROBANTE OFICIAL -->
       <div class="cfg-card">
-        <div class="cfg-title">5. Formatos de Comprobante</div>
-        <div class="cfg-sub">Plantillas de salida para Carta, Media Página y Tiquete POS (80mm).</div>
+        <div class="cfg-title">5. Formato y Estilo del Comprobante</div>
+        <div class="cfg-sub">Seleccione el formato de salida y la variante cromática para el comprobante y hoja de servicio oficial.</div>
 
-        <!-- Pestañas de Formato de Documento -->
-        <div style="display:flex;gap:8px;margin-bottom:var(--sp-4);border-bottom:1px solid var(--border);padding-bottom:10px;">
-          <button class="doc-format-tab-btn ${activeDocFormatTab === 'carta' ? 'active' : ''}" data-fmt="carta" style="padding:8px 16px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid ${activeDocFormatTab === 'carta' ? 'var(--accent)' : 'var(--border)'};background:${activeDocFormatTab === 'carta' ? 'rgba(0,194,168,0.1)' : 'var(--surface)'};color:${activeDocFormatTab === 'carta' ? 'var(--navy)' : 'var(--text-mid)'};cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-            Carta (8.5" x 11")
+        <!-- Selector de Formato de Documento -->
+        <div style="display:flex;gap:10px;margin-top:var(--sp-4);margin-bottom:var(--sp-4);flex-wrap:wrap;">
+          <button class="doc-format-tab-btn ${activeDocFormatTab === 'carta' ? 'active' : ''}" data-fmt="carta" style="padding:9px 18px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid ${activeDocFormatTab === 'carta' ? 'var(--accent)' : 'var(--border)'};background:${activeDocFormatTab === 'carta' ? 'rgba(0,194,168,0.12)' : 'var(--surface)'};color:${activeDocFormatTab === 'carta' ? 'var(--navy)' : 'var(--text-mid)'};cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s ease;">
+            📄 Hoja Completa (Carta / A4)
           </button>
-          <button class="doc-format-tab-btn ${activeDocFormatTab === 'media_carta' ? 'active' : ''}" data-fmt="media_carta" style="padding:8px 16px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid ${activeDocFormatTab === 'media_carta' ? 'var(--accent)' : 'var(--border)'};background:${activeDocFormatTab === 'media_carta' ? 'rgba(0,194,168,0.1)' : 'var(--surface)'};color:${activeDocFormatTab === 'media_carta' ? 'var(--navy)' : 'var(--text-mid)'};cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-            Media Página (5.5" x 8.5")
+          <button class="doc-format-tab-btn ${activeDocFormatTab === 'media_carta' ? 'active' : ''}" data-fmt="media_carta" style="padding:9px 18px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid ${activeDocFormatTab === 'media_carta' ? 'var(--accent)' : 'var(--border)'};background:${activeDocFormatTab === 'media_carta' ? 'rgba(0,194,168,0.12)' : 'var(--surface)'};color:${activeDocFormatTab === 'media_carta' ? 'var(--navy)' : 'var(--text-mid)'};cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s ease;">
+            📑 Media Página (Compacto)
           </button>
-          <button class="doc-format-tab-btn ${activeDocFormatTab === 'pos_termico' ? 'active' : ''}" data-fmt="pos_termico" style="padding:8px 16px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid ${activeDocFormatTab === 'pos_termico' ? 'var(--accent)' : 'var(--border)'};background:${activeDocFormatTab === 'pos_termico' ? 'rgba(0,194,168,0.1)' : 'var(--surface)'};color:${activeDocFormatTab === 'pos_termico' ? 'var(--navy)' : 'var(--text-mid)'};cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
-            POS Térmico (80mm)
+          <button class="doc-format-tab-btn ${activeDocFormatTab === 'pos_termico' ? 'active' : ''}" data-fmt="pos_termico" style="padding:9px 18px;font-size:13px;font-weight:700;border-radius:8px;border:1px solid ${activeDocFormatTab === 'pos_termico' ? 'var(--accent)' : 'var(--border)'};background:${activeDocFormatTab === 'pos_termico' ? 'rgba(0,194,168,0.12)' : 'var(--surface)'};color:${activeDocFormatTab === 'pos_termico' ? 'var(--navy)' : 'var(--text-mid)'};cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s ease;">
+            🧾 Tiquete POS (80mm)
           </button>
         </div>
 
         <!-- Grid de 3 Opciones Cromáticas para el Formato Activo -->
-        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:18px;margin-bottom:var(--sp-6);" id="receipt-options-grid">
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:18px;margin-top:var(--sp-2);margin-bottom:var(--sp-6);" id="receipt-options-grid">
           ${renderReceiptStyleCards(activeDocFormatTab, branding)}
         </div>
 
@@ -733,7 +732,7 @@ async function renderBrandingTab(box) {
       toast(`Tipografía '${selectedFont}' aplicada en todo el sistema`, 'info');
     });
 
-    // Pestañas de Formato de Comprobante (Carta, Media Página, POS)
+    // Pestañas de Formato de Documento (Hoja Completa, Media Página, POS Térmico)
     box.querySelectorAll('.doc-format-tab-btn').forEach(btn => {
       btn.onclick = () => {
         activeDocFormatTab = btn.dataset.fmt;
@@ -746,7 +745,7 @@ async function renderBrandingTab(box) {
         });
         btn.classList.add('active');
         btn.style.borderColor = 'var(--accent)';
-        btn.style.background = 'rgba(0,194,168,0.1)';
+        btn.style.background = 'rgba(0,194,168,0.12)';
         btn.style.color = 'var(--navy)';
         
         updateReceiptPreviews();
@@ -914,10 +913,11 @@ async function renderBrandingTab(box) {
       };
     });
 
-    // Renderizar iframes con el comprobante oficial real aislado en modo escritorio 100%
+    // Renderizar iframes con el comprobante oficial real aislado
     box.querySelectorAll('.receipt-card-iframe').forEach(iframe => {
       const stId = iframe.dataset.style;
-      const styleBranding = { ...branding, plantillaEstilo: stId };
+      const fmt = iframe.dataset.format || activeDocFormatTab || 'carta';
+      const styleBranding = { ...branding, formatoComprobante: fmt, plantillaEstilo: stId };
       const css = getComprobanteCSS(styleBranding);
       const bodyHtml = buildComprobanteHTML(SAMPLE_COMPROBANTE_DATA, styleBranding);
 
@@ -925,23 +925,39 @@ async function renderBrandingTab(box) {
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (doc) {
           doc.open();
+
+          let iframeCustomCss = '';
+          if (fmt === 'pos_termico') {
+            iframeCustomCss = `
+              body { margin:0; padding:6px 0; background:#e6eaf0; display:flex; justify-content:center; overflow-y:auto; }
+              .comp-pos-page { min-height:auto; padding:0; background:transparent; width:320px; transform:scale(0.55); transform-origin:top center; }
+            `;
+          } else if (fmt === 'media_carta') {
+            iframeCustomCss = `
+              body { margin:0; padding:6px 0; background:#e6eaf0; display:flex; justify-content:center; overflow:hidden; }
+              .comp-media-page { min-height:auto; padding:0; background:transparent; width:900px; min-width:900px; transform:scale(0.28); transform-origin:top center; }
+              .top-cards { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+            `;
+          } else {
+            iframeCustomCss = `
+              body { margin:0; padding:8px 0; background:#e6eaf0; display:flex; justify-content:center; overflow:hidden; }
+              .comp-v2-page { min-height:auto; padding:0; background:transparent; width:850px; min-width:850px; transform:scale(0.26); transform-origin:top center; }
+              .header-content { flex-direction: row !important; justify-content: space-between !important; }
+              .header-right { text-align: right !important; align-items: flex-end !important; }
+              .top-cards { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+              .tarea-group { grid-template-columns: repeat(4, 1fr) !important; }
+              .totals-box { width: 300px !important; }
+            `;
+          }
+
           doc.write(`<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
   <style>
     ${css}
-    /* Forzar modo escritorio completo en miniatura para evitar colapso a 1 columna */
-    body { margin:0; padding:8px 0; background:#e6eaf0; display:flex; justify-content:center; overflow:hidden; }
-    .comp-v2-page { min-height:auto; padding:0; background:transparent; width:850px; min-width:850px; transform:scale(0.27); transform-origin:top center; }
-    .header-content { flex-direction: row !important; justify-content: space-between !important; }
-    .header-right { text-align: right !important; align-items: flex-end !important; }
-    .top-cards { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
-    .tarea-group { grid-template-columns: repeat(4, 1fr) !important; }
-    .totals-box { width: 300px !important; }
+    ${iframeCustomCss}
   </style>
 </head>
 <body>
@@ -961,6 +977,7 @@ async function renderBrandingTab(box) {
 
 // ── Renderizado de las 3 Opciones Cromáticas para el Comprobante Oficial ─────
 function renderReceiptStyleCards(format, branding) {
+  const currentFmt = format || branding.formatoComprobante || 'carta';
   const styles = [
     {
       id: 'primario',
@@ -1001,8 +1018,8 @@ function renderReceiptStyleCards(format, branding) {
         </div>
 
         <!-- Miniatura del Documento Oficial Real (Aislado en iframe) -->
-        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#e6eaf0;height:240px;position:relative;cursor:pointer;display:flex;justify-content:center;" class="receipt-miniature-container" data-style="${st.id}" title="Haga clic para ver documento a escala real (1:1)">
-          <iframe class="receipt-card-iframe" data-style="${st.id}" style="width:100%;height:100%;border:none;pointer-events:none;background:#e6eaf0;"></iframe>
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#e6eaf0;height:240px;position:relative;cursor:pointer;display:flex;justify-content:center;" class="receipt-miniature-container" data-style="${st.id}" data-format="${currentFmt}" title="Haga clic para ver documento a escala real (1:1)">
+          <iframe class="receipt-card-iframe" data-style="${st.id}" data-format="${currentFmt}" style="width:100%;height:100%;border:none;pointer-events:none;background:#e6eaf0;"></iframe>
         </div>
 
         <!-- Botones de Acción -->
@@ -1020,8 +1037,9 @@ function renderReceiptStyleCards(format, branding) {
   }).join('');
 }
 
-// ── Visor a Escala Real 1:1 Oficial (Hoja de Servicio / Orden de Trabajo Real) ─────
+// ── Visor a Escala Real 1:1 Oficial (Pantalla Completa 100vw x 100vh) ─────
 function openReceiptFullModal(initialFormat, initialStyleId, branding) {
+  let currentFmt = initialFormat || branding.formatoComprobante || 'carta';
   let currentSt = initialStyleId || branding.plantillaEstilo || 'primario';
 
   const modal = document.createElement('div');
@@ -1033,7 +1051,9 @@ function openReceiptFullModal(initialFormat, initialStyleId, branding) {
   modal.style.zIndex = '999999';
   modal.style.background = 'rgba(15, 23, 42, 0.85)';
   modal.style.backdropFilter = 'blur(8px)';
-  modal.style.padding = '16px';
+  modal.style.padding = '0';
+  modal.style.width = '100vw';
+  modal.style.height = '100vh';
   modal.style.position = 'fixed';
   modal.style.inset = '0';
 
@@ -1043,109 +1063,126 @@ function openReceiptFullModal(initialFormat, initialStyleId, branding) {
     contraste: 'Moderno Bicolor'
   };
 
+  const formatNames = {
+    carta: 'Hoja Completa (Carta / A4)',
+    media_carta: 'Media Página (Compacto)',
+    pos_termico: 'Tiquete POS Térmico (80mm)'
+  };
+
   function renderModalContent() {
     const styleBranding = {
       ...branding,
+      formatoComprobante: currentFmt,
       plantillaEstilo: currentSt
     };
     const css = getComprobanteCSS(styleBranding);
     const bodyHtml = buildComprobanteHTML(SAMPLE_COMPROBANTE_DATA, styleBranding);
 
     modal.innerHTML = `
-      <div style="background:var(--panel-bg);border-radius:14px;max-width:920px;width:100%;height:92vh;display:flex;flex-direction:column;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden;position:relative;">
+      <div style="background:var(--panel-bg);border-radius:0;width:100vw;height:100vh;max-width:100vw;max-height:100vh;display:flex;flex-direction:column;border:none;overflow:hidden;position:relative;">
         
         <!-- Barra Superior de Control del Visor 1:1 -->
         <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-wrap:wrap;gap:12px;">
           <div>
-            <div style="font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Vista Previa Oficial (Hoja de Servicio / Orden de Trabajo)</div>
-            <div style="font-size:15px;font-weight:800;color:var(--navy);">
-              ${styleNames[currentSt] || currentSt}
+            <div style="font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Vista Previa Real 1:1 · Datos y Consecutivo Oficial</div>
+            <div style="font-size:14.5px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;">
+              <span>${styleNames[currentSt] || currentSt}</span>
+              <span style="font-size:12px;font-weight:600;color:var(--text-soft);">(${formatNames[currentFmt] || currentFmt})</span>
             </div>
           </div>
 
-          <!-- Selector de estilo rápido dentro del visor -->
-          <div style="display:flex;gap:6px;align-items:center;">
-            <button class="btn btn-sm ${currentSt === 'primario' ? 'btn-primary' : 'btn-secondary'} btn-modal-style" data-style="primario" style="font-size:11.5px;padding:6px 12px;">Institucional</button>
-            <button class="btn btn-sm ${currentSt === 'secundario' ? 'btn-primary' : 'btn-secondary'} btn-modal-style" data-style="secundario" style="font-size:11.5px;padding:6px 12px;">Contraste Marca</button>
-            <button class="btn btn-sm ${currentSt === 'contraste' ? 'btn-primary' : 'btn-secondary'} btn-modal-style" data-style="contraste" style="font-size:11.5px;padding:6px 12px;">Moderno Bicolor</button>
-            <button id="modal-receipt-close" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft);margin-left:12px;padding:0 4px;" title="Cerrar">✕</button>
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+            <!-- Selector de Formato dentro del visor -->
+            <div style="display:flex;gap:4px;background:var(--surface-2);padding:3px;border-radius:8px;">
+              <button class="btn btn-sm ${currentFmt === 'carta' ? 'btn-primary' : 'btn-secondary'} btn-modal-fmt" data-fmt="carta" style="font-size:11px;padding:5px 10px;">📄 Hoja Completa</button>
+              <button class="btn btn-sm ${currentFmt === 'media_carta' ? 'btn-primary' : 'btn-secondary'} btn-modal-fmt" data-fmt="media_carta" style="font-size:11px;padding:5px 10px;">📑 Media Página</button>
+              <button class="btn btn-sm ${currentFmt === 'pos_termico' ? 'btn-primary' : 'btn-secondary'} btn-modal-fmt" data-fmt="pos_termico" style="font-size:11px;padding:5px 10px;">🧾 Tiquete (80mm)</button>
+            </div>
+
+            <!-- Selector de Estilo Cromático -->
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-sm ${currentSt === 'primario' ? 'btn-primary' : 'btn-secondary'} btn-modal-style" data-style="primario" style="font-size:11px;padding:5px 10px;">Institucional</button>
+              <button class="btn btn-sm ${currentSt === 'secundario' ? 'btn-primary' : 'btn-secondary'} btn-modal-style" data-style="secundario" style="font-size:11px;padding:5px 10px;">Contraste</button>
+              <button class="btn btn-sm ${currentSt === 'contraste' ? 'btn-primary' : 'btn-secondary'} btn-modal-style" data-style="contraste" style="font-size:11px;padding:5px 10px;">Bicolor</button>
+            </div>
+
+            <button id="modal-receipt-close" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-soft);margin-left:8px;padding:0 4px;line-height:1;" title="Cerrar">✕</button>
           </div>
         </div>
 
         <!-- Área Central con Documento Oficial 1:1 Aislado -->
-        <div style="flex:1;overflow:hidden;background:#e6eaf0;">
-          <iframe id="modal-full-receipt-iframe" style="width:100%;height:100%;border:none;background:#e6eaf0;"></iframe>
+        <div style="flex:1;background:#e6eaf0;overflow:auto;display:flex;justify-content:center;padding:0;">
+          <iframe id="modal-receipt-frame" style="width:100%;height:100%;border:none;background:#e6eaf0;"></iframe>
         </div>
 
-        <!-- Barra Inferior de Acciones del Visor -->
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border);background:var(--surface);flex-wrap:wrap;gap:12px;">
+        <!-- Barra Inferior de Acción -->
+        <div style="padding:10px 20px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:center;">
           <div style="font-size:12px;color:var(--text-soft);">
-            Mostrando el comprobante oficial con tipografía y paleta seleccionada.
+            Visualizando datos reales de Supabase: Consecutivo <strong>OT-10001-00003-0001</strong> · Cuentas BAC y SINPE de César Batista
           </div>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <button id="modal-receipt-confirm" class="btn btn-secondary" style="padding:9px 16px;font-weight:600;">
-              Cerrar
-            </button>
-            <button id="modal-receipt-select-apply" class="btn btn-primary" style="padding:9px 20px;font-weight:700;">
-              Usar Esta Plantilla
-            </button>
-          </div>
+          <button class="btn btn-primary" id="btn-modal-apply-style" style="padding:7px 18px;font-size:12.5px;font-weight:700;">
+            Usar Este Estilo y Formato
+          </button>
         </div>
 
       </div>
     `;
 
-    // Render iframe content
-    const iframe = modal.querySelector('#modal-full-receipt-iframe');
-    if (iframe) {
-      setTimeout(() => {
-        try {
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (doc) {
-            doc.open();
-            doc.write(`<!DOCTYPE html>
+    // Renderizar dentro del iframe del modal a escala 100% nativa
+    setTimeout(() => {
+      const iframe = modal.querySelector('#modal-receipt-frame');
+      if (iframe) {
+        const doc = iframe.contentWindow || iframe.contentDocument;
+        if (doc) {
+          const docObj = doc.document || doc;
+          docObj.open();
+          docObj.write(`<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
   <style>
     ${css}
     body { margin:0; padding:20px 0; background:#e6eaf0; display:flex; justify-content:center; }
-    .comp-v2-page { min-height:auto; padding:0; background:transparent; width:100%; max-width:850px; }
+    ${currentFmt === 'pos_termico' ? '.comp-pos-page { min-height:auto; padding:0; background:transparent; width:320px; }' : ''}
+    ${currentFmt === 'media_carta' ? '.comp-media-page { min-height:auto; padding:0; background:transparent; width:100%; max-width:900px; }' : ''}
+    ${currentFmt === 'carta' ? '.comp-v2-page { min-height:auto; padding:0; background:transparent; width:100%; max-width:850px; }' : ''}
   </style>
 </head>
 <body>
   ${bodyHtml}
 </body>
 </html>`);
-            doc.close();
-          }
-        } catch (e) {
-          console.error('Error writing modal iframe:', e);
+          docObj.close();
         }
-      }, 0);
-    }
+      }
 
-    // Modal listeners
-    modal.querySelectorAll('.btn-modal-style').forEach(b => {
-      b.onclick = () => {
-        currentSt = b.dataset.style;
-        renderModalContent();
+      // Eventos dentro del modal
+      modal.querySelector('#modal-receipt-close').onclick = () => modal.remove();
+
+      modal.querySelectorAll('.btn-modal-fmt').forEach(btn => {
+        btn.onclick = () => {
+          currentFmt = btn.dataset.fmt;
+          renderModalContent();
+        };
+      });
+
+      modal.querySelectorAll('.btn-modal-style').forEach(btn => {
+        btn.onclick = () => {
+          currentSt = btn.dataset.style;
+          renderModalContent();
+        };
+      });
+
+      modal.querySelector('#btn-modal-apply-style').onclick = () => {
+        activeDocFormatTab = currentFmt;
+        branding.formatoComprobante = currentFmt;
+        branding.plantillaEstilo = currentSt;
+        updateReceiptPreviews();
+        modal.remove();
+        toast(`Configuración aplicada: ${formatNames[currentFmt]} con estilo ${styleNames[currentSt]}`, 'success');
       };
-    });
-
-    modal.querySelector('#modal-receipt-close').onclick = () => modal.remove();
-    modal.querySelector('#modal-receipt-confirm').onclick = () => modal.remove();
-    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-
-    modal.querySelector('#modal-receipt-select-apply').onclick = () => {
-      branding.plantillaEstilo = currentSt;
-      updateReceiptPreviews();
-      toast(`Plantilla '${styleNames[currentSt]}' seleccionada y guardada`, 'success');
-      modal.remove();
-    };
+    }, 10);
   }
 
   renderModalContent();
