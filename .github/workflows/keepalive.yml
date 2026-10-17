@@ -9,10 +9,17 @@ jobs:
   keepalive:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase
+      - name: Ping Supabase (lectura + escritura)
         env:
           ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bnhlanVrcnRwcnR6eGJrY2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Njk4ODAsImV4cCI6MjA5MTQ0NTg4MH0.wePQV8l04rMNynO-S598thR51L4YmgD-2xxiDxjl1TY
+          BASE: https://qznxejukrtprtzxbkcan.supabase.co
         run: |
+          # Escritura (requiere haber ejecutado keepalive_setup.sql en Supabase; si no, solo avisa)
+          W=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/rest/v1/rpc/ping_keepalive" \
+            -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" -H "Content-Type: application/json" -d '{}')
+          echo "Escritura: HTTP $W"
+
+          # Lectura
           curl -s -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
-            "https://qznxejukrtprtzxbkcan.supabase.co/rest/v1/fiscal_facturas?select=id&limit=1" \
-            -o /dev/null -w "Keepalive: %{http_code} - %{time_total}s\n"
+            "$BASE/rest/v1/fiscal_facturas?select=id&limit=1" \
+            -o /dev/null -w "Lectura: %{http_code} - %{time_total}s\n"
