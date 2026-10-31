@@ -33,8 +33,8 @@ export async function clientesListView() {
         </div>
       </div>
 
-      <!-- MÉTRICAS DE ALTA DENSIDAD (4 COLUMNAS EQUILIBRADAS) -->
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;" id="cli-kpis"></div>
+      <!-- MÉTRICAS DE ALTA DENSIDAD (RESPONSIVAS TIER-1) -->
+      <div class="t1-clients-kpi-grid" id="cli-kpis"></div>
 
       <!-- TABLA DE ANCHO COMPLETO (CERO TEXTOS APELOTADOS O CORTADOS) -->
       <div class="t1-clients-table-card">

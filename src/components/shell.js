@@ -156,6 +156,22 @@ export function ensureShell(activePath) {
       document.getElementById('sidebar-overlay')?.classList.remove('active');
     });
 
+    // Auto-close drawer on mobile when clicking any nav item or CTA
+    document.getElementById('app-sidebar')?.addEventListener('click', (e) => {
+      if (window.innerWidth <= 1024 && (e.target.closest('.nav-item') || e.target.closest('.nav-cta'))) {
+        document.getElementById('app-sidebar')?.classList.remove('open');
+        document.getElementById('sidebar-overlay')?.classList.remove('active');
+      }
+    });
+
+    // Auto-clean mobile drawer state when resizing to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1024) {
+        document.getElementById('app-sidebar')?.classList.remove('open');
+        document.getElementById('sidebar-overlay')?.classList.remove('active');
+      }
+    });
+
     // Keyboard shortcut: Ctrl + B / Cmd + B to toggle sidebar
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
@@ -164,15 +180,10 @@ export function ensureShell(activePath) {
       }
     });
 
-    // Restore saved state
-    if (localStorage.getItem('innovio:sidebar-collapsed') === '1') {
+    // Restore saved collapsed state for desktop
+    if (window.innerWidth > 1024 && localStorage.getItem('innovio:sidebar-collapsed') === '1') {
       document.getElementById('app-sidebar')?.classList.add('collapsed');
     }
-
-    // Restaurar estado guardado de barra colapsada
-    // Enforce clean, expanded enterprise sidebar
-    localStorage.removeItem('innovio:sidebar-collapsed');
-    document.getElementById('app-sidebar')?.classList.remove('collapsed');
   
     document.getElementById('btn-currency-toggle')?.addEventListener('click', () => {
       const next = toggleGlobalCurrency();

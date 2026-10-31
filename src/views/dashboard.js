@@ -246,10 +246,8 @@ function renderDashboard(content, stats, activeFilter = 'all', onFilterChange = 
 
       </div>
 
-      <!-- MÉTRICAS OPERATIVAS SECUNDARIAS (DISTRIBUCIÓN TIER-1 EQUILIBRADA) -->
-      <!-- MÉTRICAS OPERATIVAS SECUNDARIAS (DISTRIBUCIÓN TIER-1 COMPLETA) -->
-      <!-- MÉTRICAS OPERATIVAS SECUNDARIAS (FILA LIMPIA HORIZONTAL TIER-1) -->
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;">
+      <!-- MÉTRICAS OPERATIVAS SECUNDARIAS (FILA RESPONSIVA TIER-1) -->
+      <div class="t1-clean-kpi-grid">
         
         <!-- CARD 1: TICKET PROMEDIO -->
         <div class="t1-clean-kpi-card">

@@ -94,10 +94,21 @@ body {
 }
 
 .content {
-  padding: 32px 36px 60px !important;
+  padding: 24px 28px 48px !important;
   max-width: 1540px !important;
   margin: 0 auto !important;
   width: 100% !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 1024px) {
+  .content {
+    padding: 16px 16px 40px !important;
+  }
+}
+@media (max-width: 640px) {
+  .content {
+    padding: 12px 10px 56px !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -181,18 +192,22 @@ body {
    ══════════════════════════════════════════════════════════════ */
 .t1-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
 }
-@media (max-width: 1280px) {
+.t1-kpi-grid > * {
+  min-width: 0;
+}
+@media (max-width: 1360px) {
   .t1-kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 640px) {
   .t1-kpi-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -286,10 +301,14 @@ body {
   grid-template-columns: 1.8fr 1.2fr;
   gap: 24px;
   align-items: start;
+  width: 100%;
 }
-@media (max-width: 1180px) {
+.t1-split-layout > * {
+  min-width: 0;
+}
+@media (max-width: 1280px) {
   .t1-split-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -354,15 +373,18 @@ body {
 
 /* Enterprise Data Table */
 .t1-table-wrapper {
+  width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .t1-table {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
   text-align: left;
 }
 .t1-table th {
-  padding: 14px 24px;
+  padding: 12px 18px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -370,9 +392,10 @@ body {
   color: var(--subtle-color);
   background: var(--panel-subtle);
   border-bottom: 1px solid var(--panel-border);
+  white-space: nowrap;
 }
 .t1-table td {
-  padding: 16px 24px;
+  padding: 14px 18px;
   font-size: 13.5px;
   color: var(--body-color);
   border-bottom: 1px solid var(--panel-border);
@@ -1525,18 +1548,44 @@ body {
 
 
 /* ══════════════════════════════════════════════════════════════
-   TIER-1 ENTERPRISE KPI CARDS (CLEAN FULL-WIDTH, NO NARROW COLUMNS)
+   TIER-1 ENTERPRISE KPI CARDS & GRIDS (RESPONSIVE SYSTEM)
    ══════════════════════════════════════════════════════════════ */
+.t1-clean-kpi-grid,
+.t1-clients-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+.t1-clean-kpi-grid > *,
+.t1-clients-kpi-grid > * {
+  min-width: 0;
+}
+@media (max-width: 1360px) {
+  .t1-clean-kpi-grid,
+  .t1-clients-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .t1-clean-kpi-grid,
+  .t1-clients-kpi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .t1-clean-kpi-card {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 14px;
-  padding: 18px 22px 16px 22px;
+  padding: 16px 20px 14px 20px;
   box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 130px;
+  min-height: 125px;
+  min-width: 0;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
 }
@@ -1552,7 +1601,9 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .t1-clean-kpi-label {
@@ -1574,7 +1625,7 @@ body {
 
 .t1-clean-kpi-value {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: clamp(20px, 2.2vw, 26px);
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.03em;
@@ -1606,14 +1657,14 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--subtle-color);
   font-weight: 500;
   border-top: 1px solid rgba(15, 23, 42, 0.05);
   padding-top: 8px;
   margin-top: auto;
-  white-space: nowrap;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .t1-clean-kpi-footer-main {
